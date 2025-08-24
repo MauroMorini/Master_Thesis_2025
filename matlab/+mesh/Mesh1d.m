@@ -1,6 +1,6 @@
 % author: Mauro Morini
 % last modified: 26.11.24
-classdef Mesh1d
+classdef Mesh1d < handle
     % 
 
     properties
