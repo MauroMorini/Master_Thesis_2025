@@ -3,6 +3,16 @@
 #include <cmath>
 using namespace Eigen;
 
+/**
+ * @brief Computes the local stiffness matrix for a 1D finite element.
+ * 
+ * This function calculates the local stiffness matrix for a single element
+ * using numerical integration (quadrature) based on the degree of freedom (dof).
+ * 
+ * @param element_nodes A vector containing the coordinates of the nodes in the element.
+ * @param dof The degree of freedom, i.e., the number of nodes per element.
+ * @return Matrix<double, Dynamic, Dynamic> The local stiffness matrix for the element.
+ */
 SparseMatrix<double> stiffness_matrix_1d(VectorXd &nodes, Matrix<int, Dynamic, Dynamic> &elements) {
 
     // Initializations
@@ -14,12 +24,37 @@ SparseMatrix<double> stiffness_matrix_1d(VectorXd &nodes, Matrix<int, Dynamic, D
     std::vector<T> triplet_list;
     triplet_list.reserve(dof * dof * num_of_elements);
 
-    for (int i = 0; i < num_of_elements; i++) {
-        // TODO: assemble matrix
+    for (int k = 0; k < num_of_elements; k++) {
+
+        // collect element nodes
+        VectorXd element_nodes; 
+        for (int i = 0; i < dof; i++) {
+            element_nodes(i) = nodes(elements(k,i));
+        }
+
+        // get local element matrix and write into K
+        MatrixXd K_loc = element_stiffness_matrix_1d(element_nodes, dof); 
+        for (int i = 0; i < K_loc.rows(); i++) {
+            for (int j = 0; j < K_loc.cols(); j++) {
+                triplet_list.push_back(T(elements(k,i), elements(k,j), K_loc(i,j)));
+            }   
+        }
     }
+    K.setFromTriplets(triplet_list.begin(), triplet_list.end());
+    return K;
 }
 
-Matrix<double, Dynamic, Dynamic> element_siffness_matrix_1d(VectorXd &element_nodes, int &dof) {
+/**
+ * @brief Computes the local stiffness matrix for a 1D finite element.
+ * 
+ * This function calculates the local stiffness matrix for a single element
+ * using numerical integration (quadrature) based on the degree of freedom (dof).
+ * 
+ * @param element_nodes A vector containing the coordinates of the nodes in the element.
+ * @param dof The degree of freedom, i.e., the number of nodes per element.
+ * @return Matrix<double, Dynamic, Dynamic> The local stiffness matrix for the element.
+ */
+Matrix<double, Dynamic, Dynamic> element_stiffness_matrix_1d(const VectorXd &element_nodes, const int &dof) {
 
     // Initializations
     MatrixXd K_loc(dof, dof);
