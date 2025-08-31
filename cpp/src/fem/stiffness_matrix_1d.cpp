@@ -1,4 +1,4 @@
-#include "../Eigen/Sparse"
+#include "../../third_party/Eigen/Sparse"
 #include <vector>
 #include <cmath>
 using namespace Eigen;
