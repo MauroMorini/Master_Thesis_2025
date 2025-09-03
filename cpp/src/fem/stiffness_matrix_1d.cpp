@@ -1,48 +1,20 @@
-#include "../../third_party/Eigen/Sparse"
+#include <Eigen/Sparse>
 #include <vector>
 #include <cmath>
 using namespace Eigen;
 
-/**
- * @brief Computes the local stiffness matrix for a 1D finite element.
- * 
- * This function calculates the local stiffness matrix for a single element
- * using numerical integration (quadrature) based on the degree of freedom (dof).
- * 
- * @param element_nodes A vector containing the coordinates of the nodes in the element.
- * @param dof The degree of freedom, i.e., the number of nodes per element.
- * @return Matrix<double, Dynamic, Dynamic> The local stiffness matrix for the element.
- */
-SparseMatrix<double> stiffness_matrix_1d(VectorXd &nodes, Matrix<int, Dynamic, Dynamic> &elements) {
+Matrix<double, Dynamic, Dynamic> der_shape_func_deg1(VectorXd &element_nodes, int shape_func_idx) {
 
-    // Initializations
-    int num_nodes = nodes.size();
-    int num_of_elements = elements.rows();
-    const int dof = elements.cols();
-    SparseMatrix<double> K(num_nodes, num_nodes);
-    typedef Triplet<double> T;
-    std::vector<T> triplet_list;
-    triplet_list.reserve(dof * dof * num_of_elements);
-
-    for (int k = 0; k < num_of_elements; k++) {
-
-        // collect element nodes
-        VectorXd element_nodes; 
-        for (int i = 0; i < dof; i++) {
-            element_nodes(i) = nodes(elements(k,i));
-        }
-
-        // get local element matrix and write into K
-        MatrixXd K_loc = element_stiffness_matrix_1d(element_nodes, dof); 
-        for (int i = 0; i < K_loc.rows(); i++) {
-            for (int j = 0; j < K_loc.cols(); j++) {
-                triplet_list.push_back(T(elements(k,i), elements(k,j), K_loc(i,j)));
-            }   
-        }
+    switch (shape_func_idx)
+    {
+    case 0:
+        
+        break;
+    
+    default:
+        break;
     }
-    K.setFromTriplets(triplet_list.begin(), triplet_list.end());
-    return K;
-}
+} 
 
 /**
  * @brief Computes the local stiffness matrix for a 1D finite element.
@@ -86,16 +58,48 @@ Matrix<double, Dynamic, Dynamic> element_stiffness_matrix_1d(const VectorXd &ele
     return K_loc;
 }
 
-Matrix<double, Dynamic, Dynamic> der_shape_func_deg1(VectorXd &element_nodes, int shape_func_idx) {
 
-    switch (shape_func_idx)
-    {
-    case 0:
-        
-        break;
-    
-    default:
-        break;
+/**
+ * @brief Computes the local stiffness matrix for a 1D finite element.
+ * 
+ * This function calculates the local stiffness matrix for a single element
+ * using numerical integration (quadrature) based on the degree of freedom (dof).
+ * 
+ * @param element_nodes A vector containing the coordinates of the nodes in the element.
+ * @param dof The degree of freedom, i.e., the number of nodes per element.
+ * @return Matrix<double, Dynamic, Dynamic> The local stiffness matrix for the element.
+ */
+SparseMatrix<double> stiffness_matrix_1d(VectorXd &nodes, Matrix<int, Dynamic, Dynamic> &elements) {
+
+    // Initializations
+    int num_nodes = nodes.size();
+    int num_of_elements = elements.rows();
+    const int dof = elements.cols();
+    SparseMatrix<double> K(num_nodes, num_nodes);
+    typedef Triplet<double> T;
+    std::vector<T> triplet_list;
+    triplet_list.reserve(dof * dof * num_of_elements);
+
+    for (int k = 0; k < num_of_elements; k++) {
+
+        // collect element nodes
+        VectorXd element_nodes; 
+        for (int i = 0; i < dof; i++) {
+            element_nodes(i) = nodes(elements(k,i));
+        }
+
+        // get local element matrix and write into K
+        MatrixXd K_loc = element_stiffness_matrix_1d(element_nodes, dof); 
+        for (int i = 0; i < K_loc.rows(); i++) {
+            for (int j = 0; j < K_loc.cols(); j++) {
+                triplet_list.push_back(T(elements(k,i), elements(k,j), K_loc(i,j)));
+            }   
+        }
     }
-} 
+    K.setFromTriplets(triplet_list.begin(), triplet_list.end());
+    return K;
+}
+
+
+
 
