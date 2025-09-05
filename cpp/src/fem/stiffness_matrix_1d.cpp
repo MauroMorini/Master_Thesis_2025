@@ -39,8 +39,8 @@ Matrix<double, Dynamic, Dynamic> element_stiffness_matrix_1d(const VectorXd &ele
     case 2:
         quad_nodes << -1, 1;
         quad_weights << 1, 1;
-        shape_funct_val.col(0) = (-1/2)*Vector2d::Ones();
-        shape_funct_val.col(1) = (1/2)*Vector2d::Ones();
+        shape_funct_val.col(0) = (-0.5)*Vector2d::Ones();
+        shape_funct_val.col(1) = 0.5*Vector2d::Ones();
         break;
     
     default:
@@ -49,7 +49,7 @@ Matrix<double, Dynamic, Dynamic> element_stiffness_matrix_1d(const VectorXd &ele
     
     double element_size = std::abs(element_nodes(0) - element_nodes(element_nodes.size() - 1));
     for (int i = 0; i < dof; i++) {
-        for (int j = 0; j < i; j++) {
+        for (int j = 0; j <= i; j++) {
             K_loc(i,j) = quad_weights*(shape_funct_val.col(i).array() * shape_funct_val.col(j).array()).matrix();
             K_loc(j,i) = K_loc(i,j);
         }
