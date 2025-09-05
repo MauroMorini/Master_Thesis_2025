@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/tests",
-            "args": ["-s", "[el_stiff]"],
+            "args": ["-s", "[glob_stiff_triv]"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",

@@ -26,7 +26,7 @@ Matrix<double, Dynamic, Dynamic> der_shape_func_deg1(VectorXd &element_nodes, in
  * @param dof The degree of freedom, i.e., the number of nodes per element.
  * @return Matrix<double, Dynamic, Dynamic> The local stiffness matrix for the element.
  */
-Matrix<double, Dynamic, Dynamic> element_stiffness_matrix_1d(const VectorXd &element_nodes, const int &dof) {
+Matrix<double, Dynamic, Dynamic> element_stiffness_matrix_1d( VectorXd element_nodes, const int &dof) {
 
     // Initializations
     MatrixXd K_loc(dof, dof);
