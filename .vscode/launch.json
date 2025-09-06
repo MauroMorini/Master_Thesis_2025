@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Catch2 Test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/tests",
+            "args": ["-s", "[glob_stiff_triv]"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable gdb pretty-printing",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Load Eigen pretty printers",
+                    "text": "python import sys; sys.path.insert(0, '/home/mauro/workspace/tools/eigen/debug/gdb'); import printers; printers.register_eigen_printers(None)",
+                    "ignoreFailures": true
+                }
+            ]
+
+        }
+    ]
+}
