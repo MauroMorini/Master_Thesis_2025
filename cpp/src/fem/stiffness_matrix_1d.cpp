@@ -83,9 +83,10 @@ SparseMatrix<double> stiffness_matrix_1d(VectorXd &nodes, Matrix<int, Dynamic, D
     for (int k = 0; k < num_of_elements; k++) {
 
         // collect element nodes
-        VectorXd element_nodes; 
+        VectorXd element_nodes(dof); 
         for (int i = 0; i < dof; i++) {
-            element_nodes(i) = nodes(elements(k,i));
+            int temp_idx = elements(k,i);
+            element_nodes(i) = nodes(temp_idx);
         }
 
         // get local element matrix and write into K
