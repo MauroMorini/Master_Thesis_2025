@@ -10,7 +10,7 @@ classdef FEM1D
     methods(Static)
         % author: Mauro Morini
         % last modified: 22.03.2024
-        function A = stiffnessMatrix1D(x, T, c)
+        function A = fem1d.stiffnessMatrix1D(x, T, c)
         % calculate the nxn stiffness matrix using a connectivity matrix T and a
         % possibly non equidistant grid x of size n for 2 or 3 degrees of freedom
         % A = [(c*phi'_i, phi'_j)_L^2]i,j
@@ -36,7 +36,7 @@ classdef FEM1D
             K = x(T(i,:));
         
             % get element matrix 
-            AK = FEM1D.stiffnessElementMatrix1D(K, c);
+            AK = fem1d.stiffnessElementMatrix1D(K, c);
         
             % assembling of stiffness matrix
             A(T(i,:), T(i,:)) = A(T(i,:), T(i,:)) + AK;
@@ -130,7 +130,7 @@ classdef FEM1D
             K = x(t(i,:));
         
             % get element matrix 
-            Mloc = FEM1D.massElementMatrix1D(K, c);
+            Mloc = fem1d.massElementMatrix1D(K, c);
         
             % Assembling
             M(t(i, :), t(i, :)) = M(t(i, :), t(i, :)) + Mloc;
@@ -207,9 +207,9 @@ classdef FEM1D
                 case 1
                     error("connectivity matrix needs to have more than 1 node in element")
                 case 2
-                    b = FEM1D.loadVectorLinear1D(x,T,f);
+                    b = fem1d.loadVectorLinear1D(x,T,f);
                 case 3
-                    b = FEM1D.loadVectorQuadratic1D(x,T,f);
+                    b = fem1d.loadVectorQuadratic1D(x,T,f);
                 otherwise
                     error("load vector for " + Dof + " : degrees of freedom per element has not been implemented")
             end
@@ -338,7 +338,7 @@ classdef FEM1D
                 %             N1(FKInv(x,h2,m2))*N0(FKInv(x,h1,m1)), N1(FKInv(x,h2,m2))*N1(FKInv(x,h1,m1))];
                 % Mloc = hInt/6*(f(KInt(1)) + 4*f(mInt) + f(KInt(2)));
 
-                Mloc = FEM1D.projMassElementMatrix1D(K1, K2);
+                Mloc = fem1d.projMassElementMatrix1D(K1, K2);
                 M(t2(idxEl(j),:), t1(i,:)) = M(t2(idxEl(j),:), t1(i,:)) + Mloc;
             end          
         end
@@ -407,9 +407,9 @@ classdef FEM1D
                 case 1
                     error("connectivity matrix needs to have more than 1 node in element")
                 case 2
-                    [L2err, H1err] = FEM1D.errorsLinear1D(T, x, uh, dudx, u);
+                    [L2err, H1err] = fem1d.errorsLinear1D(T, x, uh, dudx, u);
                 case 3
-                    [L2err, H1err] = FEM1D.errorsQuad1D(T, x, uh, dudx, u);
+                    [L2err, H1err] = fem1d.errorsQuad1D(T, x, uh, dudx, u);
                 otherwise
                     error("load vector for " + Dof + " : degrees of freedom per element has not been implemented")
             end

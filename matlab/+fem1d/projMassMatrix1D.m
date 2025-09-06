@@ -39,7 +39,7 @@ function M = projMassMatrix1D(p1,t1,p2,t2)
                 %             N1(FKInv(x,h2,m2))*N0(FKInv(x,h1,m1)), N1(FKInv(x,h2,m2))*N1(FKInv(x,h1,m1))];
                 % Mloc = hInt/6*(f(KInt(1)) + 4*f(mInt) + f(KInt(2)));
 
-                Mloc = projMassElementMatrix1D(K1, K2);
+                Mloc = fem1d.projMassElementMatrix1D(K1, K2);
                 M(t2(idxEl(j),:), t1(i,:)) = M(t2(idxEl(j),:), t1(i,:)) + Mloc;
             end          
         end

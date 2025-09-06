@@ -24,7 +24,7 @@ function A = stiffnessMatrix1D(x, T, c)
         K = x(T(i,:));
     
         % get element matrix 
-        AK = stiffnessElementMatrix1D(K, c);
+        AK = fem1d.stiffnessElementMatrix1D(K, c);
     
         % assembling of stiffness matrix
         A(T(i,:), T(i,:)) = A(T(i,:), T(i,:)) + AK;
