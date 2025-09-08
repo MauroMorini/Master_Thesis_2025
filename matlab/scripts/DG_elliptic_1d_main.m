@@ -6,17 +6,30 @@ import mesh.*
 import fem1d.*
 
 % define function handles (real solution)   
+% Cell array of 10 C^2 functions on [0,1]
 syms x
-u_exact_handle = sin(x);
+cell_exact_fun = {
+    x.^2;                   % polynomial
+    x.^3;                   % polynomial
+    sin(pi*x);              % sine
+    cos(pi*x);              % cosine
+    x.^2 .* (1-x);          % cubic-like
+    exp(x);                 % exponential
+    log(x+1);               % smooth on [0,1]
+    sin(2*pi*x) + x;        % sine + linear
+    x.^4 - x.^2;            % quartic
+    exp(-x).*sin(5*x)       % damped oscillation
+};
+u_exact_handle = cell_exact_fun{6};
 f_exact_handle = diff(-u_exact_handle, 2);
 du_exact_handle = diff(u_exact_handle, 1);
-u_exact_handle = matlabFunction(u_exact_handle);
-du_exact_handle = matlabFunction(du_exact_handle);
-f_exact_handle = matlabFunction(f_exact_handle);
+u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
+du_exact_handle = matlabFunction(du_exact_handle, 'vars', {x});
+f_exact_handle = matlabFunction(f_exact_handle, 'vars', {x});
 c_handle = @(x) ones(size(x));
 
 % initialize 
-H_stepsizes = 2.^-(2:6);
+H_stepsizes = 2.^-(1:10);
 errors = zeros(1, length(H_stepsizes));
 for i = 1:length(H_stepsizes)
     % initialize mesh
@@ -40,7 +53,7 @@ for i = 1:length(H_stepsizes)
 
     % calculate errors 
     errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);
-
+    disp("calculated h = "+ h + "  i = " + i + " cond(A) = " + condest(A(interior_nodes_idx, interior_nodes_idx)))
 end
 
 % plot solution
