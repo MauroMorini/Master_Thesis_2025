@@ -18,6 +18,24 @@ f_exact_handle = matlabFunction(f_exact_handle);
 c_handle = @(x) ones(size(x));
 
 % assemble matrices
+num_nodes = length(nodes);
 A = fem1d.stiffnessMatrix1D(nodes', elements, c_handle);
-load_v = fem1d.loadVectorLinear1D(nodes', elements, f_exact_handle);
+load_vec = fem1d.loadVectorLinear1D(nodes', elements, f_exact_handle);
+uh = zeros(num_nodes, 1);
+
+% solve interior problem:
+interior_nodes_idx = 1:num_nodes;
+interior_nodes_idx(boundary_nodes_idx) = [];
+uh(interior_nodes_idx) = A(interior_nodes_idx, interior_nodes_idx) \ load_vec(interior_nodes_idx);
+
+% boundary conditions
+uh(boundary_nodes_idx) = u_exact_handle(nodes(boundary_nodes_idx));
+
+% plot solution
+figure;
+plot(nodes, uh, nodes, u_exact_handle(nodes))
+xlabel("x")
+ylabel("y")
+legend("u_exact", "uh")
+
 

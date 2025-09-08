@@ -296,7 +296,7 @@ classdef Mesh1d < handle
                 warning("There are elements which are too small or too big")
             end
             N = length(obj.p);
-            obj.e = [obj.a, obj.b];
+            obj.e = [1, N];
             obj.t = [(1:(N-1))', (2:N)'];
         end
 
@@ -323,7 +323,7 @@ classdef Mesh1d < handle
             figure(f);            
             plot(obj.p,0,'b.','MarkerSize',10)
             hold on
-            plot(obj.e, [0,0], 'rx','MarkerSize',10)
+            plot(obj.p(obj.e), [0,0], 'rx','MarkerSize',10)
             hold off
         end
     end
