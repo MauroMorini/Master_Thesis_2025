@@ -10,6 +10,7 @@ classdef MeshIntervalDG1d < handle
         lower_interval_bound
         upper_interval_bound
         element_interface_nodes
+        int_face_node_to_element_map
     end
 
     methods
@@ -69,12 +70,16 @@ classdef MeshIntervalDG1d < handle
             nodes_matrix_extended(:, end) = obj.element_interface_nodes(2:end);
             nodes_matrix_extended = nodes_matrix_extended.';
             obj.nodes = nodes_matrix_extended(:);
-            obj.boundary_interface_node_idx = [1, length(obj.nodes)];
+            num_nodes = length(obj.nodes);
+            obj.boundary_interface_node_idx = [1, num_nodes];
             
             % connectivity matrix
-            elements_temp = 1:length(obj.nodes);
+            elements_temp = 1:num_nodes;
             elements_temp = reshape(elements_temp, obj.dof, []);
             obj.elements = elements_temp.';
+
+            % int_face_node_to_element_map
+            obj.int_face_node_to_element_map = [NaN, 1; (1:N-2).', (2:N-1).'; N-1, NaN];
         end
 
         function [nodes, elements, boundary_interface_node_idx] = getPet(obj)
