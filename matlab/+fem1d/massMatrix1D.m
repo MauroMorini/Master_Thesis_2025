@@ -14,10 +14,10 @@ function M = massMatrix1D(x, t, c)
 
         n = length(x);
         dof = size(t, 2);
-        A_max_entries = nEl*dof^2;
-        triplet_list_rows = zeros(A_max_entries, 1);
-        triplet_list_cols = zeros(A_max_entries, 1);
-        triplet_list_entries = zeros(A_max_entries, 1);
+        M_max_entries = nEl*dof^2;
+        triplet_list_rows = zeros(M_max_entries, 1);
+        triplet_list_cols = zeros(M_max_entries, 1);
+        triplet_list_entries = zeros(M_max_entries, 1);
         triplet_list_iterator = 1;
         
         % iterate over elements

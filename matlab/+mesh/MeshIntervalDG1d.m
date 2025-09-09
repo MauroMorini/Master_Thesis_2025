@@ -1,5 +1,25 @@
 classdef MeshIntervalDG1d < handle
-
+    % MeshIntervalDG1d is a class for creating and managing a 1D mesh
+    % for discontinuous Galerkin methods.
+    %
+    % Properties:
+    %   nodes - Array of node coordinates in the mesh.
+    %   elements - Connectivity matrix defining the mesh elements.
+    %   boundary_interface_node_idx - Indices of boundary nodes in the mesh.
+    %   dof - Number of degrees of freedom per element.
+    %   h_max - Maximum mesh size.
+    %   h_min - Minimum mesh size.
+    %   lower_interval_bound - Lower bound of the mesh interval.
+    %   upper_interval_bound - Upper bound of the mesh interval.
+    %   element_interface_nodes - Coordinates of the element interface nodes.
+    %   face_node_to_element_map - Mapping of internal face nodes to elements.
+    %
+    % Methods:
+    %   MeshIntervalDG1d - Constructor for the MeshIntervalDG1d class.
+    %   updatePet - Updates the mesh properties and connectivity based on the
+    %               current element interface nodes.
+    %   getPet - Returns the current nodes, elements, and boundary node indices.
+    %   plotMesh - Plots the mesh and highlights the boundary nodes.
     properties
         nodes
         elements
@@ -10,7 +30,7 @@ classdef MeshIntervalDG1d < handle
         lower_interval_bound
         upper_interval_bound
         element_interface_nodes
-        int_face_node_to_element_map
+        face_node_to_element_map
     end
 
     methods
@@ -78,8 +98,8 @@ classdef MeshIntervalDG1d < handle
             elements_temp = reshape(elements_temp, obj.dof, []);
             obj.elements = elements_temp.';
 
-            % int_face_node_to_element_map
-            obj.int_face_node_to_element_map = [NaN, 1; (1:N-2).', (2:N-1).'; N-1, NaN];
+            % face_node_to_element_map
+            obj.face_node_to_element_map = [NaN, 1; (1:N-2).', (2:N-1).'; N-1, NaN];
         end
 
         function [nodes, elements, boundary_interface_node_idx] = getPet(obj)
