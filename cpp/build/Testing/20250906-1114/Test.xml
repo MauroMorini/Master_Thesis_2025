@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="Linux-g++"
+	BuildStamp="20250906-1114-Experimental"
+	Name="mauro-Alienware-m15-R7"
+	Generator="ctest-3.28.3"
+	CompilerName="/usr/bin/g++"
+	CompilerVersion="13.3.0"
+	OSName="Linux"
+	Hostname="mauro-Alienware-m15-R7"
+	OSRelease="6.14.0-29-generic"
+	OSVersion="#29~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Aug 14 16:52:50 UTC 2"
+	OSPlatform="x86_64"
+	Is64Bits="1"
+	VendorString="GenuineIntel"
+	VendorID="Intel Corporation"
+	FamilyID="6"
+	ModelID="154"
+	ProcessorCacheSize="24576"
+	NumberOfLogicalCPU="20"
+	NumberOfPhysicalCPU="14"
+	TotalVirtualMemory="4095"
+	TotalPhysicalMemory="15673"
+	LogicalProcessorsPerPhysical="1"
+	ProcessorClockFrequency="2100.02"
+	>
+	<Testing>
+		<StartDateTime>Sep 06 13:45 CEST</StartDateTime>
+		<StartTestTime>1757159110</StartTestTime>
+		<TestList>
+			<Test>./fem_tests</Test>
+		</TestList>
+		<Test Status="passed">
+			<Name>fem_tests</Name>
+			<Path>.</Path>
+			<FullName>./fem_tests</FullName>
+			<FullCommandLine>/home/mauro/workspace/university/Master_Thesis_2025/cpp/build/tests</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>0.00461519</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>/home/mauro/workspace/university/Master_Thesis_2025/cpp/build/tests</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Environment">
+					<Value>#CTEST_RESOURCE_GROUP_COUNT=</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJwLSsxLyc/NSy0uVihOTU1JTVEoybdSMDI0Njc0sjQz57KlLuByzMlRKEktLilWKEgsLgZap2GkAGIUlWTm5xUrZOYpGIHlFZITi1OLNbm4AAciLUU=</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<EndDateTime>Sep 06 13:45 CEST</EndDateTime>
+		<EndTestTime>1757159110</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>

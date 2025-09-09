@@ -1,0 +1,2 @@
+/usr/bin/ar qc libdgfem.a CMakeFiles/dgfem.dir/src/fem/stiffness_matrix_1d.cpp.o
+/usr/bin/ranlib libdgfem.a

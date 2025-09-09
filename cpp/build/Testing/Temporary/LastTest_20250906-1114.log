@@ -1,0 +1,22 @@
+Start testing: Sep 06 13:45 CEST
+----------------------------------------------------------
+1/1 Testing: fem_tests
+1/1 Test: fem_tests
+Command: "/home/mauro/workspace/university/Master_Thesis_2025/cpp/build/tests"
+Directory: /home/mauro/workspace/university/Master_Thesis_2025/cpp/build
+"fem_tests" start time: Sep 06 13:45 CEST
+Output:
+----------------------------------------------------------
+Randomness seeded to: 213712967
+===============================================================================
+All tests passed (2 assertions in 2 test cases)
+
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"fem_tests" end time: Sep 06 13:45 CEST
+"fem_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Sep 06 13:45 CEST
