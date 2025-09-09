@@ -71,10 +71,3 @@ ylabel('Error');
 legend("h²", "L2")
 title('Convergence of Errors');
 
-% interior nodes
-num_nodes = length(nodes);
-interior_nodes_idx = 1:num_nodes;
-interior_nodes_idx(boundary_nodes_idx) = [];
-
-u_h_zero_bc = A(interior_nodes_idx, interior_nodes_idx)\load_v(interior_nodes_idx);
-

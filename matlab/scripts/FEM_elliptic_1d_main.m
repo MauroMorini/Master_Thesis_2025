@@ -1,4 +1,4 @@
-% Solves simple elliptic problem in 1d using DG and plots errors
+% Solves simple elliptic problem in 1d using FEM and plots errors
 clc;clear;close all;
 
 % Imports
@@ -39,7 +39,7 @@ for i = 1:length(H_stepsizes)
     
     % assemble matrices
     num_nodes = length(nodes);
-    A = fem1d.stiffnessMatrix1D(nodes', elements, c_handle);
+    A = fem1d.stiffnessMatrix1D_triplets(nodes', elements, c_handle);
     load_vec = fem1d.loadVectorLinear1D(nodes', elements, f_exact_handle);
     uh = zeros(num_nodes, 1);
     
@@ -70,11 +70,4 @@ xlabel('Step Size (H)');
 ylabel('Error');
 legend("h²", "L2")
 title('Convergence of Errors');
-
-% interior nodes
-num_nodes = length(nodes);
-interior_nodes_idx = 1:num_nodes;
-interior_nodes_idx(boundary_nodes_idx) = [];
-
-u_h_zero_bc = A(interior_nodes_idx, interior_nodes_idx)\load_v(interior_nodes_idx);
 
