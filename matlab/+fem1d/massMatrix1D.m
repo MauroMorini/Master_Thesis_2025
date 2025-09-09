@@ -9,23 +9,35 @@ function M = massMatrix1D(x, t, c)
         % Outputs : 
         % M : global stiffness matrix nPxnP
         
-        % decide if quadratic or linear FE
-        DoF = size(t, 2);
-        
-        nP = length(x);
-        nE = size(t, 1);
-        M = sparse(nP, nP);
+        % number of elements 
+        nEl = size(t, 1); 
+
+        n = length(x);
+        dof = size(t, 2);
+        A_max_entries = nEl*dof^2;
+        triplet_list_rows = zeros(A_max_entries, 1);
+        triplet_list_cols = zeros(A_max_entries, 1);
+        triplet_list_entries = zeros(A_max_entries, 1);
+        triplet_list_iterator = 1;
         
         % iterate over elements
-        for i = 1:nE
+        for k = 1:nEl
             
             % element
-            K = x(t(i,:));
+            K = x(t(k,:));
         
             % get element matrix 
             Mloc = fem1d.massElementMatrix1D(K, c);
-        
-            % Assembling
-            M(t(i, :), t(i, :)) = M(t(i, :), t(i, :)) + Mloc;
+            
+            % assembling of stiffness matrix
+            for i = 1:dof
+                for j = 1:dof
+                    triplet_list_rows(triplet_list_iterator) = t(k,i);
+                    triplet_list_cols(triplet_list_iterator) = t(k,j);
+                    triplet_list_entries(triplet_list_iterator) = Mloc(i,j);
+                    triplet_list_iterator = triplet_list_iterator + 1;
+                end
+            end
         end
+        M = sparse(triplet_list_rows, triplet_list_cols, triplet_list_entries, n, n);
         end

@@ -18,16 +18,16 @@ for i = 1:length(num_nodes_list)
 
     % standard matlab stiffness
     tic;
-    A_matlab_stand = fem1d.stiffnessMatrix1D(nodes, elements, c);
+    A_matlab_stand = fem1d.stiffnessMatrix1D_original(nodes, elements, c);
     times_mat(1, i) = toc;
 
     % standard matlab stiffness
     tic;
-    A_matlab_triplet = fem1d.stiffnessMatrix1D_triplets(nodes, elements, c);
+    A_matlab_triplet = fem1d.stiffnessMatrix1D(nodes, elements, c);
     times_mat(2, i) = toc;
 end
 
-% plot results
+% plot results  
 figure;
 plot(num_nodes_list, times_mat(1,:), num_nodes_list, times_mat(2,:))
 title("comparison time needed to assemble stiffness matrices")
