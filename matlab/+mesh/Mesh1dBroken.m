@@ -1,6 +1,6 @@
 % author: Mauro Morini
 % last modified: 26.11.24
-classdef Mesh1d < handle
+classdef Mesh1dBroken < handle
     % 
 
     properties
