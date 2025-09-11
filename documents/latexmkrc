@@ -1,3 +1,0 @@
-# Put all aux files in build/
-$out_dir = 'build';
-$pdf_mode = 1;        # compile PDF

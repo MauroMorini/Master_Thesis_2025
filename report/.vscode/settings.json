@@ -1,0 +1,33 @@
+{
+  "latex-workshop.latex.tools": [
+    {
+      "name": "latexmk",
+      "command": "latexmk",
+      "args": [
+        "-pdf",
+        "-interaction=nonstopmode",
+        "-synctex=1",
+        "%DOC%"
+      ]
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "latexmk",
+      "tools": ["latexmk"]
+    }
+  ],
+  "latex-workshop.latex.build.forceRecipeUsage": true,
+  
+  // Hide LaTeX junk files in VS Code file explorer
+  "files.exclude": {
+    "**/report/build/": true,
+    "**/report/*.aux": true,
+    "**/report/*.log": true,
+    "**/report/*.bbl": true,
+    "**/report/*.blg": true,
+    "**/report/*.toc": true,
+    "**/report/*.out": true,
+    "**/report/*.synctex.gz": true
+  }
+}
