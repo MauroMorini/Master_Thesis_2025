@@ -1,1 +1,0 @@
-/usr/bin/g++ -g CMakeFiles/tests.dir/tests/testing_stiffness_matrix.cpp.o -o tests  libdgfem.a third_party/Catch2/src/libCatch2Maind.a third_party/Catch2/src/libCatch2d.a 
