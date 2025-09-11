@@ -13,7 +13,7 @@ c = @(x) ones(size(x));
 for i = 1:length(num_nodes_list)
     % create mesh
     h = stepsizes(i);
-    Mesh = Mesh1d([0,1], [h, h/100]);
+    Mesh = mesh.Mesh1dBroken([0,1], [h, h/100]);
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 
     % standard matlab stiffness

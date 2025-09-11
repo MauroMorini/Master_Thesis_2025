@@ -1,0 +1,8 @@
+\begin{thebibliography}{1}
+
+\bibitem{exampleRef}
+John Doe.
+\newblock {\em Some Math Book}.
+\newblock Math Press, 2020.
+
+\end{thebibliography}

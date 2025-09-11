@@ -29,45 +29,46 @@ f_exact_handle = matlabFunction(f_exact_handle, 'vars', {x});
 c_handle = @(x) ones(size(x));
 
 % initialize 
-H_stepsizes = 2.^-(1:10);
+H_stepsizes = [0.1];
 errors = zeros(1, length(H_stepsizes));
 for i = 1:length(H_stepsizes)
     % initialize mesh
     h = H_stepsizes(i);
-    Mesh = Mesh1d([0,1], [h, h/100]);
+    Mesh = mesh.MeshIntervalDG1d([0,1], [h, h/100]);
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
     
     % assemble matrices
     num_nodes = length(nodes);
     A = fem1d.stiffnessMatrix1D(nodes', elements, c_handle);
+    B_flux = dg1d.interiorFluxMatrix1D(nodes, elements);
     load_vec = fem1d.loadVectorLinear1D(nodes', elements, f_exact_handle);
     uh = zeros(num_nodes, 1);
     
     % boundary conditions
     uh(boundary_nodes_idx) = u_exact_handle(nodes(boundary_nodes_idx));
     
-    % solve interior problem:
-    interior_nodes_idx = 1:num_nodes;
-    interior_nodes_idx(boundary_nodes_idx) = [];
-    uh(interior_nodes_idx) = A(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - A(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
+    % % solve interior problem:
+    % interior_nodes_idx = 1:num_nodes;
+    % interior_nodes_idx(boundary_nodes_idx) = [];
+    % uh(interior_nodes_idx) = A(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - A(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
 
-    % calculate errors 
-    errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);
-    disp("calculated h = "+ h + "  i = " + i + " cond(A) = " + condest(A(interior_nodes_idx, interior_nodes_idx)))
+    % % calculate errors 
+    % errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);
+    % disp("calculated h = "+ h + "  i = " + i + " cond(A) = " + condest(A(interior_nodes_idx, interior_nodes_idx)))
 end
 
-% plot solution
-figure;
-plot(nodes, uh, nodes, u_exact_handle(nodes))
-xlabel("x")
-ylabel("y")
-legend("uh", "u\_exact")
+% % plot solution
+% figure;
+% plot(nodes, uh, nodes, u_exact_handle(nodes))
+% xlabel("x")
+% ylabel("y")
+% legend("uh", "u\_exact")
 
-% plot errors
-figure;
-loglog(H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, errors);
-xlabel('Step Size (H)');
-ylabel('Error');
-legend("h²", "L2")
-title('Convergence of Errors');
+% % plot errors
+% figure;
+% loglog(H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, errors);
+% xlabel('Step Size (H)');
+% ylabel('Error');
+% legend("h²", "L2")
+% title('Convergence of Errors');
 

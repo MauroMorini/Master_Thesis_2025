@@ -102,7 +102,7 @@ classdef MeshIntervalDG1d < handle
             obj.face_node_to_element_map = [NaN, 1; (1:N-2).', (2:N-1).'; N-1, NaN];
         end
 
-        function [nodes, elements, boundary_interface_node_idx] = getPet(obj)
+        function [nodes, boundary_interface_node_idx, elements] = getPet(obj)
             nodes = obj.nodes;
             elements = obj.elements;
             boundary_interface_node_idx = obj.boundary_interface_node_idx;

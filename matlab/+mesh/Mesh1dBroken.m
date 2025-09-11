@@ -15,7 +15,7 @@ classdef Mesh1dBroken < handle
     end
 
     methods
-        function obj = Mesh1d(varargin) 
+        function obj = Mesh1dBroken(varargin) 
             % Constructor 
             % with exception of the default constructer, the inputs have to
             % be given in the following order
