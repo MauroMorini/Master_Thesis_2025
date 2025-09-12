@@ -40,7 +40,7 @@ for i = 1:length(H_stepsizes)
     % assemble matrices
     num_nodes = length(nodes);
     A = fem1d.stiffnessMatrix1D(nodes', elements, c_handle);
-    B_flux = dg1d.interiorFluxMatrix1D(nodes, elements);
+    B_flux = dg1d.interiorFluxMatrix1D(nodes, elements, c_handle);
     load_vec = fem1d.loadVectorLinear1D(nodes', elements, f_exact_handle);
     uh = zeros(num_nodes, 1);
     

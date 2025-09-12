@@ -1,4 +1,6 @@
-function B_flux = interiorFluxMatrix1D(nodes, elements)
+function B_flux = interiorFluxMatrix1D(nodes, elements, c_handle)
+    % this method assembles the symmetric flux part of the SIP-DG method in 1d
+    % for interior faces, no penalty terms are assembled here.
 
     % initializations 
     num_faces = size(elements, 1)+1; 
@@ -15,7 +17,14 @@ function B_flux = interiorFluxMatrix1D(nodes, elements)
         bordering_element_nodes = nodes(bordering_elements);
         xk = bordering_element_nodes(1, 2);
         outward_normal = [1, -1];
-
+        
+        % comment for clarity:
+        % for each fixed face we know only the two bordering elements can
+        % have impact due to the local support of the basis functions. So
+        % we add up all combinations of basis functions (with jump, avg)
+        % evaluated at xk. Note that the basis function only have support
+        % in their respective element, such that {phi_i^s(xk)} = 1/2
+        % phi_i^s(xk), [phi_i^s(xk)] = outward_normal*phi_i^s(xk)
         for el_idx_1=1:2
             for el_idx_2=1:2
                 xn_loc_1 = bordering_element_nodes(el_idx_1, 1);    
@@ -32,8 +41,8 @@ function B_flux = interiorFluxMatrix1D(nodes, elements)
                     for loc_node_idx_2=1:dof
                         triplet_list_rows(triplet_list_iterator) = bordering_elements(el_idx_1, loc_node_idx_1);
                         triplet_list_cols(triplet_list_iterator) = bordering_elements(el_idx_2, loc_node_idx_2);
-                        triplet_list_entries(triplet_list_iterator) =   dphi_2{loc_node_idx_2}(xk)*outward_normal(el_idx_2)*phi_1{loc_node_idx_1}(xk)*(1/2)+...
-                                                                        dphi_2{loc_node_idx_2}(xk)*(1/2)*phi_1{loc_node_idx_1}(xk)*outward_normal(el_idx_1);
+                        triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*dphi_2{loc_node_idx_2}(xk)*outward_normal(el_idx_2)*phi_1{loc_node_idx_1}(xk)*(1/2)+...
+                                                                        c_handle(xk)*dphi_1{loc_node_idx_1}(xk)*outward_normal(el_idx_1)*phi_2{loc_node_idx_2}(xk)*(1/2);
                         triplet_list_iterator = triplet_list_iterator + 1;
                     end
                 end
