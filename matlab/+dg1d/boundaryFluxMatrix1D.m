@@ -1,18 +1,37 @@
-function B_flux = interiorFluxMatrix1D(nodes, elements, c_handle)
+function B_flux = boundaryFluxMatrix1D(nodes, elements, c_handle)
     % this method assembles the symmetric flux part of the SIP-DG method in 1d
-    % for interior faces, no penalty terms are assembled here.
+    % for boundary faces, no penalty terms are assembled here.
 
     % initializations 
-    num_faces = size(elements, 1)+1; 
     num_nodes = length(nodes);
     dof = size(elements, 2);
-    B_flux_max_entries = (num_faces-2)*dof^2*4;
+    B_flux_max_entries = 2*dof^2*4;
     triplet_list_rows = zeros(B_flux_max_entries, 1);
     triplet_list_cols = zeros(B_flux_max_entries, 1);
     triplet_list_entries = zeros(B_flux_max_entries, 1);
     triplet_list_iterator = 1;
 
-    for k = 2:num_faces-1
+    % lower boundary face contribution      ISSUE: outward normal and index hardcoded!!!
+    el_loc = elements(1,:);
+    xk = nodes(el_loc(1));
+    outward_normal = -1;
+    h = abs(xk - nodes(el_loc(end)));
+    phi = {@(x) 1- (x-xk)/h, @(x) (x-xk)/h};
+    dphi = {@(x) -ones(size(x))/h, @(x) ones(size(x))/h};
+
+    for loc_node_idx_1=1:dof
+        for loc_node_idx_2=1:dof
+            triplet_list_rows(triplet_list_iterator) = el_loc(loc_node_idx_1);
+            triplet_list_cols(triplet_list_iterator) = el_loc(loc_node_idx_2);
+            triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*dphi{loc_node_idx_2}(xk)*outward_normal*phi{loc_node_idx_1}(xk)*(1/2)+...
+                                                            c_handle(xk)*dphi{loc_node_idx_1}(xk)*outward_normal*phi{loc_node_idx_2}(xk)*(1/2);
+            triplet_list_iterator = triplet_list_iterator + 1;
+        end
+    end
+
+
+
+    for k = 1:num_faces
         bordering_elements = [elements(k-1,:); elements(k,:)];
         bordering_element_nodes = nodes(bordering_elements);
         xk = bordering_element_nodes(1, 2);
@@ -27,7 +46,7 @@ function B_flux = interiorFluxMatrix1D(nodes, elements, c_handle)
         % phi_i^s(xk), [phi_i^s(xk)] = outward_normal*phi_i^s(xk)
         for el_idx_1=1:2
             for el_idx_2=1:2
-                xn_loc_1 = bordering_element_nodes(el_idx_1, 1);        % lower element face node
+                xn_loc_1 = bordering_element_nodes(el_idx_1, 1);    
                 h_loc_1 = abs(xn_loc_1-bordering_element_nodes(el_idx_1, end));
                 phi_1 = {@(x) 1- (x-xn_loc_1)/h_loc_1, @(x) (x-xn_loc_1)/h_loc_1};
                 dphi_1 = {@(x) -ones(size(x))/h_loc_1, @(x) ones(size(x))/h_loc_1};
