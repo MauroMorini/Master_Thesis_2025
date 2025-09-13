@@ -22,8 +22,9 @@ function B_penalty = boundaryPenaltyMatrix1D(nodes, elements, c_handle, sigma)
     % lower boundary face contribution      ISSUE: outward normal and index hardcoded!!!
     el_loc = elements(1,:);
     xk = nodes(el_loc(1));
+    xn_loc = nodes(el_loc(1));
     h = abs(xk - nodes(el_loc(end)));
-    phi = {@(x) 1- (x-xk)/h, @(x) (x-xk)/h};
+    phi = {@(x) 1- (x-xn_loc)/h, @(x) (x-xn_loc)/h};
 
     for loc_node_idx_1=1:dof
         for loc_node_idx_2=1:dof
@@ -37,8 +38,9 @@ function B_penalty = boundaryPenaltyMatrix1D(nodes, elements, c_handle, sigma)
     % upper boundary face contribution      ISSUE: outward normal and index hardcoded!!!
     el_loc = elements(end,:);
     xk = nodes(el_loc(end));
+    xn_loc = nodes(el_loc(1));
     h = abs(xk - nodes(el_loc(1)));
-    phi = {@(x) 1- (x-xk)/h, @(x) (x-xk)/h};
+    phi = {@(x) 1- (x-xn_loc)/h, @(x) (x-xn_loc)/h};
 
     for loc_node_idx_1=1:dof
         for loc_node_idx_2=1:dof

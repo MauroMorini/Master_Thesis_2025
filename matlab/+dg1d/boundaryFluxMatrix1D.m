@@ -22,9 +22,10 @@ function B_flux = boundaryFluxMatrix1D(nodes, elements, c_handle)
     % lower boundary face contribution      ISSUE: outward normal and index hardcoded!!!
     el_loc = elements(1,:);
     xk = nodes(el_loc(1));
+    xn_loc = nodes(el_loc(1));
     outward_normal = -1;
     h = abs(xk - nodes(el_loc(end)));
-    phi = {@(x) 1- (x-xk)/h, @(x) (x-xk)/h};
+    phi = {@(x) 1- (x-xn_loc)/h, @(x) (x-xn_loc)/h};
     dphi = {@(x) -ones(size(x))/h, @(x) ones(size(x))/h};
 
     for loc_node_idx_1=1:dof
@@ -40,9 +41,10 @@ function B_flux = boundaryFluxMatrix1D(nodes, elements, c_handle)
     % upper boundary face contribution      ISSUE: outward normal and index hardcoded!!!
     el_loc = elements(end,:);
     xk = nodes(el_loc(end));
+    xn_loc = nodes(el_loc(1));
     outward_normal = -1;
     h = abs(xk - nodes(el_loc(1)));
-    phi = {@(x) 1- (x-xk)/h, @(x) (x-xk)/h};
+    phi = {@(x) 1- (x-xn_loc)/h, @(x) (x-xn_loc)/h};
     dphi = {@(x) -ones(size(x))/h, @(x) ones(size(x))/h};
 
     for loc_node_idx_1=1:dof
