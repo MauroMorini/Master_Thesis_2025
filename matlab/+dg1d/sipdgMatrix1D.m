@@ -17,5 +17,5 @@ function B = sipdgMatrix1D(nodes, elements, c_handle, sigma)
     B_penalty_int = dg1d.interiorPenaltyMatrix1D(nodes, elements, c_handle, sigma);
     B_penalty_bound = dg1d.boundaryPenaltyMatrix1D(nodes, elements, c_handle, sigma);
 
-    B = A + B_flux_int + B_flux_bound + B_penalty_int + B_penalty_bound;
+    B = A - B_flux_int - B_flux_bound + B_penalty_int + B_penalty_bound;
 end
