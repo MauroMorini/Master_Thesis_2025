@@ -65,9 +65,9 @@ legend("uh", "u\_exact")
 
 % plot errors
 figure;
-loglog(H_stepsizes, H_stepsizes.^3, '--', H_stepsizes, errors);
+loglog(H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, errors);
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h^3", "L2")
+legend("h^2", "L2")
 title('Convergence of Errors');
 

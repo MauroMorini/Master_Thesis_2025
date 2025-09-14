@@ -20,16 +20,21 @@ cell_exact_fun = {
     x.^4 - x.^2;            % quartic
     exp(-x).*sin(5*x)       % damped oscillation
 };
-u_exact_handle = cell_exact_fun{3};
-f_exact_handle = diff(-u_exact_handle, 2);
+cell_c_fun = {
+    0*x + 1;
+    sin(10*x)
+};
+c_handle = cell_c_fun{2};
+u_exact_handle = cell_exact_fun{6};
+f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1);
 du_exact_handle = diff(u_exact_handle, 1);
 u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
 du_exact_handle = matlabFunction(du_exact_handle, 'vars', {x});
 f_exact_handle = matlabFunction(f_exact_handle, 'vars', {x});
-c_handle = @(x) ones(size(x));
+c_handle = matlabFunction(c_handle, 'vars', {x});
 
 % initialize parameters and preallocate
-H_meshsizes = 2.^-(2:8);
+H_meshsizes = 2.^-(2:10);
 sigma = 10;
 errors = zeros(1, length(H_meshsizes));
 
@@ -60,9 +65,9 @@ legend("uh", "u\_exact")
 
 % plot errors
 figure;
-loglog(H_meshsizes, H_meshsizes.^3, '--', H_meshsizes, errors);
+loglog(H_meshsizes, H_meshsizes.^2, '--', H_meshsizes, errors);
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h^3", "L2")
+legend("h^2", "L2")
 title('Convergence of Errors');
 
