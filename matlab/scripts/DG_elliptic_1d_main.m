@@ -14,7 +14,7 @@ cell_exact_fun = {
     sin(pi*x);              % sine
     cos(pi*x);              % cosine
     x.^2 .* (1-x);          % cubic-like
-    exp(x).*(1-x).*x;                 % exponential
+    exp(x).*(1-x).*x + 1;                 % exponential
     log(x+1);               % smooth on [0,1]
     sin(2*pi*x) + x;        % sine + linear
     x.^4 - x.^2;            % quartic
@@ -47,10 +47,10 @@ for i = 1:length(H_meshsizes)
     % assemble matrices
     num_nodes = length(nodes);
     B = dg1d.sipdgMatrix1D(nodes, elements, c_handle, sigma);
-    load_vec = fem1d.loadVectorLinear1D(nodes', elements, f_exact_handle);
+    rhs_vector = dg1d.sipdgDirichletLoadVector1D(nodes, elements, f_exact_handle, c_handle, u_exact_handle, sigma);
     
     % solve system
-    uh = B\load_vec;
+    uh = B\rhs_vector;
 
     % calculate errors 
     errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);
