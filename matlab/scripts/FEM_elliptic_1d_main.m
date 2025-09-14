@@ -20,7 +20,7 @@ cell_exact_fun = {
     x.^4 - x.^2;            % quartic
     exp(-x).*sin(5*x)       % damped oscillation
 };
-u_exact_handle = cell_exact_fun{6};
+u_exact_handle = cell_exact_fun{3};
 f_exact_handle = diff(-u_exact_handle, 2);
 du_exact_handle = diff(u_exact_handle, 1);
 u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
@@ -34,7 +34,7 @@ errors = zeros(1, length(H_stepsizes));
 for i = 1:length(H_stepsizes)
     % initialize mesh
     h = H_stepsizes(i);
-    Mesh = Mesh1d([0,1], [h, h/100]);
+    Mesh = Mesh1dBroken([0,1], [h, h/100]);
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
     
     % assemble matrices
@@ -65,9 +65,9 @@ legend("uh", "u\_exact")
 
 % plot errors
 figure;
-loglog(H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, errors);
+loglog(H_stepsizes, H_stepsizes.^3, '--', H_stepsizes, errors);
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h²", "L2")
+legend("h^3", "L2")
 title('Convergence of Errors');
 

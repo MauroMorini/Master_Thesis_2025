@@ -49,8 +49,9 @@ function B_flux = interiorFluxMatrix1D(nodes, elements, c_handle)
                     for loc_node_idx_2=1:dof
                         triplet_list_rows(triplet_list_iterator) = bordering_elements(el_idx_1, loc_node_idx_1);
                         triplet_list_cols(triplet_list_iterator) = bordering_elements(el_idx_2, loc_node_idx_2);
-                        triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*dphi_2{loc_node_idx_2}(xk)*outward_normal(el_idx_2)*phi_1{loc_node_idx_1}(xk)*(1/2)+...
-                                                                        c_handle(xk)*dphi_1{loc_node_idx_1}(xk)*outward_normal(el_idx_1)*phi_2{loc_node_idx_2}(xk)*(1/2);
+                        triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*dphi_1{loc_node_idx_1}(xk)*outward_normal(el_idx_2)*phi_2{loc_node_idx_2}(xk)*(1/2)+...
+                                                                        c_handle(xk)*dphi_2{loc_node_idx_2}(xk)*outward_normal(el_idx_1)*phi_1{loc_node_idx_1}(xk)*(1/2);
+                                                                        
                         triplet_list_iterator = triplet_list_iterator + 1;
                     end
                 end

@@ -32,8 +32,8 @@ function B_flux = boundaryFluxMatrix1D(nodes, elements, c_handle)
         for loc_node_idx_2=1:dof
             triplet_list_rows(triplet_list_iterator) = el_loc(loc_node_idx_1);
             triplet_list_cols(triplet_list_iterator) = el_loc(loc_node_idx_2);
-            triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*dphi{loc_node_idx_2}(xk)*outward_normal*phi{loc_node_idx_1}(xk)*(1/2)+...
-                                                            c_handle(xk)*dphi{loc_node_idx_1}(xk)*outward_normal*phi{loc_node_idx_2}(xk)*(1/2);
+            triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*dphi{loc_node_idx_2}(xk)*outward_normal*phi{loc_node_idx_1}(xk)+...
+                                                            c_handle(xk)*dphi{loc_node_idx_1}(xk)*outward_normal*phi{loc_node_idx_2}(xk);
             triplet_list_iterator = triplet_list_iterator + 1;
         end
     end
@@ -42,7 +42,7 @@ function B_flux = boundaryFluxMatrix1D(nodes, elements, c_handle)
     el_loc = elements(end,:);
     xk = nodes(el_loc(end));
     xn_loc = nodes(el_loc(1));
-    outward_normal = -1;
+    outward_normal = 1;
     h = abs(xk - nodes(el_loc(1)));
     phi = {@(x) 1- (x-xn_loc)/h, @(x) (x-xn_loc)/h};
     dphi = {@(x) -ones(size(x))/h, @(x) ones(size(x))/h};
@@ -51,8 +51,8 @@ function B_flux = boundaryFluxMatrix1D(nodes, elements, c_handle)
         for loc_node_idx_2=1:dof
             triplet_list_rows(triplet_list_iterator) = el_loc(loc_node_idx_1);
             triplet_list_cols(triplet_list_iterator) = el_loc(loc_node_idx_2);
-            triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*dphi{loc_node_idx_2}(xk)*outward_normal*phi{loc_node_idx_1}(xk)*(1/2)+...
-                                                            c_handle(xk)*dphi{loc_node_idx_1}(xk)*outward_normal*phi{loc_node_idx_2}(xk)*(1/2);
+            triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*dphi{loc_node_idx_2}(xk)*outward_normal*phi{loc_node_idx_1}(xk)+...
+                                                            c_handle(xk)*dphi{loc_node_idx_1}(xk)*outward_normal*phi{loc_node_idx_2}(xk);
             triplet_list_iterator = triplet_list_iterator + 1;
         end
     end

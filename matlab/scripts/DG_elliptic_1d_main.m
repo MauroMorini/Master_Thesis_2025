@@ -14,7 +14,7 @@ cell_exact_fun = {
     sin(pi*x);              % sine
     cos(pi*x);              % cosine
     x.^2 .* (1-x);          % cubic-like
-    exp(x);                 % exponential
+    exp(x).*(1-x).*x;                 % exponential
     log(x+1);               % smooth on [0,1]
     sin(2*pi*x) + x;        % sine + linear
     x.^4 - x.^2;            % quartic
@@ -29,13 +29,13 @@ f_exact_handle = matlabFunction(f_exact_handle, 'vars', {x});
 c_handle = @(x) ones(size(x));
 
 % initialize parameters and preallocate
-H_stepsizes = [0.1];
-sigma = 10000;
-errors = zeros(1, length(H_stepsizes));
+H_meshsizes = 2.^-(2:8);
+sigma = 10;
+errors = zeros(1, length(H_meshsizes));
 
-for i = 1:length(H_stepsizes)
+for i = 1:length(H_meshsizes)
     % initialize mesh
-    h = H_stepsizes(i);
+    h = H_meshsizes(i);
     Mesh = mesh.MeshIntervalDG1d([0,1], [h, h/100]);
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
     
@@ -58,11 +58,11 @@ xlabel("x")
 ylabel("y")
 legend("uh", "u\_exact")
 
-% % plot errors
-% figure;
-% loglog(H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, errors);
-% xlabel('Step Size (H)');
-% ylabel('Error');
-% legend("h²", "L2")
-% title('Convergence of Errors');
+% plot errors
+figure;
+loglog(H_meshsizes, H_meshsizes.^3, '--', H_meshsizes, errors);
+xlabel('Step Size (H)');
+ylabel('Error');
+legend("h^3", "L2")
+title('Convergence of Errors');
 
