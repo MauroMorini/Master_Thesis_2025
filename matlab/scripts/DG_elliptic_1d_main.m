@@ -14,61 +14,60 @@ cell_exact_fun = {
     sin(pi*x);              % sine
     cos(pi*x);              % cosine
     x.^2 .* (1-x);          % cubic-like
-    exp(x);                 % exponential
+    exp(x).*(1-x).*x + 1;                 % exponential
     log(x+1);               % smooth on [0,1]
     sin(2*pi*x) + x;        % sine + linear
     x.^4 - x.^2;            % quartic
     exp(-x).*sin(5*x)       % damped oscillation
 };
+cell_c_fun = {
+    0*x + 1;
+    sin(10*x)
+};
+c_handle = cell_c_fun{2};
 u_exact_handle = cell_exact_fun{6};
-f_exact_handle = diff(-u_exact_handle, 2);
+f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1);
 du_exact_handle = diff(u_exact_handle, 1);
 u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
 du_exact_handle = matlabFunction(du_exact_handle, 'vars', {x});
 f_exact_handle = matlabFunction(f_exact_handle, 'vars', {x});
-c_handle = @(x) ones(size(x));
+c_handle = matlabFunction(c_handle, 'vars', {x});
 
-% initialize 
-H_stepsizes = [0.1];
-errors = zeros(1, length(H_stepsizes));
-for i = 1:length(H_stepsizes)
+% initialize parameters and preallocate
+H_meshsizes = 2.^-(2:10);
+sigma = 10;
+errors = zeros(1, length(H_meshsizes));
+
+for i = 1:length(H_meshsizes)
     % initialize mesh
-    h = H_stepsizes(i);
+    h = H_meshsizes(i);
     Mesh = mesh.MeshIntervalDG1d([0,1], [h, h/100]);
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
     
     % assemble matrices
     num_nodes = length(nodes);
-    A = fem1d.stiffnessMatrix1D(nodes', elements, c_handle);
-    B_flux = dg1d.interiorFluxMatrix1D(nodes, elements);
-    load_vec = fem1d.loadVectorLinear1D(nodes', elements, f_exact_handle);
-    uh = zeros(num_nodes, 1);
+    B = dg1d.sipdgMatrix1D(nodes, elements, c_handle, sigma);
+    rhs_vector = dg1d.sipdgDirichletLoadVector1D(nodes, elements, f_exact_handle, c_handle, u_exact_handle, sigma);
     
-    % boundary conditions
-    uh(boundary_nodes_idx) = u_exact_handle(nodes(boundary_nodes_idx));
-    
-    % % solve interior problem:
-    % interior_nodes_idx = 1:num_nodes;
-    % interior_nodes_idx(boundary_nodes_idx) = [];
-    % uh(interior_nodes_idx) = A(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - A(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
+    % solve system
+    uh = B\rhs_vector;
 
-    % % calculate errors 
-    % errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);
-    % disp("calculated h = "+ h + "  i = " + i + " cond(A) = " + condest(A(interior_nodes_idx, interior_nodes_idx)))
+    % calculate errors 
+    errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);
 end
 
-% % plot solution
-% figure;
-% plot(nodes, uh, nodes, u_exact_handle(nodes))
-% xlabel("x")
-% ylabel("y")
-% legend("uh", "u\_exact")
+% plot solution
+figure;
+plot(nodes, uh, nodes, u_exact_handle(nodes))
+xlabel("x")
+ylabel("y")
+legend("uh", "u\_exact")
 
-% % plot errors
-% figure;
-% loglog(H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, errors);
-% xlabel('Step Size (H)');
-% ylabel('Error');
-% legend("h²", "L2")
-% title('Convergence of Errors');
+% plot errors
+figure;
+loglog(H_meshsizes, H_meshsizes.^2, '--', H_meshsizes, errors);
+xlabel('Step Size (H)');
+ylabel('Error');
+legend("h^2", "L2")
+title('Convergence of Errors');
 
