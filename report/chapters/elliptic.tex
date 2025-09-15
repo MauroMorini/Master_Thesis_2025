@@ -2,12 +2,16 @@ First we will consider a time-independent elliptic problem. The derivation
 of the bilinear form and the final fully discrete scheme is mostly based on
 Chapter 1 in \cite{riviere2008}, with cross references from other sources 
 in the bibliography.
+
+%---Problem---------------------------------------------------------------
 \section{Problem}
 We consider the following elliptic model problem:
 \begin{equation}
+    \label{eq:elliptic_pde}
     -(c(x)u'(x))' = f(x) \qquad \forall x\in \Omega
 \end{equation} 
 \begin{equation}
+    \label{eq:elliptic_pde_bc}
     u(0) = g_0, u(1) = g_1
 \end{equation}
 Where $\Omega = (0,1)$ is the domain, $g_0, g_1 \in \mathbb{R}$ yield
@@ -27,13 +31,17 @@ Where
 \[
     a:H^1(\Omega) \times H^1(\Omega) \to \mathbb{R}, \qquad (u,v) \mapsto \int_{\Omega} c(x)u'(x)v'(x) \text{d}x
 \]  
-defines the standard elliptic bilinear form on $H^1(\Omega)$ and $(u,v)_{L^2(\Omega)} = \int_{\Omega} uv \,\text{d}x$
+defines the standard elliptic bilinear form on $H^1(\Omega)$ and 
+\[
+    (u,v)_{L^2(\Omega)} = \int_{\Omega} uv \,\text{d}x
+\]
+
 denotes the $L^2$-inner product.
 
 \section{Discretization}
-Let $0=x_0 < ... < x_{N+1} = 1$, let $I_n = (x_n, x_{n+1})$ for $n = 0,..,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ the partition
+Let $0=x_0 < \cdots < x_{N+1} = 1$, let $I_n = (x_n, x_{n+1})$ for $n = 0,\ldots,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ the partition
 of $\Omega$.
-We denote the element length by $h_n = x_{n+1} - x_{n}$ for $n=0,..N$ and the global meshsize by
+We denote the element length by $h_n = x_{n+1} - x_{n}$ for $n=0,\ldots,N$ and the global meshsize by
 $h = \max_{n} h_n$.
 Next we define the discontinuous finite element space
 \begin{equation}
@@ -46,25 +54,63 @@ $V_h$ is our final approximation space in which the numerical solution
 lays.
 We observe that in contrast to a continuous finite element approximation space 
 here the resulting solution is a priori discontinuous by construction 
-of the space. To proceed we will require the following trace operators:
+of the space. Furthermore we have here $V_h \not\subset H^1(\Omega)$.
+This is especially apparent in 1d due to the Sobolev embedding $H^1(\Omega) \subset C^0(\Omega)$. \\
+To proceed we will require the following trace operators:
 
 \begin{definition} 
     Let $v:\Omega \to \mathbb{R}$ be piecewise continuous and let $n \in
-    \{1,..,N\}$
+    \{1,\ldots,N\}$
     \begin{enumerate}[label=\textnormal{(\roman*)}]
-        \item We denote $v(x_n^+) := \lim_{x \to x_n^+} v(x), v(x_n^-) := \lim_{x \to x_n^-} v(x)$
+        \item We denote $v(x_n^+) := \lim_{x \searrow x_n} v(x), v(x_n^-) := \lim_{x \nearrow x_n} v(x)$
         the limit from above/below.
-        \item We write
+        \item We define the \textbf{jump} at $x_n$ as
         \[
-            [v(x_n)]:= v(x_n^+) - v(x_n^-)
+        [v(x_n)]:= v(x_n^-) - v(x_n^+)
         \]
-        for the \textbf{jump}, and
+        and the \textbf{average} at $x_n$ as
         \[
             \{v(x_n)\}:= \frac{v(x_n^+) + v(x_n^-)}{2}
         \]
-        for the \textbf{average}.
+        furthermore by convention we set: 
+        \[
+            [v(x_0)] := -v(x_0^+),\quad [v(x_{N+1})] := v(x_{N+1}^-),\quad 
+            \{v(x_0)\}:=v(x_0^+),\quad \{v(x_{N+1})\}:= v(x_{N+1}^-)
+        \]  
     \end{enumerate}
 \end{definition}
 
-
+To derive the SIPDG variational formulation, let $v \in V_h$ be a test
+function. For simplicity suppose for now that the coefficient $c \in C^1(\Omega)$ and
+the exact solution $u \in H^2(\Omega) \subset C^1(\Omega)$. 
+Due to the discontinuity of the test function in contrast to 
+continuous FEM we multiply $u$ with $v$ on each element $I_n$
+and integrate by parts locally
+\begin{equation*}
+    \int_{x_n}^{x_{n+1}} fv\, \text{d}x = -\int_{x_n}^{x_{n+1}} (cu')'\, \text{d}x 
+    = \int_{x_n}^{x_{n+1}} cu'v'\, \text{d}x 
+    - \left. cu'v\right|_{x_n}^{x_{n+1}} \qquad \forall n=0,\ldots,N
+\end{equation*}
+then sum over all elements
+\begin{equation}
+    \label{eq:elliptic_sipdg_var_form_incomplete}
+    (f,v)_{L^2(\Omega)} = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
+    -\sum_{n=0}^{N+1} [c(x_n)u'(x_n)v(x_n)]
+\end{equation}
+where we have used that $\sum_{n=0}^N \left. w \right|_{x_n}^{x_{n+1}} = w(x_{N+1}^-) - 
+w(x_{N}^+) + w(x_{N}^-) - \cdots - w(x_1^+) + w(x_1^-) - w(x_0^+) = \sum_{n=0}^{N+1} [w(x_n)]$ for any piece-wise continuous function $w$.
+\\
+By our construction are $c, u'$ continuous on $\Omega$, this means 
+\begin{equation}
+    \label{eq:id_1_cu_jump_zero}
+        [c(x_n)u'(x_n)v(x_n)] = c(x_n)u'(x_n)[v(x_n)] = \{c(x_n)u'(x_n)\}[v(x_n)] \qquad \forall n=0,\ldots,N+1
+\end{equation}
+and 
+\begin{equation}
+    \label{eq:id_2_u_jump_zero}
+    [u(x_n)] = 0 \qquad \forall n=1,\ldots,N
+\end{equation}
+The next step is to symmetrize our currently non-symmetrical bilinear form.
+For that subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[v(x_n)]$ on both sides of
+(\ref{eq:elliptic_sipdg_var_form_incomplete}).
 
