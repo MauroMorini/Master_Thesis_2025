@@ -1,4 +1,7 @@
-First we will consider a time-independent elliptic problem
+First we will consider a time-independent elliptic problem. The derivation
+of the bilinear form and the final fully discrete scheme is mostly based on
+Chapter 1 in \cite{riviere2008}, with cross references from other sources 
+in the bibliography.
 \section{Problem}
 We consider the following elliptic model problem:
 \begin{equation}
@@ -28,7 +31,40 @@ defines the standard elliptic bilinear form on $H^1(\Omega)$ and $(u,v)_{L^2(\Om
 denotes the $L^2$-inner product.
 
 \section{Discretization}
-Let $0=x_0 < x_1 < ... < x_{N+1} = 1$, let $I_n = (x_n, x_{n+1})$ for $n = 0,..,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ the partition
+Let $0=x_0 < ... < x_{N+1} = 1$, let $I_n = (x_n, x_{n+1})$ for $n = 0,..,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ the partition
 of $\Omega$.
 We denote the element length by $h_n = x_{n+1} - x_{n}$ for $n=0,..N$ and the global meshsize by
 $h = \max_{n} h_n$.
+Next we define the discontinuous finite element space
+\begin{equation}
+    V_h^r(\mathcal{T}_h) = \{v \in L^2(\Omega) |\, v|_{I_n} \in \mathcal{P}^r(I_n) \} 
+\end{equation}
+where $\mathcal{P}^r(I_n)$ denotes the space of polynomials $p:I_n \to \mathbb{R}$ with $\deg(p) = r$
+for $r \in \mathbb{N}$. When the context allows it, we will denote the
+finite element space with just $V_h$ for simplicity. 
+$V_h$ is our final approximation space in which the numerical solution
+lays.
+We observe that in contrast to a continuous finite element approximation space 
+here the resulting solution is a priori discontinuous by construction 
+of the space. To proceed we will require the following trace operators:
+
+\begin{definition} 
+    Let $v:\Omega \to \mathbb{R}$ be piecewise continuous and let $n \in
+    \{1,..,N\}$
+    \begin{enumerate}[label=\textnormal{(\roman*)}]
+        \item We denote $v(x_n^+) := \lim_{x \to x_n^+} v(x), v(x_n^-) := \lim_{x \to x_n^-} v(x)$
+        the limit from above/below.
+        \item We write
+        \[
+            [v(x_n)]:= v(x_n^+) - v(x_n^-)
+        \]
+        for the \textbf{jump}, and
+        \[
+            \{v(x_n)\}:= \frac{v(x_n^+) + v(x_n^-)}{2}
+        \]
+        for the \textbf{average}.
+    \end{enumerate}
+\end{definition}
+
+
+
