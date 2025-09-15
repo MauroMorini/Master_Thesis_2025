@@ -22,7 +22,7 @@ cell_exact_fun = {
 };
 cell_c_fun = {
     0*x + 1;
-    sin(10*x)
+    sin(10*x) + 2
 };
 c_handle = cell_c_fun{2};
 u_exact_handle = cell_exact_fun{6};
@@ -35,7 +35,7 @@ c_handle = matlabFunction(c_handle, 'vars', {x});
 
 % initialize parameters and preallocate
 H_meshsizes = 2.^-(2:10);
-sigma = 10;
+sigma = 100;
 errors = zeros(1, length(H_meshsizes));
 
 for i = 1:length(H_meshsizes)

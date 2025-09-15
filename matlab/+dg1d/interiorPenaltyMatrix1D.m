@@ -52,7 +52,8 @@ function B_penalty = interiorPenaltyMatrix1D(nodes, elements, c_handle, sigma)
                         triplet_list_rows(triplet_list_iterator) = bordering_elements(el_idx_1, loc_node_idx_1);
                         triplet_list_cols(triplet_list_iterator) = bordering_elements(el_idx_2, loc_node_idx_2);
                         triplet_list_entries(triplet_list_iterator) =   sigma/h_loc_max*phi_1{loc_node_idx_1}(xk)*phi_2{loc_node_idx_2}(xk)...
-                                                                        *outward_normal(loc_node_idx_1)*outward_normal(loc_node_idx_2);
+                                                                        *outward_normal(loc_node_idx_1)*outward_normal(loc_node_idx_2)...
+                                                                        *max(c_handle(xk-eps),c_handle(xk+eps));
                         triplet_list_iterator = triplet_list_iterator + 1;
                     end
                 end

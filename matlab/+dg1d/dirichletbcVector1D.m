@@ -33,7 +33,7 @@ function dirichlet_vect = dirichletbcVector1D(nodes, elements, c_handle, g_handl
 
     for loc_node_idx=1:dof
         triplet_list_idx(triplet_list_iterator) = el_loc(loc_node_idx);
-        triplet_list_entries(triplet_list_iterator) =   sigma/h*g_handle(xk)*phi{loc_node_idx}(xk)-...
+        triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*sigma/h*g_handle(xk)*phi{loc_node_idx}(xk)-...
                                                         c_handle(xk)*dphi{loc_node_idx}(xk)*g_handle(xk)*outward_normal;
         triplet_list_iterator = triplet_list_iterator + 1;
     end
@@ -49,7 +49,7 @@ function dirichlet_vect = dirichletbcVector1D(nodes, elements, c_handle, g_handl
 
     for loc_node_idx=1:dof
         triplet_list_idx(triplet_list_iterator) = el_loc(loc_node_idx);
-        triplet_list_entries(triplet_list_iterator) =   sigma/h*g_handle(xk)*phi{loc_node_idx}(xk)-...
+        triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*sigma/h*g_handle(xk)*phi{loc_node_idx}(xk)-...
                                                         c_handle(xk)*dphi{loc_node_idx}(xk)*g_handle(xk)*outward_normal;
         triplet_list_iterator = triplet_list_iterator + 1;
     end
