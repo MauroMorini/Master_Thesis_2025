@@ -110,7 +110,24 @@ and
     \label{eq:id_2_u_jump_zero}
     [u(x_n)] = 0 \qquad \forall n=1,\ldots,N
 \end{equation}
-The next step is to symmetrize our currently non-symmetrical bilinear form.
-For that subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[v(x_n)]$ on both sides of
-(\ref{eq:elliptic_sipdg_var_form_incomplete}).
-
+To derive the final sip variational form we will now have to add two additional terms
+to (\ref{eq:elliptic_sipdg_var_form_incomplete}): \\
+\textbf{Step 1:} Firstly we need to symmetrize our currently non-symmetrical right hand side
+which will correspond to the SIPDG bilinear form.
+For that we subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[v(x_n)]$ on both sides of
+(\ref{eq:elliptic_sipdg_var_form_incomplete}):
+\begin{align*}
+    &(f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+) \\
+    = &\sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
+    -\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
+\end{align*}
+note that on the left hand side of the equation we have applied (\ref{eq:id_2_u_jump_zero})
+for the interior node contributions of the sum (which therefore vanish), and the boundary condition (\ref{eq:elliptic_pde_bc}) 
+ensuring the left hand side to be soley dependent on $v$.\\
+\textbf{Step 2:} The bilinear form we seek to create will be defined on $V_h\times V_h$
+meaning it will intake discontinuous functions. In particular the numerical
+solution will be a discontinuous function wheras the exact solution is continuous.
+To counterweigh this discrepancy we need to integrate a penalization mechanism, which seeks to 
+minimize discontinuous behaviors. Technically speaking this penalization term 
+will guarantee coercivity of the bilinear form. \\
+Let $\sigma > 0$, similarly to Step 1 we can add the term $\sum_{n=0}^{N+1}\frac{\sigma}{h_n}$  
