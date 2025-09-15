@@ -30,7 +30,7 @@ function B_penalty = boundaryPenaltyMatrix1D(nodes, elements, c_handle, sigma)
         for loc_node_idx_2=1:dof
             triplet_list_rows(triplet_list_iterator) = el_loc(loc_node_idx_1);
             triplet_list_cols(triplet_list_iterator) = el_loc(loc_node_idx_2);
-            triplet_list_entries(triplet_list_iterator) = sigma/h*phi{loc_node_idx_1}(xk)*phi{loc_node_idx_2}(xk);
+            triplet_list_entries(triplet_list_iterator) = c_handle(xk)*sigma/h*phi{loc_node_idx_1}(xk)*phi{loc_node_idx_2}(xk);
             triplet_list_iterator = triplet_list_iterator + 1;
         end
     end
@@ -46,7 +46,7 @@ function B_penalty = boundaryPenaltyMatrix1D(nodes, elements, c_handle, sigma)
         for loc_node_idx_2=1:dof
             triplet_list_rows(triplet_list_iterator) = el_loc(loc_node_idx_1);
             triplet_list_cols(triplet_list_iterator) = el_loc(loc_node_idx_2);
-            triplet_list_entries(triplet_list_iterator) = sigma/h*phi{loc_node_idx_1}(xk)*phi{loc_node_idx_2}(xk);
+            triplet_list_entries(triplet_list_iterator) = c_handle(xk)*sigma/h*phi{loc_node_idx_1}(xk)*phi{loc_node_idx_2}(xk);
             triplet_list_iterator = triplet_list_iterator + 1;
         end
     end
