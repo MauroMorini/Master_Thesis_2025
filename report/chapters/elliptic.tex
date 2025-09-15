@@ -1,5 +1,34 @@
+First we will consider a time-independent elliptic problem
 \section{Problem}
-We consider the following model problem. Let $\Omega = (0,1) \subset \mathbb{R}$ be our domain 
+We consider the following elliptic model problem:
 \begin{equation}
-    
+    -(c(x)u'(x))' = f(x) \qquad \forall x\in \Omega
 \end{equation} 
+\begin{equation}
+    u(0) = g_0, u(1) = g_1
+\end{equation}
+Where $\Omega = (0,1)$ is the domain, $g_0, g_1 \in \mathbb{R}$ yield
+Dirichlet boundary conditions, $f \in L^2(\Omega)$ and $c:\Omega \to \mathbb{R}$
+satisfies:
+\[
+    c_{\min} \leq c(x) \leq c_{\max} \qquad \forall x\in \Omega
+\]
+for $0 < c_{\min} \leq c_{\max}$.
+By multiplying by a test function and integrating over $\Omega$ we get the 
+weak formulation: \\
+Find $u \in H^1(\Omega)$ such that:
+\begin{equation}
+    a(u,v) = (f,v)_{L^2(\Omega)} \qquad \forall v \in C_c^{\infty}(\Omega)
+\end{equation}
+Where 
+\[
+    a:H^1(\Omega) \times H^1(\Omega) \to \mathbb{R}, \qquad (u,v) \mapsto \int_{\Omega} c(x)u'(x)v'(x) \text{d}x
+\]  
+defines the standard elliptic bilinear form on $H^1(\Omega)$ and $(u,v)_{L^2(\Omega)} = \int_{\Omega} uv \,\text{d}x$
+denotes the $L^2$-inner product.
+
+\section{Discretization}
+Let $0=x_0 < x_1 < ... < x_{N+1} = 1$, let $I_n = (x_n, x_{n+1})$ for $n = 0,..,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ the partition
+of $\Omega$.
+We denote the element length by $h_n = x_{n+1} - x_{n}$ for $n=0,..N$ and the global meshsize by
+$h = \max_{n} h_n$.
