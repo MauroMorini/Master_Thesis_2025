@@ -45,13 +45,13 @@ function B_penalty = interiorPenaltyMatrix1D(nodes, elements, c_handle, sigma)
                 h_loc_2 = abs(xn_loc_2-bordering_element_nodes(el_idx_2, end));
                 phi_2 = {@(x) 1- (x-xn_loc_2)/h_loc_2, @(x) (x-xn_loc_2)/h_loc_2};
 
-                h_loc_max = max(h_loc_1, h_loc_2);
+                h_loc_min = min(h_loc_1, h_loc_2);
 
                 for loc_node_idx_1=1:dof
                     for loc_node_idx_2=1:dof
                         triplet_list_rows(triplet_list_iterator) = bordering_elements(el_idx_1, loc_node_idx_1);
                         triplet_list_cols(triplet_list_iterator) = bordering_elements(el_idx_2, loc_node_idx_2);
-                        triplet_list_entries(triplet_list_iterator) =   sigma/h_loc_max*phi_1{loc_node_idx_1}(xk)*phi_2{loc_node_idx_2}(xk)...
+                        triplet_list_entries(triplet_list_iterator) =   sigma/h_loc_min*phi_1{loc_node_idx_1}(xk)*phi_2{loc_node_idx_2}(xk)...
                                                                         *outward_normal(loc_node_idx_1)*outward_normal(loc_node_idx_2)...
                                                                         *max(c_handle(xk-eps),c_handle(xk+eps));
                         triplet_list_iterator = triplet_list_iterator + 1;

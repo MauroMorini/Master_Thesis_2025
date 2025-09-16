@@ -35,7 +35,7 @@ c_handle = matlabFunction(c_handle, 'vars', {x});
 
 % initialize parameters and preallocate
 H_meshsizes = 2.^-(2:10);
-sigma = 100;
+sigma = 10;
 errors = zeros(1, length(H_meshsizes));
 
 for i = 1:length(H_meshsizes)
