@@ -131,9 +131,9 @@ To counterweigh this discrepancy we need to integrate a penalization mechanism, 
 minimize discontinuous behaviors. Technically speaking this penalization term 
 will guarantee coercivity of the bilinear form. \\
 Let $\sigma > 0$ constant, we define:
-\begin{equation*}
-    h(x_n) := 
+\begin{equation}
+    \texttt{a}(x_n) := 
     \begin{cases}
-        s
+        \frac{\sigma}{\min(h_n, h_{n-1})}, 
     \end{cases}
-\end{equation*}
+\end{equation}

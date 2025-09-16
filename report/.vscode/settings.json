@@ -6,7 +6,6 @@
       "args": [
         "-pdf",
         "-interaction=nonstopmode",
-        "-synctex=1",
         "%DOC%"
       ]
     }
@@ -18,8 +17,7 @@
     }
   ],
   "latex-workshop.latex.build.forceRecipeUsage": true,
-  
-  // Hide LaTeX junk files in VS Code file explorer
+
   "files.exclude": {
     "**/report/build/": true,
     "**/report/*.aux": true,
