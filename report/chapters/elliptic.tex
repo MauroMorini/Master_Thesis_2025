@@ -1,7 +1,7 @@
 First we will consider a time-independent elliptic problem. The derivation
-of the bilinear form and the final fully discrete scheme is mostly based on
-Chapter 1 in \cite{riviere2008}, with cross references from other sources 
-in the bibliography.
+of the bilinear form is inspired by 
+Chapter 1 in \cite{riviere2008} as well as \cite{georgoulis2011Springer} and \cite{grote2006}
+for cross reference.
 
 %---Problem---------------------------------------------------------------
 \section{Problem}
@@ -21,8 +21,8 @@ satisfies:
     c_{\min} \leq c(x) \leq c_{\max} \qquad \forall x\in \Omega
 \]
 for $0 < c_{\min} \leq c_{\max}$.
-By multiplying by a test function and integrating over $\Omega$ we get the 
-weak formulation: \\
+Multiplying the solution by a test function and integrating by parts over $\Omega$ we get the 
+standard weak formulation: \\
 Find $u \in H^1(\Omega)$ such that:
 \begin{equation}
     a(u,v) = (f,v)_{L^2(\Omega)} \qquad \forall v \in C_c^{\infty}(\Omega)
@@ -38,8 +38,9 @@ defines the standard elliptic bilinear form on $H^1(\Omega)$ and
 
 denotes the $L^2$-inner product.
 
+%---Discretization---------------------------------------------------------
 \section{Discretization}
-Let $0=x_0 < \cdots < x_{N+1} = 1$, let $I_n = (x_n, x_{n+1})$ for $n = 0,\ldots,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ the partition
+Let $0=x_0 < \cdots < x_{N+1} = 1$, $I_n = (x_n, x_{n+1})$ for $n = 0,\ldots,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ a partition
 of $\Omega$.
 We denote the element length by $h_n = x_{n+1} - x_{n}$ for $n=0,\ldots,N$ and the global meshsize by
 $h = \max_{n} h_n$.
@@ -53,9 +54,10 @@ finite element space with just $V_h$ for simplicity.
 $V_h$ is our final approximation space in which the numerical solution
 lays.
 We observe that in contrast to a continuous finite element approximation space 
-here the resulting solution is a priori discontinuous by construction 
-of the space. Furthermore we have here $V_h \not\subset H^1(\Omega)$.
-This is especially apparent in 1d due to the Sobolev embedding $H^1(\Omega) \subset C^0(\Omega)$. \\
+here the resulting solution is a priori discontinuous by construction. 
+Furthermore we have here $V_h \not\subset H^1(\Omega)$. 
+This is especially apparent in 1d due to the Sobolev embedding $H^1(\Omega) \subset C^0(\Omega)$.
+Any discontinuous element of $V_h$ can therefore not be in $H^1(\Omega)$. \\
 To proceed we will require the following trace operators:
 
 \begin{definition} 
@@ -80,6 +82,8 @@ To proceed we will require the following trace operators:
     \end{enumerate}
 \end{definition}
 
+%---Variational Formulation--------------------------------------------------------
+\section{Variational Formulation}
 To derive the SIPDG variational formulation, let $v \in V_h$ be a test
 function. For simplicity suppose for now that the coefficient $c \in C^1(\Omega)$ and
 the exact solution $u \in H^2(\Omega) \subset C^1(\Omega)$. 
@@ -151,9 +155,37 @@ on both sides of (\ref{eq:elliptic_sipdg_var_form_incomplete}) and get the final
 \textit{discrete} SIPDG variational formulation.\\
 Find $u_h \in V_h$ such that:
 \begin{equation}
-    B(u_h, v) = l(v), \qquad \forall v\in V_h
+    \label{eq:discrete_var_form_elliptic}
+    b(u_h, v) = \ell(v), \qquad \forall v\in V_h
 \end{equation}
 where
 \begin{align*}
-    B(u,v) = 
+    b(u,v) &= \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
+    -\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
+    +\sum_{n=0}^{N+1} \texttt{a}(x_n)[u(x_n)][v(x_n)] \\
+    \ell(v) &= (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
+    + \texttt{a}(x_{N+1})g_1v(x_{N+1}) + \texttt{a}(x_{0})g_0v(x_{0})
 \end{align*}
+
+%---Matrix-Vector System---------------------------------------------------------
+\section{Matrix-Vector System}
+We will now in derive the fully discrete Matrix-Vector system given by
+the variational form (\ref{eq:discrete_var_form_elliptic}). To do so let
+$r \in \mathbb{N}$ denote the polynomial degree and consequently the element degree of freedom. Note that in this thesis we will only consider global polynomial degrees.
+Next let $\{\Phi_0,\ldots,\Phi_M\}$ be a basis of $V_h$, where $M = \dim(V_h)$.
+We can represent the sought Galerkin approximation $u_h = \sum_{j=0}^{M} \alpha_j \Phi_j\in V_h$ for coefficients 
+$\alpha_j \in \mathbb{R}$. Then (\ref{eq:discrete_var_form_elliptic}) is equivalent to:
+\begin{equation*}
+    \sum_{j=0}^{M} \alpha_j b(\Phi_j, \Phi_i) = \ell(\Phi_i) \qquad \forall i=0,\ldots,M
+\end{equation*}
+which corresponds to the system:
+\begin{equation}
+    BU = L
+\end{equation}
+for $B \in \mathbb{R}^{M\times M}, [B]_{i,j} = b(\Phi_j, \Phi_i), 
+U \in \mathbb{R}^M, [U]_j = \alpha_j, 
+L\in\mathbb{R}^M, [L]_j = \ell(\Phi_j)$.
+
+\section{Basis of Finite Element Space}
+
+
