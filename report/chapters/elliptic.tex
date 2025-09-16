@@ -114,7 +114,7 @@ and
     \label{eq:id_2_u_jump_zero}
     [u(x_n)] = 0 \qquad \forall n=1,\ldots,N
 \end{equation}
-To derive the final sip variational form we will now have to add two additional terms
+To derive the final variational form we will now have to add two additional terms
 to (\ref{eq:elliptic_sipdg_var_form_incomplete}): \\
 \textbf{Step 1:} Firstly we need to symmetrize our currently non-symmetrical right hand side
 which will correspond to the SIPDG bilinear form.
@@ -131,7 +131,7 @@ ensuring the left hand side to be soley dependent on $v$.\\
 \textbf{Step 2:} The bilinear form we seek to create will be defined on $V_h\times V_h$
 meaning it will intake discontinuous functions. In particular the numerical
 solution will be a discontinuous function wheras the exact solution is continuous.
-To counterweigh this discrepancy we need to integrate a penalization mechanism, which seeks to 
+To counterweigh this discrepancy we need to integrate a penalization mechanism, seeking to 
 minimize discontinuous behaviors. Technically speaking this penalization term 
 will guarantee coercivity of the bilinear form. \\
 Let $\sigma > 0$ constant, we define:
