@@ -5,27 +5,27 @@
       "command": "latexmk",
       "args": [
         "-pdf",
+        "-synctex=1",
         "-interaction=nonstopmode",
+        "-outdir=build",
         "%DOC%"
       ]
     }
   ],
+
   "latex-workshop.latex.recipes": [
     {
-      "name": "latexmk",
+      "name": "latexmk (build folder)",
       "tools": ["latexmk"]
     }
   ],
-  "latex-workshop.latex.build.forceRecipeUsage": true,
 
-  "files.exclude": {
-    "**/report/build/": true,
-    "**/report/*.aux": true,
-    "**/report/*.log": true,
-    "**/report/*.bbl": true,
-    "**/report/*.blg": true,
-    "**/report/*.toc": true,
-    "**/report/*.out": true,
-    "**/report/*.synctex.gz": true
-  }
+  "latex-workshop.latex.build.forceRecipeUsage": true,
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.latex.build.onSave.enabled": true,
+  "latex-workshop.latex.build.onSave.override": true,
+
+  "latex-workshop.latex.outDir": "build",
+  "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.view.pdf.internal.synctex.keybinding": "ctrl-click"
 }

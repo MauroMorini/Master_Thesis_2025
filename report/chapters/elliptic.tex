@@ -131,9 +131,29 @@ To counterweigh this discrepancy we need to integrate a penalization mechanism, 
 minimize discontinuous behaviors. Technically speaking this penalization term 
 will guarantee coercivity of the bilinear form. \\
 Let $\sigma > 0$ constant, we define:
-\begin{equation}
-    \texttt{a}(x_n) := 
+\begin{equation*}
+    \texttt{c}(x_n) := 
     \begin{cases}
-        \frac{\sigma}{\min(h_n, h_{n-1})}, 
+        \max(c(x_n^+), c(x_n^-)), &n=1,\ldots,N \\
+        c(x_n^+), &n=0 \\
+        c(x_n^-), &n=N+1
+    \end{cases},
+    \qquad \texttt{h}(x_n) :=
+    \begin{cases}
+        \min(h_n, h_{n-1}), &n=1,\ldots,N \\
+        h_n, &n\in \{0, N+1\}
     \end{cases}
+\end{equation*}
+with this we define our penalization parameter 
+$\texttt{a}(x_n) = \frac{\sigma \texttt{c}(x_n)}{\texttt{h}(x_n)} > 0$ for all $n=0\ldots,N+1$.
+Similarly to Step 1 we can now add the term $\sum_{n=0}^{N+1} \texttt{a}(x_n)[u(x_n)][v(x_n)]$
+on both sides of (\ref{eq:elliptic_sipdg_var_form_incomplete}) and get the final
+\textit{discrete} SIPDG variational formulation.\\
+Find $u_h \in V_h$ such that:
+\begin{equation}
+    B(u_h, v) = l(v), \qquad \forall v\in V_h
 \end{equation}
+where
+\begin{align*}
+    B(u,v) = 
+\end{align*}
