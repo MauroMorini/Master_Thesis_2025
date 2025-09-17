@@ -5,11 +5,16 @@ clc;clear;close all;
 import mesh.*
 import fem1d.*
 
+% Settings
+c_handle_idx = 1;
+u_exact_handle_idx = ;
+dof = 3;
+
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
 syms x
 cell_exact_fun = {
-    x.^2;                   % polynomial
+    x;                   % polynomial
     x.^3;                   % polynomial
     sin(pi*x);              % sine
     cos(pi*x);              % cosine
@@ -20,13 +25,18 @@ cell_exact_fun = {
     x.^4 - x.^2;            % quartic
     exp(-x).*sin(5*x)       % damped oscillation
 };
-u_exact_handle = cell_exact_fun{3};
-f_exact_handle = diff(-u_exact_handle, 2);
+cell_c_fun = {
+    0*x + 1;
+    sin(10*x) + 2
+};
+c_handle = cell_c_fun{c_handle_idx};
+u_exact_handle = cell_exact_fun{u_exact_handle_idx};
+f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1);
 du_exact_handle = diff(u_exact_handle, 1);
 u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
 du_exact_handle = matlabFunction(du_exact_handle, 'vars', {x});
 f_exact_handle = matlabFunction(f_exact_handle, 'vars', {x});
-c_handle = @(x) ones(size(x));
+c_handle = matlabFunction(c_handle, 'vars', {x});
 
 % initialize 
 H_stepsizes = 2.^-(1:10);
@@ -34,13 +44,15 @@ errors = zeros(1, length(H_stepsizes));
 for i = 1:length(H_stepsizes)
     % initialize mesh
     h = H_stepsizes(i);
-    Mesh = Mesh1dBroken([0,1], [h, h/100]);
+    Mesh = mesh.MeshIntervalFEM1d([0,1], [h, h/100]);
+    Mesh.dof = dof;
+    Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
     
     % assemble matrices
     num_nodes = length(nodes);
-    A = fem1d.stiffnessMatrix1D(nodes', elements, c_handle);
-    load_vec = fem1d.loadVectorLinear1D(nodes', elements, f_exact_handle);
+    A = fem1d.stiffnessMatrix1D(nodes, elements, c_handle);
+    load_vec = fem1d.loadVector1D(nodes, elements, f_exact_handle);
     uh = zeros(num_nodes, 1);
     
     % boundary conditions
@@ -65,9 +77,9 @@ legend("uh", "u\_exact")
 
 % plot errors
 figure;
-loglog(H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, errors);
+loglog(H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, H_stepsizes.^3, '--', H_stepsizes, errors);
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h^2", "L2")
+legend("h^2", "h^3", "L2")
 title('Convergence of Errors');
 

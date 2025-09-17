@@ -1,9 +1,15 @@
-% Solves simple elliptic problem in 1d using DG and plots errors
+% Solves elliptic problem with given exact solution in 1d using SIPDG and plots errors
 clc;clear;close all;
 
 % Imports
 import mesh.*
 import fem1d.*
+
+% Settings
+c_handle_idx = 1;
+u_exact_handle_idx = 6;
+sigma = 100;
+dof = 3;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -14,7 +20,7 @@ cell_exact_fun = {
     sin(pi*x);              % sine
     cos(pi*x);              % cosine
     x.^2 .* (1-x);          % cubic-like
-    exp(x).*(1-x).*x + 1;                 % exponential
+    exp(x);                 % exponential
     log(x+1);               % smooth on [0,1]
     sin(2*pi*x) + x;        % sine + linear
     x.^4 - x.^2;            % quartic
@@ -24,8 +30,8 @@ cell_c_fun = {
     0*x + 1;
     sin(10*x) + 2
 };
-c_handle = cell_c_fun{2};
-u_exact_handle = cell_exact_fun{6};
+c_handle = cell_c_fun{c_handle_idx};
+u_exact_handle = cell_exact_fun{u_exact_handle_idx};
 f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1);
 du_exact_handle = diff(u_exact_handle, 1);
 u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
@@ -35,15 +41,14 @@ c_handle = matlabFunction(c_handle, 'vars', {x});
 
 % initialize parameters and preallocate
 H_meshsizes = 2.^-(2:10);
-sigma = 100;
 errors = zeros(1, length(H_meshsizes));
 
 for i = 1:length(H_meshsizes)
     % initialize mesh
     h = H_meshsizes(i);
     Mesh = mesh.MeshIntervalDG1d([0,1], [h, h/100]);
-    Mesh.dof = 3;
-    Mesh.updatePet()
+    Mesh.dof = dof;
+    Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
     
     % assemble matrices
@@ -56,6 +61,7 @@ for i = 1:length(H_meshsizes)
 
     % calculate errors 
     errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);
+    disp("calculated uh for h = " + h)
 end
 
 % plot solution

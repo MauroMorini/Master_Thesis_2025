@@ -13,7 +13,7 @@ function rhs = sipdgDirichletLoadVector1D(nodes, elements, f_handle, c_handle, g
     % Output:   
     %       rhs:     (num_nodes, 1) full rhs vector for sipdg
 
-    load_vector = fem1d.loadVectorLinear1D(nodes, elements, f_handle);
+    load_vector = fem1d.loadVector1D(nodes, elements, f_handle);
     dirichlet_vector = dg1d.dirichletbcVector1D(nodes, elements, c_handle, g_handle, sigma);
 
     rhs = load_vector + dirichlet_vector;

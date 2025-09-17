@@ -22,14 +22,14 @@ function b = loadVectorQuadratic1D(x, T, f)
             N = {@(xi) 1/2*(xi.^2 - xi); @(xi) 1-xi.^2; @(xi) 1/2*(xi.^2 + xi)};
         
             % calculate elementwise load vector using simpson rule
-            w = [1, 4, 1];
+            w = [1, 4, 1]/3;
             bK = zeros(3,1);
             y = [-1, 0, 1];
             
             for p = 1:3
                 bK(p) = (N{p}(y).*f(K))*w.';
             end
-            bK = bK*h/6;
+            bK = bK*h/2;
         
             % assemble global load vector
             b(T(i,:)) = b(T(i,:)) + bK;
