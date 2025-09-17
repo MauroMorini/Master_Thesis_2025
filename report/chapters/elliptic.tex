@@ -14,7 +14,7 @@ We consider the following elliptic model problem:
     \label{eq:elliptic_pde_bc}
     u(0) = g_0, u(1) = g_1
 \end{equation}
-Where $\Omega = (0,1)$ is the domain, $g_0, g_1 \in \mathbb{R}$ yield
+Where $\Omega = (0,1)$ is the domain, $g_0, g_1 \in \mathbb{R}$ are
 Dirichlet boundary conditions, $f \in L^2(\Omega)$ and $c:\Omega \to \mathbb{R}$
 satisfies:
 \[
@@ -168,6 +168,19 @@ where
     \ell(v) &= (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
     + \texttt{a}(x_{N+1})g_1v(x_{N+1}) + \texttt{a}(x_{0})g_0v(x_{0})
 \end{align*}
+
+%---Boundary Conditions----------------------------------------------------------
+\section{Boundary Conditions}
+By subtracting the term $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[v(x_n)]$ on both sides
+of (\ref{eq:elliptic_sipdg_var_form_incomplete}) we \textit{weakly} imposed the Dirichlet
+boundary conditions into the variational form. This stands in contrast to how boundary 
+conditions are usually imposed in continuous FEM. Indeed one could also impose them strongly,
+meaning we could define 
+\begin{equation*}
+    V_h^r(\mathcal{T}_h) = \{v \in L^2(\Omega) |\, v|_{I_n} \in \mathcal{P}^r(I_n), v(x_0)=g_0, v(x_{N+1})=g_1 \}
+\end{equation*}
+but this soley as a side note, we will continue to work with purely weakly imposed 
+boundary conditions.  
 
 %---Matrix-Vector System---------------------------------------------------------
 \section{Matrix-Vector System}
