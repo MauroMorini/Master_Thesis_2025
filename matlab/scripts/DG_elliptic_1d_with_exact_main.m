@@ -9,7 +9,7 @@ import fem1d.*
 c_handle_idx = 1;
 u_exact_handle_idx = 6;
 sigma = 100;
-dof = 3;
+dof = 2;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]

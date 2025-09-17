@@ -76,21 +76,10 @@ classdef MeshIntervalFEM1d < handle
             if ~corrSize
                 warning("There are elements which are too small or too big")
             end
-            N = length(obj.element_interface_nodes);
 
-            % add additional nodes for higher dofs to obj.nodes 
-            H = diff(obj.element_interface_nodes)/(obj.dof-1);
-            nodes_matrix_extended = zeros(N-1, obj.dof-1);
-            nodes_matrix_extended(:, 1) = obj.element_interface_nodes(1:end-1);
-            for i = 1:(obj.dof-2)
-                local_nodes = obj.element_interface_nodes(1:end-1) + H*i;
-                nodes_matrix_extended(:, i+1) = local_nodes;
-            end
-            nodes_matrix_extended = nodes_matrix_extended.';
-            obj.nodes = [nodes_matrix_extended(:);obj.upper_interval_bound];
-            num_nodes = length(obj.nodes);
-            obj.boundary_interface_node_idx = [1, num_nodes];
-            
+            obj.setNodes();
+
+            N = length(obj.element_interface_nodes);
             % connectivity matrix
             elements_temp = zeros(N-1, obj.dof);
             for i = 1:obj.dof
@@ -102,6 +91,22 @@ classdef MeshIntervalFEM1d < handle
             obj.face_node_to_element_map = [NaN, 1; (1:N-2).', (2:N-1).'; N-1, NaN];
         end
 
+        function obj = setNodes(obj)
+            % creates interior nodes based on Gauss-Lobatto
+            % and updates object
+            N = length(obj.element_interface_nodes);
+            [quad_nodes, ~] = obj.getLobattoQuadrature(obj.dof);
+            element_meshsizes = diff(obj.element_interface_nodes);
+            element_midpoints = obj.element_interface_nodes(1:end-1) + element_meshsizes/2;
+            nodes_matrix_extended = zeros(N-1, obj.dof-1);
+            nodes_matrix_extended(:, 1) = obj.element_interface_nodes(1:end-1);
+            nodes_matrix_extended(:, 2:end) = element_midpoints + quad_nodes(2:end-1).*element_meshsizes/2;
+            nodes_matrix_extended = nodes_matrix_extended.';
+            obj.nodes = [nodes_matrix_extended(:);obj.upper_interval_bound];
+            num_nodes = length(obj.nodes);
+            obj.boundary_interface_node_idx = [1, num_nodes];
+            
+        end
         function [nodes, boundary_interface_node_idx, elements] = getPet(obj)
             nodes = obj.nodes;
             elements = obj.elements;
@@ -118,6 +123,51 @@ classdef MeshIntervalFEM1d < handle
             hold on
             plot(obj.element_interface_nodes(obj.boundary_interface_node_idx), [0,0], 'rx','MarkerSize',10)
             hold off
+        end
+    end
+    methods (Static)
+        function [phi_cell, dphi_cell] = getLagrangeBasisFun(dof)
+            % depending on degrees of freedom provided collects a cell array with function handles 
+            % of basis Lagrange functions defined on the reference element K = (-1,1)
+            % 
+            % Inputs:
+            %       dof:        scalar degrees of freedom parameter
+            %       
+            % Output:   
+            %       phi_cell:   (1,dof) cell array containing function handles of basis functions 
+            %       dphi_cell:  (1,dof) cell array containing function handles of derivatives of basis functions
+            switch dof
+                case 2
+                    phi_cell = {@(xi) (1-xi)/2, @(xi) (1+xi)/2};
+                    dphi_cell = {@(xi) -(1/2)*ones(size(xi)), @(xi) (1/2)*ones(size(xi))};
+                case 3
+                    phi_cell = {@(xi)1/2*(xi.^2 - xi), @(xi) 1 - xi.^2, @(xi) 1/2*(xi + xi.^2)};
+                    dphi_cell = {@(xi)1/2*(2*xi-1), @(xi) -2*xi, @(xi) 1/2*(1+2*xi)};
+                otherwise     
+            end
+        end
+        function [quad_nodes, quad_weights] = getLobattoQuadrature(dof)
+            % depending on dof parameter yields quadrature points and weights, currently only yields 
+            % uniformly distributed nodal basis
+            %
+            % Inputs:
+            %       dof:            scalar degrees of freedom
+            % Outputs:
+            %       quad_nodes:     (1, dof) node vector
+            %       quad_weights:   (1, dof) weight vector
+            switch dof
+                case 2
+                    quad_nodes = [-1, 1];
+                    quad_weights = [1, 1];
+                case 3
+                    quad_nodes = [-1, 0, 1];
+                    quad_weights = [1, 4, 1]/3;    
+                case 4
+                    quad_nodes = [-1, -1/sqrt(5), 1/sqrt(5), 1];
+                    quad_weights = [1, 5, 5, 1]/6;            
+                otherwise
+                    error("method has not been implemented for dof = " + dof)
+            end
         end
     end
 end

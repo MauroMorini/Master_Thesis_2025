@@ -7,7 +7,7 @@ import fem1d.*
 
 % Settings
 c_handle_idx = 1;
-u_exact_handle_idx = ;
+u_exact_handle_idx = 3;
 dof = 3;
 
 % define function handles (real solution)   
