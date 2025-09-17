@@ -149,7 +149,9 @@ Let $\sigma > 0$ constant, we define:
     \end{cases}
 \end{equation*}
 with this we define our penalization parameter 
-$\texttt{a}(x_n) = \frac{\sigma \texttt{c}(x_n)}{\texttt{h}(x_n)} > 0$ for all $n=0\ldots,N+1$.
+\begin{equation*}
+    \texttt{a}(x_n) = \frac{\sigma \texttt{c}(x_n)}{\texttt{h}(x_n)} > 0 \qquad \forall n=0\ldots,N+1  
+\end{equation*}
 Similarly to Step 1 we can now add the term $\sum_{n=0}^{N+1} \texttt{a}(x_n)[u(x_n)][v(x_n)]$
 on both sides of (\ref{eq:elliptic_sipdg_var_form_incomplete}) and get the final
 \textit{discrete} SIPDG variational formulation.\\
