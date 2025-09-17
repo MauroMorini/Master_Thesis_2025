@@ -21,6 +21,8 @@ function dirichlet_vect = dirichletbcVector1D(nodes, elements, c_handle, g_handl
     triplet_list_idx = zeros(B_penalty_max_entries, 1);
     triplet_list_entries = zeros(B_penalty_max_entries, 1);
     triplet_list_iterator = 1;
+    [phi, dphi] = fem1d.getBasisFun(dof);
+    F_ref = @(x, xn_loc, h_loc) (x - xn_loc)/h_loc;
 
     % lower boundary face contribution      ISSUE: outward normal and index hardcoded!!!
     el_loc = elements(1,:);
@@ -28,13 +30,11 @@ function dirichlet_vect = dirichletbcVector1D(nodes, elements, c_handle, g_handl
     xn_loc = nodes(el_loc(1));
     h = abs(xk - nodes(el_loc(end)));
     outward_normal = -1;
-    phi = {@(x) 1- (x-xn_loc)/h, @(x) (x-xn_loc)/h};
-    dphi = {@(x) -ones(size(x))/h, @(x) ones(size(x))/h};
 
     for loc_node_idx=1:dof
         triplet_list_idx(triplet_list_iterator) = el_loc(loc_node_idx);
-        triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*sigma/h*g_handle(xk)*phi{loc_node_idx}(xk)-...
-                                                        c_handle(xk)*dphi{loc_node_idx}(xk)*g_handle(xk)*outward_normal;
+        triplet_list_entries(triplet_list_iterator) =   c_handle(xk)*sigma/h*g_handle(xk)*phi{loc_node_idx}(F_ref(xk,xn_loc,h))-...
+                                                        c_handle(xk)*dphi{loc_node_idx}(F_ref(xk,xn_loc,h))/h*g_handle(xk)*outward_normal;
         triplet_list_iterator = triplet_list_iterator + 1;
     end
 

@@ -42,6 +42,8 @@ for i = 1:length(H_meshsizes)
     % initialize mesh
     h = H_meshsizes(i);
     Mesh = mesh.MeshIntervalDG1d([0,1], [h, h/100]);
+    Mesh.dof = 3;
+    Mesh.updatePet()
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
     
     % assemble matrices

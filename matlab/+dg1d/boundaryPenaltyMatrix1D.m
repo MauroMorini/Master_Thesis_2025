@@ -18,19 +18,20 @@ function B_penalty = boundaryPenaltyMatrix1D(nodes, elements, c_handle, sigma)
     triplet_list_cols = zeros(B_penalty_max_entries, 1);
     triplet_list_entries = zeros(B_penalty_max_entries, 1);
     triplet_list_iterator = 1;
+    [phi, dphi] = fem1d.getBasisFun(dof);
+    F_ref = @(x, xn_loc, h_loc) (x - xn_loc)/h_loc;
 
     % lower boundary face contribution      ISSUE: outward normal and index hardcoded!!!
     el_loc = elements(1,:);
     xk = nodes(el_loc(1));
     xn_loc = nodes(el_loc(1));
     h = abs(xk - nodes(el_loc(end)));
-    phi = {@(x) 1- (x-xn_loc)/h, @(x) (x-xn_loc)/h};
 
     for loc_node_idx_1=1:dof
         for loc_node_idx_2=1:dof
             triplet_list_rows(triplet_list_iterator) = el_loc(loc_node_idx_1);
             triplet_list_cols(triplet_list_iterator) = el_loc(loc_node_idx_2);
-            triplet_list_entries(triplet_list_iterator) = c_handle(xk)*sigma/h*phi{loc_node_idx_1}(xk)*phi{loc_node_idx_2}(xk);
+            triplet_list_entries(triplet_list_iterator) = c_handle(xk)*sigma/h*phi{loc_node_idx_1}(F_ref(xk,xn_loc,h))*phi{loc_node_idx_2}(F_ref(xk,xn_loc,h));
             triplet_list_iterator = triplet_list_iterator + 1;
         end
     end
@@ -40,13 +41,12 @@ function B_penalty = boundaryPenaltyMatrix1D(nodes, elements, c_handle, sigma)
     xk = nodes(el_loc(end));
     xn_loc = nodes(el_loc(1));
     h = abs(xk - nodes(el_loc(1)));
-    phi = {@(x) 1- (x-xn_loc)/h, @(x) (x-xn_loc)/h};
 
     for loc_node_idx_1=1:dof
         for loc_node_idx_2=1:dof
             triplet_list_rows(triplet_list_iterator) = el_loc(loc_node_idx_1);
             triplet_list_cols(triplet_list_iterator) = el_loc(loc_node_idx_2);
-            triplet_list_entries(triplet_list_iterator) = c_handle(xk)*sigma/h*phi{loc_node_idx_1}(xk)*phi{loc_node_idx_2}(xk);
+            triplet_list_entries(triplet_list_iterator) = c_handle(xk)*sigma/h*phi{loc_node_idx_1}(F_ref(xk,xn_loc,h))*phi{loc_node_idx_2}(F_ref(xk,xn_loc,h));
             triplet_list_iterator = triplet_list_iterator + 1;
         end
     end
