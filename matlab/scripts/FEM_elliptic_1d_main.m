@@ -9,7 +9,7 @@ import fem1d.*
 % Settings
 c_handle_idx = 1;
 u_exact_handle_idx = 3;
-dof = 3;
+dof = 2;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -54,15 +54,16 @@ for i = 1:length(H_stepsizes)
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 
-    % set coefficient
+    % set values from handles
     c_vals = c_handle(nodes(elements));
-    
+    f_values = f_exact_handle(nodes(elements));
+
     % assemble matrices
     num_nodes = length(nodes);
     A = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
     M = fem1d.massMatrix1D_v1(nodes, elements, c_handle);
     LHS = A + M;
-    load_vec = fem1d.loadVector1D(nodes, elements, f_exact_handle);
+    load_vec = fem1d.loadVector1D(nodes, elements, f_values);
     uh = zeros(num_nodes, 1);
     
     % boundary conditions

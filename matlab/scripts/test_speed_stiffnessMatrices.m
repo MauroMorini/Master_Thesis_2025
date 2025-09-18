@@ -5,7 +5,7 @@ clc;clear;close all;
 import mesh.*
 import fem1d.*
 
-num_nodes_list = [200, 2000, 10000, 20000, 40000, 100000];
+num_nodes_list = [200, 2000, 10000, 20000, 40000];
 stepsizes = 1./(num_nodes_list + 1);
 times_mat = zeros(3, length(num_nodes_list));
 c = @(x) ones(size(x));
@@ -41,4 +41,3 @@ title("comparison time needed to assemble stiffness matrices")
 legend("matlab v0", "matlab v1", "matlab v2")
 xlabel("number of nodes")
 ylabel("time required")
-ylim(max(times(2,end), times(3,end)))

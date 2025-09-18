@@ -33,26 +33,35 @@ function A = stiffnessMatrix1D(nodes, elements, c_vals)
         
         % element length
         h = abs(K(end) - K(1));
-    
-        % calculate local stiffness matrix
-        AK = zeros(dof);
-        for p = 1:dof
-            for q = 1:p
-                AK(p,q) = (dphi_val(p,:).*dphi_val(q,:).*c_vals(k,:))*quad_weights.';
-                AK(q,p) = AK(p,q);
-            end
-        end
-        AK = AK*(2/h);
-    
-        % assembling of stiffness matrix    TODO: vectorize
+
         for i = 1:dof
             for j = 1:dof
                 triplet_list_rows(triplet_list_iterator) = elements(k,i);
                 triplet_list_cols(triplet_list_iterator) = elements(k,j);
-                triplet_list_entries(triplet_list_iterator) = AK(i,j);
+                triplet_list_entries(triplet_list_iterator) = (dphi_val(i,:).*dphi_val(j,:).*c_vals(k,:))*quad_weights.'*(2/h);
                 triplet_list_iterator = triplet_list_iterator + 1;
             end
         end
+    
+        % % calculate local stiffness matrix
+        % AK = zeros(dof);
+        % for p = 1:dof
+        %     for q = 1:p
+        %         AK(p,q) = (dphi_val(p,:).*dphi_val(q,:).*c_vals(k,:))*quad_weights.';
+        %         AK(q,p) = AK(p,q);
+        %     end
+        % end
+        % AK = AK*(2/h);
+    
+        % % assembling of stiffness matrix    TODO: vectorize
+        % for i = 1:dof
+        %     for j = 1:dof
+        %         triplet_list_rows(triplet_list_iterator) = elements(k,i);
+        %         triplet_list_cols(triplet_list_iterator) = elements(k,j);
+        %         triplet_list_entries(triplet_list_iterator) = AK(i,j);
+        %         triplet_list_iterator = triplet_list_iterator + 1;
+        %     end
+        % end
     end
 
     A = sparse(triplet_list_rows, triplet_list_cols, triplet_list_entries, num_nodes, num_nodes);
