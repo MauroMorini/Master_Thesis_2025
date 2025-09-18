@@ -23,7 +23,7 @@ function M = massMatrix1D_v0(x, t, c)
             K = x(t(i,:));
         
             % get element matrix 
-            Mloc = fem1d.massElementMatrix1D_v1(K, c);
+            Mloc = fem1d_old_versions.massElementMatrix1D_v1(K, c);
             
             % Assembling
             M(t(i, :), t(i, :)) = M(t(i, :), t(i, :)) + Mloc;

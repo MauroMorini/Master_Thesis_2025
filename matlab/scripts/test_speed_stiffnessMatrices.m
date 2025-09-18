@@ -4,6 +4,7 @@ clc;clear;close all;
 % Imports
 import mesh.*
 import fem1d.*
+import fem1d_old_versions.*
 
 num_nodes_list = [200, 2000, 10000, 20000, 40000];
 stepsizes = 1./(num_nodes_list + 1);
@@ -19,18 +20,18 @@ for i = 1:length(num_nodes_list)
 
     % standard matlab stiffness original
     tic;
-    A_matlab_stand = fem1d.stiffnessMatrix1D_v0(nodes, elements, c);
+    A_matlab_stand = fem1d_old_versions.stiffnessMatrix1D_v0(nodes, elements, c);
     times_mat(1, i) = toc;
 
     % matlab stiffness triplets with function calls
     tic;
-    A_matlab_triplet = fem1d.stiffnessMatrix1D_v1(nodes, elements, c);
+    A_matlab_triplet = fem1d_old_versions.stiffnessMatrix1D_v1(nodes, elements, c);
     times_mat(2, i) = toc;
 
     % matlab stiffness triplets without function calls
     tic;
     c_vals = c(nodes(elements));
-    A_matlab_triplet_no_fun = fem1d.stiffnessMatrix1D_v1(nodes, elements, c);
+    A_matlab_triplet_no_fun = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
     times_mat(3, i) = toc;
 end
 

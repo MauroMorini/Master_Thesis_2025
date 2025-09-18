@@ -18,7 +18,7 @@ function load_vector = loadVector1D(nodes, elements, f_values)
     load_vector = zeros(num_nodes, 1);
     
     % collect quadrature information
-    [phi_val, ~, quad_weights] = common.QuadratureFEM.getShapeFunctionValueMatrix(dof);
+    [phi_val, ~, quad_weights] = common.getShapeFunctionValueMatrix(dof);
 
     % iterate over elements
     for k = 1:nEl

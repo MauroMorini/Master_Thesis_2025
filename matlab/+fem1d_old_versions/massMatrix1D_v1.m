@@ -27,7 +27,7 @@ function M = massMatrix1D_v1(x, t, c)
             K = x(t(k,:));
         
             % get element matrix 
-            Mloc = fem1d.massElementMatrix1D_v1(K, c);
+            Mloc = fem1d_old_versions.massElementMatrix1D_v1(K, c);
             
             % assembling of stiffness matrix
             for i = 1:dof

@@ -1,14 +1,15 @@
 function B_flux = interiorFluxMatrix1D(nodes, elements, c_handle)
     % this method assembles the symmetric flux part of the SIP-DG method in 1d
     % for interior faces, no penalty terms are assembled here.
-    %
-    % Inputs:
-    %       nodes:      (num_nodes, 1) node value matrix
-    %       elements:   (num_el, dof) connectivity (element index) matrix 
-    %       c_handle:   @(x) function handle 
-    %
-    % Output:   
-    %       B_flux:     (num_nodes, num_nodes) sparse matrix 
+
+    arguments (Input)
+        nodes               % (num_nodes, 1) node value matrix
+        elements            % (num_el, dof) connectivity (element index) matrix 
+        c_handle            % @(x) function handle 
+    end
+    arguments (Output)
+        B_flux              % (num_nodes, num_nodes) sparse matrix 
+    end
 
     % initializations 
     num_faces = size(elements, 1)+1; 

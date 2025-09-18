@@ -21,7 +21,7 @@ function [l2_error, h1_error] = errors1D(nodes, elements, uh_vals, u_exact_vals,
     h1_error = 0;
 
     % collect quadrature information
-    [phi_val, dphi_val, quad_weights] = common.QuadratureFEM.getShapeFunctionValueMatrix(dof);
+    [phi_val, dphi_val, quad_weights] = common.getShapeFunctionValueMatrix(dof);
     
     % iterate over elements
     for k = 1:num_el

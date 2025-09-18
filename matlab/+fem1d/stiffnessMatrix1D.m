@@ -23,7 +23,7 @@ function A = stiffnessMatrix1D(nodes, elements, c_vals)
     triplet_list_entries = zeros(A_max_entries, 1);
     
     % collect quadrature information
-    [~, dphi_val, quad_weights] = common.QuadratureFEM.getShapeFunctionValueMatrix(dof);
+    [~, dphi_val, quad_weights] = common.getShapeFunctionValueMatrix(dof);
 
     % iterate over all elements
     for k = 1:nEl
