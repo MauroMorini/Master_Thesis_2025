@@ -1,4 +1,4 @@
-function b = loadVectorLinear1D(x, T, f)
+function b = loadVectorLinear1D_v0(x, T, f)
     % calculate the nx1 load vector for finite elements solution of the
     % poisson equation in 1D given a function handle f, a grid x and a
     % connectivity matrix T

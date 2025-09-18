@@ -1,4 +1,4 @@
-function AK = stiffnessElementMatrix1D(K, c)
+function AK = stiffnessElementMatrix1D_v0(K, c)
     % calculates element matrix for a given element K on the grid, a function
     % handle c for 3 degrees of freedom (i.e. r=2). Code can be adapted for
     % higher grade polynomials

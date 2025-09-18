@@ -1,4 +1,4 @@
-function AK = massElementMatrix1D(K, c)
+function AK = massElementMatrix1D_v1(K, c)
         % calculates element matrix for a given element K on the grid, a function
         % handle c for 3 degrees of freedom (i.e. r=3). Code can be adapted for
         % higher grade polynomials

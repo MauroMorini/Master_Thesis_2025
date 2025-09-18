@@ -1,4 +1,4 @@
-function load_vector = loadVector1D(nodes, elements, f_handle)
+function load_vector = loadVector1D_v0(nodes, elements, f_handle)
     % assembles load vector depending on degrees of freedom
     %
     % Inputs: 
@@ -10,9 +10,9 @@ function load_vector = loadVector1D(nodes, elements, f_handle)
     dof = size(elements, 2);
     switch dof
         case 2
-            load_vector = fem1d.loadVectorLinear1D(nodes.', elements, f_handle);
+            load_vector = fem1d.loadVectorLinear1D_v0(nodes.', elements, f_handle);
         case 3      
-            load_vector = fem1d.loadVectorQuadratic1D(nodes.', elements, f_handle);        
+            load_vector = fem1d.loadVectorQuadratic1D_v0(nodes.', elements, f_handle);        
         otherwise
             error("load vector for dof = " + dof + " has not been implemented")
     end

@@ -2,6 +2,7 @@
 clc;clear;close all;
 
 % Imports
+import common.*
 import mesh.*
 import fem1d.*
 
@@ -26,17 +27,21 @@ cell_exact_fun = {
     exp(-x).*sin(5*x)       % damped oscillation
 };
 cell_c_fun = {
-    0*x + 1;
+    1;
     sin(10*x) + 2
 };
 c_handle = cell_c_fun{c_handle_idx};
 u_exact_handle = cell_exact_fun{u_exact_handle_idx};
-f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1);
+f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1)+ u_exact_handle;
 du_exact_handle = diff(u_exact_handle, 1);
 u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
 du_exact_handle = matlabFunction(du_exact_handle, 'vars', {x});
 f_exact_handle = matlabFunction(f_exact_handle, 'vars', {x});
-c_handle = matlabFunction(c_handle, 'vars', {x});
+if isnumeric(c_handle)
+    c_handle = @(x) c_handle + zeros(size(x));
+else
+    c_handle = matlabFunction(c_handle, 'vars', {x});
+end
 
 % initialize 
 H_stepsizes = 2.^-(1:10);
@@ -48,10 +53,15 @@ for i = 1:length(H_stepsizes)
     Mesh.dof = dof;
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
+
+    % set coefficient
+    c_vals = c_handle(nodes(elements));
     
     % assemble matrices
     num_nodes = length(nodes);
-    A = fem1d.stiffnessMatrix1D(nodes, elements, c_handle);
+    A = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
+    M = fem1d.massMatrix1D_v1(nodes, elements, c_handle);
+    LHS = A + M;
     load_vec = fem1d.loadVector1D(nodes, elements, f_exact_handle);
     uh = zeros(num_nodes, 1);
     
@@ -61,7 +71,7 @@ for i = 1:length(H_stepsizes)
     % solve interior problem:
     interior_nodes_idx = 1:num_nodes;
     interior_nodes_idx(boundary_nodes_idx) = [];
-    uh(interior_nodes_idx) = A(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - A(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
+    uh(interior_nodes_idx) = LHS(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - LHS(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
 
     % calculate errors 
     errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);

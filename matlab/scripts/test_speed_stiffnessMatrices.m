@@ -5,10 +5,11 @@ clc;clear;close all;
 import mesh.*
 import fem1d.*
 
-num_nodes_list = [200, 2000, 10000, 20000, 40000];
+num_nodes_list = [200, 2000, 10000, 20000, 40000, 100000];
 stepsizes = 1./(num_nodes_list + 1);
-times_mat = zeros(2, length(num_nodes_list));
+times_mat = zeros(3, length(num_nodes_list));
 c = @(x) ones(size(x));
+
 
 for i = 1:length(num_nodes_list)
     % create mesh
@@ -16,21 +17,28 @@ for i = 1:length(num_nodes_list)
     Mesh = mesh.Mesh1dBroken([0,1], [h, h/100]);
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 
-    % standard matlab stiffness
+    % standard matlab stiffness original
     tic;
-    A_matlab_stand = fem1d.stiffnessMatrix1D_original(nodes, elements, c);
+    A_matlab_stand = fem1d.stiffnessMatrix1D_v0(nodes, elements, c);
     times_mat(1, i) = toc;
 
-    % standard matlab stiffness
+    % matlab stiffness triplets with function calls
     tic;
-    A_matlab_triplet = fem1d.stiffnessMatrix1D(nodes, elements, c);
+    A_matlab_triplet = fem1d.stiffnessMatrix1D_v1(nodes, elements, c);
     times_mat(2, i) = toc;
+
+    % matlab stiffness triplets without function calls
+    tic;
+    c_vals = c(nodes(elements));
+    A_matlab_triplet_no_fun = fem1d.stiffnessMatrix1D_v1(nodes, elements, c);
+    times_mat(3, i) = toc;
 end
 
 % plot results  
 figure;
-plot(num_nodes_list, times_mat(1,:), num_nodes_list, times_mat(2,:))
+plot(num_nodes_list, times_mat(1,:), num_nodes_list, times_mat(2,:),num_nodes_list, times_mat(3,:))
 title("comparison time needed to assemble stiffness matrices")
-legend("standard matlab", "matlab with triplets")
+legend("matlab v0", "matlab v1", "matlab v2")
 xlabel("number of nodes")
 ylabel("time required")
+ylim(max(times(2,end), times(3,end)))

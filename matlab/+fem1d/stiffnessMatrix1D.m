@@ -1,47 +1,59 @@
-function A = stiffnessMatrix1D(x, T, c)
-    % calculate the nxn stiffness matrix using a connectivity matrix T and a
-    % possibly non equidistant grid x of size n for 2 or 3 degrees of freedom
-    % A = [(c*phi'_i, phi'_j)_L^2]i,j
-    %
-    % Inputs :
-    % T : (nEl, DoF) connectivity matrix
-    % x : (1, n) point vector
-    % c : function handle 
-    %
-    % Outputs:
-    % A : (n,n) sparse stiffness matrix
+function A = stiffnessMatrix1D(nodes, elements, c_vals)
+    % calculate the nxn stiffness matrix 
+    arguments (Input)
+        nodes           % (num_nodes,1) node vector
+        elements        % (num_el, dof) connectivity matrix
+        c_vals          % (num_el, dof) values of coefficient function in elements
+    end
+
+    arguments (Output)
+        A               % (num_nodes, num_nodes) sparse stiffness matrix
+    end
             
-    % number of elements 
-    nEl = size(T, 1); 
-    
-    n = length(x);
-    dof = size(T, 2);
+    % initializations
+    nEl = size(elements, 1); 
+    num_nodes = length(nodes);
+    dof = size(elements, 2);
+    triplet_list_iterator = 1;
+
+    % preallocation
     A_max_entries = nEl*dof^2;
     triplet_list_rows = zeros(A_max_entries, 1);
     triplet_list_cols = zeros(A_max_entries, 1);
     triplet_list_entries = zeros(A_max_entries, 1);
-    triplet_list_iterator = 1;
-
     
+    % collect quadrature information
+    [~, dphi_val, quad_weights] = common.QuadratureFEM.getShapeFunctionValueMatrix(dof);
+
     % iterate over all elements
     for k = 1:nEl
         
         % element
-        K = x(T(k,:));
+        K = nodes(elements(k,:));
+        
+        % element length
+        h = abs(K(end) - K(1));
     
-        % get element matrix 
-        AK = fem1d.stiffnessElementMatrix1D(K, c);
+        % calculate local stiffness matrix
+        AK = zeros(dof);
+        for p = 1:dof
+            for q = 1:p
+                AK(p,q) = (dphi_val(p,:).*dphi_val(q,:).*c_vals(k,:))*quad_weights.';
+                AK(q,p) = AK(p,q);
+            end
+        end
+        AK = AK*(2/h);
     
-        % assembling of stiffness matrix
+        % assembling of stiffness matrix    TODO: vectorize
         for i = 1:dof
             for j = 1:dof
-                triplet_list_rows(triplet_list_iterator) = T(k,i);
-                triplet_list_cols(triplet_list_iterator) = T(k,j);
+                triplet_list_rows(triplet_list_iterator) = elements(k,i);
+                triplet_list_cols(triplet_list_iterator) = elements(k,j);
                 triplet_list_entries(triplet_list_iterator) = AK(i,j);
                 triplet_list_iterator = triplet_list_iterator + 1;
             end
         end
     end
 
-    A = sparse(triplet_list_rows, triplet_list_cols, triplet_list_entries, n, n);
+    A = sparse(triplet_list_rows, triplet_list_cols, triplet_list_entries, num_nodes, num_nodes);
 end

@@ -1,4 +1,4 @@
-function A = stiffnessMatrix1D_original(x, T, c)
+function A = stiffnessMatrix1D_v0(x, T, c)
     % calculate the nxn stiffness matrix using a connectivity matrix T and a
     % possibly non equidistant grid x of size n for 2 or 3 degrees of freedom
     % A = [(c*phi'_i, phi'_j)_L^2]i,j
@@ -24,7 +24,7 @@ function A = stiffnessMatrix1D_original(x, T, c)
         K = x(T(i,:));
     
         % get element matrix 
-        AK = fem1d.stiffnessElementMatrix1D(K, c);
+        AK = fem1d.stiffnessElementMatrix1D_v0(K, c);
     
         % assembling of stiffness matrix
         A(T(i,:), T(i,:)) = A(T(i,:), T(i,:)) + AK;

@@ -1,4 +1,4 @@
-function M = massMatrix1D_original(x, t, c)
+function M = massMatrix1D_v0(x, t, c)
         % calculates global mass matrix for linear or quadratic 
         % FE in 1D M(i,j) = int_Omega phi_i*phi_j*c
         % Inputs : 
@@ -23,7 +23,7 @@ function M = massMatrix1D_original(x, t, c)
             K = x(t(i,:));
         
             % get element matrix 
-            Mloc = fem1d.massElementMatrix1D(K, c);
+            Mloc = fem1d.massElementMatrix1D_v1(K, c);
             
             % Assembling
             M(t(i, :), t(i, :)) = M(t(i, :), t(i, :)) + Mloc;

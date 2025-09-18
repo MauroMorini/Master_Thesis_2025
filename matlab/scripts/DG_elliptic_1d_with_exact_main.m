@@ -27,7 +27,7 @@ cell_exact_fun = {
     exp(-x).*sin(5*x)       % damped oscillation
 };
 cell_c_fun = {
-    0*x + 1;
+    1;
     sin(10*x) + 2
 };
 c_handle = cell_c_fun{c_handle_idx};
@@ -37,8 +37,11 @@ du_exact_handle = diff(u_exact_handle, 1);
 u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
 du_exact_handle = matlabFunction(du_exact_handle, 'vars', {x});
 f_exact_handle = matlabFunction(f_exact_handle, 'vars', {x});
-c_handle = matlabFunction(c_handle, 'vars', {x});
-
+if isnumeric(c_handle)
+    c_handle = @(x) c_handle + zeros(size(x));
+else
+    c_handle = matlabFunction(c_handle, 'vars', {x});
+end
 % initialize parameters and preallocate
 H_meshsizes = 2.^-(2:10);
 errors = zeros(1, length(H_meshsizes));
@@ -50,6 +53,10 @@ for i = 1:length(H_meshsizes)
     Mesh.dof = dof;
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
+
+    % set coefficient
+    c_vals = c_handle(nodes(elements));
+    % TODO: rewrite all the function handles to values
     
     % assemble matrices
     num_nodes = length(nodes);
