@@ -1,4 +1,4 @@
-function [L2err, H1err] = errorsQuad1D(T, x, uh, dudx, u)
+function [L2err, H1err] = errorsQuad1D_v0(T, x, uh, dudx, u)
     % calculates the error in L^2 and H^1 norm for quadratic FE with
     % uh: numerical solution
     % u: exact solution

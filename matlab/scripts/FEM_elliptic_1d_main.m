@@ -57,6 +57,8 @@ for i = 1:length(H_stepsizes)
     % set values from handles
     c_vals = c_handle(nodes(elements));
     f_values = f_exact_handle(nodes(elements));
+    u_exact_vals = u_exact_handle(nodes);
+    du_exact_vals = du_exact_handle(nodes);
 
     % assemble matrices
     num_nodes = length(nodes);
@@ -75,7 +77,7 @@ for i = 1:length(H_stepsizes)
     uh(interior_nodes_idx) = LHS(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - LHS(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
 
     % calculate errors 
-    errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);
+    errors(i) = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
     disp("calculated h = "+ h + "  i = " + i + " cond(A) = " + condest(A(interior_nodes_idx, interior_nodes_idx)))
 end
 

@@ -1,4 +1,4 @@
-function [L2err, H1err] = errorsLinear1D(T, x, uh, dudx, u)
+function [L2err, H1err] = errorsLinear1D_v0(T, x, uh, dudx, u)
     % calculates the error in L^2 and H^1 norm for linear FE with
     % uh: numerical solution
     % u: exact solution
