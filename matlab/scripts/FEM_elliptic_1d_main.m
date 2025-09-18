@@ -45,7 +45,7 @@ end
 
 % initialize 
 H_stepsizes = 2.^-(1:10);
-errors = zeros(1, length(H_stepsizes));
+errors = zeros(2, length(H_stepsizes));
 for i = 1:length(H_stepsizes)
     % initialize mesh
     h = H_stepsizes(i);
@@ -77,22 +77,22 @@ for i = 1:length(H_stepsizes)
     uh(interior_nodes_idx) = LHS(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - LHS(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
 
     % calculate errors 
-    errors(i) = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
+    [errors(1,i), errors(2,i)] = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
     disp("calculated h = "+ h + "  i = " + i + " cond(A) = " + condest(A(interior_nodes_idx, interior_nodes_idx)))
 end
 
 % plot solution
 figure;
-plot(nodes, uh, nodes, u_exact_handle(nodes))
+plot(nodes, uh, nodes, u_exact_vals)
 xlabel("x")
 ylabel("y")
 legend("uh", "u\_exact")
 
 % plot errors
 figure;
-loglog(H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, H_stepsizes.^3, '--', H_stepsizes, errors);
+loglog(H_stepsizes, H_stepsizes, '--', H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, H_stepsizes.^3, '--', H_stepsizes, errors(1,:), H_stepsizes, errors(2,:));
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h^2", "h^3", "L2")
+legend("h", "h^2", "h^3", "L2", "H1")
 title('Convergence of Errors');
 

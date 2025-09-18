@@ -21,7 +21,7 @@ function [l2_error, h1_error] = errors1D(nodes, elements, uh_vals, u_exact_vals,
     h1_error = 0;
 
     % collect quadrature information
-    [phi_val, ~, quad_weights] = common.QuadratureFEM.getShapeFunctionValueMatrix(dof);
+    [phi_val, dphi_val, quad_weights] = common.QuadratureFEM.getShapeFunctionValueMatrix(dof);
     
     % iterate over elements
     for k = 1:num_el
@@ -32,11 +32,12 @@ function [l2_error, h1_error] = errors1D(nodes, elements, uh_vals, u_exact_vals,
         % element length
         h = abs(K(1) - K(end));
         
-        % values of u_h at quadrature points
+        % values of u_h, du_h at quadrature points
         uh_loc_val = (uh_vals(elements(k,:)).'*phi_val);
+        duh_loc_val = (uh_vals(elements(k,:)).'*dphi_val);
 
         l2_error = l2_error + (h/2)*(u_exact_vals(elements(k,:)).' - uh_loc_val).^2*quad_weights.';
-        h1_error = h1_error + (h/2)*(du_exact_vals(elements(k,:)).' - (2/h)*uh_loc_val).^2*quad_weights.';
+        h1_error = h1_error + (h/2)*(du_exact_vals(elements(k,:)).' - (2/h)*duh_loc_val).^2*quad_weights.';
        
     end
     h1_error = sqrt(h1_error + l2_error);
