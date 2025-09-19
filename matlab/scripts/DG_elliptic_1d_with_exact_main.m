@@ -42,6 +42,7 @@ if isnumeric(c_handle)
 else
     c_handle = matlabFunction(c_handle, 'vars', {x});
 end
+
 % initialize parameters and preallocate
 H_meshsizes = 2.^-(2:10);
 errors = zeros(1, length(H_meshsizes));
@@ -54,20 +55,23 @@ for i = 1:length(H_meshsizes)
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 
-    % set coefficient
-    c_vals = c_handle(nodes(elements));
+    % set values from handles
+    c_vals = c_handle(nodes);
+    f_vals = f_exact_handle(nodes);
+    u_exact_vals = u_exact_handle(nodes);
+    du_exact_vals = du_exact_handle(nodes);
     % TODO: rewrite all the function handles to values
     
     % assemble matrices
     num_nodes = length(nodes);
-    B = dg1d.sipdgMatrix1D(nodes, elements, c_handle, sigma);
-    rhs_vector = dg1d.sipdgDirichletLoadVector1D(nodes, elements, f_exact_handle, c_handle, u_exact_handle, sigma);
+    B = dg1d.sipdgMatrix1D(nodes, elements, c_vals, sigma);
+    rhs_vector = dg1d.sipdgDirichletLoadVector1D(nodes, elements, f_vals, c_vals, u_exact_vals, sigma);
     
     % solve system
     uh = B\rhs_vector;
 
     % calculate errors 
-    errors(i) = fem1d.errors1D(elements, nodes, uh, du_exact_handle, u_exact_handle);
+    errors(i) = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
     disp("calculated uh for h = " + h)
 end
 
