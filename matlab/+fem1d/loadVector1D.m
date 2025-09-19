@@ -3,7 +3,7 @@ function load_vector = loadVector1D(nodes, elements, f_values)
     arguments (Input)
         nodes           % (num_nodes, 1) node vector
         elements        % (num_el, dof) connectivity matrix
-        f_values        % (num_el, dof) values of forcing term at element entries
+        f_values        % (num_nodes, 1) values of forcing term at nodes
     end
     arguments (Output)
         load_vector     % (num_nodes, 1) load vector 
@@ -13,6 +13,7 @@ function load_vector = loadVector1D(nodes, elements, f_values)
     nEl = size(elements, 1); 
     num_nodes = length(nodes);
     dof = size(elements, 2);
+    f_values_el = f_values(elements);
 
     % preallocation
     load_vector = zeros(num_nodes, 1);
@@ -27,7 +28,7 @@ function load_vector = loadVector1D(nodes, elements, f_values)
         
         loc_load_vector = zeros(dof,1);
         for p = 1:dof
-            loc_load_vector(p) = (h/2)*phi_val(p,:).*f_values(k,:)*quad_weights.';
+            loc_load_vector(p) = (h/2)*phi_val(p,:).*f_values_el(k,:)*quad_weights.';
         end
         load_vector(elements(k,:)) = load_vector(elements(k,:)) + loc_load_vector;
     end

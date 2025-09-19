@@ -1,11 +1,11 @@
-function B_flux = interiorFluxMatrix1D(nodes, elements, c_handle)
+function B_flux = interiorFluxMatrix1D(nodes, elements, c_vals)
     % this method assembles the symmetric flux part of the SIP-DG method in 1d
     % for interior faces, no penalty terms are assembled here.
 
     arguments (Input)
         nodes               % (num_nodes, 1) node value matrix
         elements            % (num_el, dof) connectivity (element index) matrix 
-        c_handle            % @(x) function handle 
+        c_vals              % (num_nodes, 1) vector with values of c at nodes (c(nodes))  
     end
     arguments (Output)
         B_flux              % (num_nodes, num_nodes) sparse matrix 
@@ -16,12 +16,14 @@ function B_flux = interiorFluxMatrix1D(nodes, elements, c_handle)
     num_nodes = length(nodes);
     dof = size(elements, 2);
     B_flux_max_entries = (num_faces-2)*dof^2*4;
+    triplet_list_iterator = 1;
+
+    % preallocation
     triplet_list_rows = zeros(B_flux_max_entries, 1);
     triplet_list_cols = zeros(B_flux_max_entries, 1);
     triplet_list_entries = zeros(B_flux_max_entries, 1);
-    triplet_list_iterator = 1;
-    [phi, dphi] = fem1d.getBasisFun(dof);
-    F_ref = @(x, xn_loc, h_loc) (x - xn_loc)/h_loc;
+
+    [phi_val, dphi_val, ~] = common.getShapeFunctionValueMatrix(dof);
 
     for k = 2:num_faces-1
         bordering_elements = [elements(k-1,:); elements(k,:)];
