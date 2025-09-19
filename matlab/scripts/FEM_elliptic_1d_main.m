@@ -55,7 +55,7 @@ for i = 1:length(H_stepsizes)
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 
     % set values from handles
-    c_vals = c_handle(nodes(elements));
+    c_vals = c_handle(nodes);
     f_values = f_exact_handle(nodes);
     u_exact_vals = u_exact_handle(nodes);
     du_exact_vals = du_exact_handle(nodes);
@@ -63,7 +63,6 @@ for i = 1:length(H_stepsizes)
     % assemble matrices
     num_nodes = length(nodes);
     A = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
-    M = fem1d_old_versions.massMatrix1D_v1(nodes, elements, c_handle);
     M = fem1d.massMatrix1D(nodes, elements, c_vals);
     LHS = A + M;
     load_vec = fem1d.loadVector1D(nodes, elements, f_values);
