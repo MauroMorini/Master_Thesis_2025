@@ -60,7 +60,6 @@ for i = 1:length(H_meshsizes)
     f_vals = f_exact_handle(nodes);
     u_exact_vals = u_exact_handle(nodes);
     du_exact_vals = du_exact_handle(nodes);
-    % TODO: rewrite all the function handles to values
     
     % assemble matrices
     num_nodes = length(nodes);
@@ -71,7 +70,7 @@ for i = 1:length(H_meshsizes)
     uh = B\rhs_vector;
 
     % calculate errors 
-    errors(i) = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
+    [errors(1,i),errors(2,i)] = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
     disp("calculated uh for h = " + h)
 end
 
@@ -84,9 +83,9 @@ legend("uh", "u\_exact")
 
 % plot errors
 figure;
-loglog(H_meshsizes, H_meshsizes.^2, '--', H_meshsizes, errors);
+loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors(1,:),H_meshsizes, errors(2,:));
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h^2", "L2")
+legend("h^"+(dof-1), "h^"+(dof), "L2", "H1")
 title('Convergence of Errors');
 
