@@ -1,12 +1,13 @@
 function [quad_nodes, quad_weights] = getLobattoQuadrature(dof)
     % depending on dof parameter yields quadrature points and weights, currently only yields 
     % uniformly distributed nodal basis
-    %
-    % Inputs:
-    %       dof:            scalar degrees of freedom
-    % Outputs:
-    %       quad_nodes:     (1, dof) node vector
-    %       quad_weights:   (1, dof) weight vector
+    arguments (Input)
+        dof             % scalar degrees of freedom
+    end
+    arguments (Output)
+        quad_nodes      % (1, dof) node vector
+        quad_weights    % (1, dof) weight vector
+    end
     switch dof
         case 2
             quad_nodes = [-1, 1];

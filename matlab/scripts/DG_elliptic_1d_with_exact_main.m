@@ -9,7 +9,7 @@ import fem1d.*
 c_handle_idx = 1;
 u_exact_handle_idx = 6;
 sigma = 100;
-dof = 2;
+dof = 3;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -68,6 +68,7 @@ for i = 1:length(H_meshsizes)
     
     % solve system
     uh = B\rhs_vector;
+    disp("cond(B) is: " + condest(B));
 
     % calculate errors 
     [errors(1,i),errors(2,i)] = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
