@@ -6,10 +6,10 @@ import mesh.*
 import fem1d.*
 
 % Settings
-c_handle_idx = 1;
+c_handle_idx = 2;
 u_exact_handle_idx = 6;
-sigma = 100;
-dof = 4;
+sigma = 5;
+dof = 10;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
