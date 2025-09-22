@@ -9,7 +9,7 @@ import fem1d.*
 c_handle_idx = 1;
 u_exact_handle_idx = 6;
 sigma = 100;
-dof = 3;
+dof = 4;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -88,5 +88,5 @@ loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),
 xlabel('Step Size (H)');
 ylabel('Error');
 legend("h^"+(dof-1), "h^"+(dof), "L2", "H1")
-title('Convergence of Errors');
+title("Convergence of Errors for P^"+(dof-1)+ "elements");
 

@@ -95,7 +95,7 @@ classdef MeshIntervalFEM1d < handle
             % creates interior nodes based on Gauss-Lobatto
             % and updates object
             N = length(obj.element_interface_nodes);
-            [quad_nodes, ~] = common.QuadratureFEM.getLobattoQuadrature(obj.dof);
+            [quad_nodes, ~] = common.getLobattoQuadrature(obj.dof);
             element_meshsizes = diff(obj.element_interface_nodes);
             element_midpoints = obj.element_interface_nodes(1:end-1) + element_meshsizes/2;
             nodes_matrix_extended = zeros(N-1, obj.dof-1);
