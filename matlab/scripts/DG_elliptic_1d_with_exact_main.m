@@ -9,7 +9,7 @@ import fem1d.*
 c_handle_idx = 2;
 u_exact_handle_idx = 6;
 sigma = 5;
-dof = 10;
+dof = 3;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -44,14 +44,17 @@ else
 end
 
 % initialize parameters and preallocate
-H_meshsizes = 2.^-(2:10);
+H_meshsizes = 2.^-(2:15);
 errors = zeros(1, length(H_meshsizes));
 
 for i = 1:length(H_meshsizes)
     % initialize mesh
+    refine_factor = 2;
     h = H_meshsizes(i);
     Mesh = mesh.MeshIntervalDG1d([0,1], [h, h/100]);
     Mesh.dof = dof;
+    refinable_idx = Mesh.getRefinableElements(refine_factor);
+    Mesh.refineElementsByFact(refinable_idx(1:3:end), refine_factor);
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 

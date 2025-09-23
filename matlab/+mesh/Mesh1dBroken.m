@@ -277,7 +277,7 @@ classdef Mesh1dBroken < handle
         end
 
         function refinableTIdx = getRefinableElements(obj, refFactor)
-            % returns index of elements which can be refined by the factor
+            % returns index ofHmin elements which can be refined by the factor
             % given
             D = abs(obj.p(obj.t(:,1)) - obj.p(obj.t(:,2)));
             refinableTIdx = find(D/refFactor >= obj.Hmin);
