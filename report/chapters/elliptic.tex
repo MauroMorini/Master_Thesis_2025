@@ -84,7 +84,7 @@ To proceed we will require the following trace operators:
 
 %---Variational Formulation--------------------------------------------------------
 \section{Variational Formulation}
-To derive the SIPDG variational formulation, let $v \in V_h$ be a test
+To derive the SIPG variational formulation, let $v \in V_h$ be a test
 function. For simplicity suppose for now that the coefficient $c \in C^1(\Omega)$ and
 the exact solution $u \in H^2(\Omega) \subset C^1(\Omega)$. 
 Due to the discontinuity of the test function in contrast to 
@@ -97,7 +97,7 @@ and integrate by parts locally
 \end{equation*}
 then sum over all elements
 \begin{equation}
-    \label{eq:elliptic_sipdg_var_form_incomplete}
+    \label{eq:elliptic_sipg_var_form_incomplete}
     (f,v)_{L^2(\Omega)} = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
     -\sum_{n=0}^{N+1} [c(x_n)u'(x_n)v(x_n)]
 \end{equation}
@@ -115,11 +115,11 @@ and
     [u(x_n)] = 0 \qquad \forall n=1,\ldots,N
 \end{equation}
 To derive the final variational form we will now have to add two additional terms
-to (\ref{eq:elliptic_sipdg_var_form_incomplete}): \\
+to (\ref{eq:elliptic_sipg_var_form_incomplete}): \\
 \textbf{Step 1:} Firstly we need to symmetrize our currently non-symmetrical right hand side
-which will correspond to the SIPDG bilinear form.
+which will correspond to the SIPG bilinear form.
 For that we subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[v(x_n)]$ on both sides of
-(\ref{eq:elliptic_sipdg_var_form_incomplete}):
+(\ref{eq:elliptic_sipg_var_form_incomplete}):
 \begin{align*}
     &(f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+) \\
     = &\sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
@@ -153,8 +153,8 @@ with this we define our penalization parameter
     \texttt{a}(x_n) = \frac{\sigma \texttt{c}(x_n)}{\texttt{h}(x_n)} > 0 \qquad \forall n=0\ldots,N+1  
 \end{equation*}
 Similarly to Step 1 we can now add the term $\sum_{n=0}^{N+1} \texttt{a}(x_n)[u(x_n)][v(x_n)]$
-on both sides of (\ref{eq:elliptic_sipdg_var_form_incomplete}) and get the final
-\textit{discrete} SIPDG variational formulation.\\
+on both sides of (\ref{eq:elliptic_sipg_var_form_incomplete}) and get the final
+\textit{discrete} SIPG variational formulation.\\
 Find $u_h \in V_h$ such that:
 \begin{equation}
     \label{eq:discrete_var_form_elliptic}
@@ -172,7 +172,7 @@ where
 %---Boundary Conditions----------------------------------------------------------
 \section{Boundary Conditions}
 By subtracting the term $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[v(x_n)]$ on both sides
-of (\ref{eq:elliptic_sipdg_var_form_incomplete}) we \textit{weakly} imposed the Dirichlet
+of (\ref{eq:elliptic_sipg_var_form_incomplete}) we \textit{weakly} imposed the Dirichlet
 boundary conditions into the variational form. This stands in contrast to how boundary 
 conditions are usually imposed in continuous FEM. Indeed one could also impose them strongly,
 meaning we could define 
@@ -195,6 +195,7 @@ $\alpha_j \in \mathbb{R}$. Then (\ref{eq:discrete_var_form_elliptic}) is equival
 \end{equation*}
 which corresponds to the system:
 \begin{equation}
+    \label{eq:fully_discrete_dg_system_elliptic}
     BU = L
 \end{equation}
 for $B \in \mathbb{R}^{M\times M}, [B]_{i,j} = b(\Phi_j, \Phi_i), 
@@ -202,5 +203,69 @@ U \in \mathbb{R}^M, [U]_j = \alpha_j,
 L\in\mathbb{R}^M, [L]_j = \ell(\Phi_j)$.
 
 \section{Basis of Finite Element Space}
+
+\section{Existence of Discrete Solution}
+Firstly we will recall some basic definitions:
+\begin{definition} Let $V$ be a normed vector space and $b:V\times V \to \mathbb{R}$
+    be a bilinear form.
+    \begin{enumerate}[label=\textnormal{(\roman*)}]
+        \item We say $b$ is \textbf{continuous} if $\exists C_{\text{cont}}>0$, such that
+        \[
+            |b(u,v)|\leq C_{\text{cont}}\, ||u||\, ||v|| \qquad \forall u,v \in V
+        \]
+        \item We say $b$ is \textbf{symmetric} if 
+        \[  
+            b(u,v) = b(v,u) \qquad \forall u,v \in V
+        \]
+        \item We say $b$ is \textbf{coercive} if $\exists C_{\text{coer}}>0$, such that
+        \[
+            b(u,u)\geq C_{\text{coer}}\, ||u||^2 \qquad \forall u \in V
+        \]
+    \end{enumerate}
+    
+\end{definition}
+
+
+Since (\ref{eq:discrete_var_form_elliptic}) corresponds to the finite dimensional
+system (\ref{eq:fully_discrete_dg_system_elliptic}) uniqueness and existence of a solution
+are equivalent. 
+The bilinear form $b$ is \textit{symmetric} by construction 
+the goal of this section is to show that $b$ is also \textit{coercive}. 
+From the coercivity of $b$ it will follow that the matrix $B$ in (\ref{eq:fully_discrete_dg_system_elliptic})
+is positive definite and hence invertible, which means there exists a (unique) solution
+of (\ref{eq:discrete_var_form_elliptic}).
+\begin{lemma}
+    Let $V = \text{span}(\varphi_1,\ldots,\varphi_N)$ be a finite dimensional 
+    normed vector space with $\dim(V) = N\in \mathbb{N}$ and let
+    $b:V \times V \to \mathbb{R}$ be a symmetric, coercive bilinear form,
+    then the matrix ${[B]}_{i,j} = {[b(\varphi_j, \varphi_i)]}_{i,j}\in \mathbb{R}^{N\times N}$
+    is symmetric positive definite.
+\end{lemma}
+\begin{proof}
+    Clearly $B$ is symmetric. \\
+    Let $v=(v_1,\ldots,v_N)\in \mathbb{R}^N$ then $w = \sum_{i=1}^{N}
+    v_i \varphi_i\in V$ and we have:
+    \[
+        v^{T}Bv = \sum_{i,j=1}^{N}v_i v_j b(\varphi_j,\varphi_i) = b(w,w) \geq
+        C_{\text{coer}} ||w||^2
+    \]
+    where we have used the biliniearity and the coercivity of $b$.
+\end{proof}
+Next we will require a usefull tool often used in FEM proofs to bound
+a boundary integral with the integral over the interior domain. These kind
+of inequalities are in the literature often called \textit{inverse (trace) inequalities}
+and are in essence trace inequalities on finite dimensional subspaces.
+
+\begin{lemma}
+    {\normalfont(inverse inequality)} Let $r\geq 0$ be the polynomial degree, 
+    $a,b\in \mathbb{R}$ with $a<b$ and let $\mathcal{P}^r([a,b])$ denote the 
+    space of polynomials of degree $r$ defined on $[a,b]$. \\
+    For any $v\in \mathcal{P}^r((a,b))$ we have:
+    \begin{enumerate}
+        \item $|v(a)|^2 \leq \frac{{(r+1)}^2}{b-a}||v||_{L^2([a,b])}^2$ 
+        \item $|v(b)|^2 \leq \frac{{(r+1)}^2}{b-a}||v||_{L^2([a,b])}^2$
+    \end{enumerate}
+\end{lemma}
+
 
 

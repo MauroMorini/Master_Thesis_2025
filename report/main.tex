@@ -2,13 +2,46 @@
 \documentclass[11pt]{report}  
 \input{preamble}
 
-\title{SIP Discontinuous Galerkin implementation for elliptic and hyperbolic problems in 1d}
-\author{Mauro Morini}
-\date{\today}
-
 \begin{document}
 
-\maketitle
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+
+    % Top-left logo
+    \begin{flushleft}
+        \includegraphics[width=4cm]{figures/university-of-basel-vector-logo.png} % University logo
+    \end{flushleft}
+
+    % University / Department
+    {\Large University of Basel \par}
+    {\Large Department of Mathematics and Computer Science \par}
+    \vspace{2.5cm}
+
+    % Thesis title
+    {\Huge\bfseries SIPG Implementation for Elliptic and Hyperbolic Problems in 1D\par}
+    \vspace{1.5cm}
+
+    % Subtitle
+    {\Large Master Thesis\par}
+    \vspace{2cm}
+
+    % Author
+    {\Large Mauro Morini\par}
+    \vspace{1cm}
+
+    % Faculty logo
+    \includegraphics[width=5cm]{figures/Siegel_Phil_Nat589.png} % Department or institute logo
+    \vspace{1cm}
+
+    % Supervisor
+    {\large Supervisor: Prof. Dr. Marcus J. Grote\par}
+    \vfill
+
+    % Date
+    {\large \today\par}
+\end{titlepage}
+
 \tableofcontents
 
 \input{chapters/intro}
@@ -18,5 +51,6 @@
 
 \bibliographystyle{siam}
 \bibliography{references}
+\nocite{riviere2008, grote2006,warburtonHesthaven2003ineq}
 
 \end{document}
