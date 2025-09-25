@@ -3,13 +3,47 @@
 \usepackage{geometry}       % page layout
 \geometry{margin=1in}   
 \usepackage{graphicx}       % figures
-\usepackage{hyperref}       % clickable links
 \usepackage{tikz}           % diagrams
 \usepackage{enumitem}       % enumerate (i)
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{theorems}
+\usepackage{hyperref}       % clickable links
 
-% Theorem environments
+% --------------------------------------------------------
+% Theorem declarations (must come BEFORE tcolorbox styling!)
 \newtheorem{theorem}{Theorem}[chapter]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{corollary}[theorem]{Corollary}
 
+% --------------------------------------------------------
+% Shared tcolorbox style for all theorem-like environments
+\tcbset{
+  mythmstyle/.style={
+    enhanced,
+    breakable,                  % allow page breaks inside long environments
+    boxrule=0.6pt,              % thickness of frame
+    arc=2pt,                    % rounded corners
+    colback=blue!5!white,       % default background color
+    colframe=white,             % default frame color
+    fonttitle=\bfseries,        % title font
+    coltitle=black,
+    left=6pt,right=6pt,top=6pt,bottom=6pt, % inner padding
+    before skip=10pt, after skip=10pt
+  }
+}
+
+% --------------------------------------------------------
+% Apply colors to each environment
+% \tcolorboxenvironment{theorem}{mythmstyle, colback=red!10!white}
+% \tcolorboxenvironment{lemma}{mythmstyle, colback=red!10!white}
+% \tcolorboxenvironment{definition}{mythmstyle, colback=green!10!white}
+% \tcolorboxenvironment{corollary}{mythmstyle, colback=red!10!white}
+
+% --------------------------------------------------------
+% Proof step environment
+\newcounter{proofstep}
+\newenvironment{proofstep}[1][]{
+  \refstepcounter{proofstep}
+  \par\noindent\textbf{Step \theproofstep} (\textit{#1})\textbf{.} \par\nobreak
+}{\vspace{0.5em}}

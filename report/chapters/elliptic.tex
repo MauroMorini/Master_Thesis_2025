@@ -149,9 +149,10 @@ Let $\sigma > 0$ constant, we define:
     \end{cases}
 \end{equation*}
 with this we define our penalization parameter 
-\begin{equation*}
-    \texttt{a}(x_n) = \frac{\sigma \texttt{c}(x_n)}{\texttt{h}(x_n)} > 0 \qquad \forall n=0\ldots,N+1  
-\end{equation*}
+\begin{equation}
+    \label{def:penalization_function}
+    \texttt{a}(x_n) := \frac{\sigma \texttt{c}(x_n)}{\texttt{h}(x_n)} > 0 \qquad \forall n=0\ldots,N+1  
+\end{equation}
 Similarly to Step 1 we can now add the term $\sum_{n=0}^{N+1} \texttt{a}(x_n)[u(x_n)][v(x_n)]$
 on both sides of (\ref{eq:elliptic_sipg_var_form_incomplete}) and get the final
 \textit{discrete} SIPG variational formulation.\\
@@ -196,14 +197,15 @@ $\alpha_j \in \mathbb{R}$. Then (\ref{eq:discrete_var_form_elliptic}) is equival
 which corresponds to the system:
 \begin{equation}
     \label{eq:fully_discrete_dg_system_elliptic}
-    BU = L
+    \textbf{Bu} = \textbf{l}
 \end{equation}
-for $B \in \mathbb{R}^{M\times M}, [B]_{i,j} = b(\Phi_j, \Phi_i), 
-U \in \mathbb{R}^M, [U]_j = \alpha_j, 
-L\in\mathbb{R}^M, [L]_j = \ell(\Phi_j)$.
+for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b(\Phi_j, \Phi_i), 
+\textbf{u} \in \mathbb{R}^M, [\textbf{U}]_j = \alpha_j, 
+\textbf{l}\in\mathbb{R}^M, [\textbf{l}]_j = \ell(\Phi_j)$.
 
+%---Basis-of-FE-Space------------------------------------------------------------
 \section{Basis of Finite Element Space}
-
+%---Existence-------------------------------------------------------------------------
 \section{Existence of Discrete Solution}
 Firstly we will recall some basic definitions:
 \begin{definition} Let $V$ be a normed vector space and $b:V\times V \to \mathbb{R}$
@@ -211,7 +213,7 @@ Firstly we will recall some basic definitions:
     \begin{enumerate}[label=\textnormal{(\roman*)}]
         \item We say $b$ is \textbf{continuous} if $\exists C_{\text{cont}}>0$, such that
         \[
-            |b(u,v)|\leq C_{\text{cont}}\, ||u||\, ||v|| \qquad \forall u,v \in V
+            |b(u,v)|\leq C_{\text{cont}}\, \|u\|\, \|v\| \qquad \forall u,v \in V
         \]
         \item We say $b$ is \textbf{symmetric} if 
         \[  
@@ -219,7 +221,7 @@ Firstly we will recall some basic definitions:
         \]
         \item We say $b$ is \textbf{coercive} if $\exists C_{\text{coer}}>0$, such that
         \[
-            b(u,u)\geq C_{\text{coer}}\, ||u||^2 \qquad \forall u \in V
+            b(u,u)\geq C_{\text{coer}}\, \|u\|^2 \qquad \forall u \in V
         \]
     \end{enumerate}
     
@@ -238,16 +240,16 @@ of (\ref{eq:discrete_var_form_elliptic}).
     Let $V = \text{span}(\varphi_1,\ldots,\varphi_N)$ be a finite dimensional 
     normed vector space with $\dim(V) = N\in \mathbb{N}$ and let
     $b:V \times V \to \mathbb{R}$ be a symmetric, coercive bilinear form,
-    then the matrix ${[B]}_{i,j} = {[b(\varphi_j, \varphi_i)]}_{i,j}\in \mathbb{R}^{N\times N}$
+    then the matrix ${[\textbf{B}]}_{i,j} = {[b(\varphi_j, \varphi_i)]}_{i,j}\in \mathbb{R}^{N\times N}$
     is symmetric positive definite.
 \end{lemma}
 \begin{proof}
-    Clearly $B$ is symmetric. \\
-    Let $v=(v_1,\ldots,v_N)\in \mathbb{R}^N$ then $w = \sum_{i=1}^{N}
+    Clearly $\textbf{B}$ is symmetric. \\
+    Let $\textbf{v}=(v_1,\ldots,v_N)\in \mathbb{R}^N$ then $v = \sum_{i=1}^{N}
     v_i \varphi_i\in V$ and we have:
     \[
-        v^{T}Bv = \sum_{i,j=1}^{N}v_i v_j b(\varphi_j,\varphi_i) = b(w,w) \geq
-        C_{\text{coer}} ||w||^2
+        \textbf{v}^{T}\textbf{B}\textbf{v} = \sum_{i,j=1}^{N}v_i v_j b(\varphi_j,\varphi_i) = b(v,v) \geq
+        C_{\text{coer}} \|w\|^2
     \]
     where we have used the biliniearity and the coercivity of $b$.
 \end{proof}
@@ -255,17 +257,140 @@ Next we will require a usefull tool often used in FEM proofs to bound
 a boundary integral with the integral over the interior domain. These kind
 of inequalities are in the literature often called \textit{inverse (trace) inequalities}
 and are in essence trace inequalities on finite dimensional subspaces.
+We will here rely on a result and proof as presented in \cite{warburtonHesthaven2003ineq}.
 
-\begin{lemma}
-    {\normalfont(inverse inequality)} Let $r\geq 0$ be the polynomial degree, 
+\begin{lemma}[Inverse inequality]
+    \label{lemma:inv_ineq}
+    Let $r\in \mathbb{N}$ be the polynomial degree, 
     $a,b\in \mathbb{R}$ with $a<b$ and let $\mathcal{P}^r([a,b])$ denote the 
     space of polynomials of degree $r$ defined on $[a,b]$. \\
     For any $v\in \mathcal{P}^r((a,b))$ we have:
     \begin{enumerate}
-        \item $|v(a)|^2 \leq \frac{{(r+1)}^2}{b-a}||v||_{L^2([a,b])}^2$ 
-        \item $|v(b)|^2 \leq \frac{{(r+1)}^2}{b-a}||v||_{L^2([a,b])}^2$
+        \item $|v(a)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$ 
+        \item $|v(b)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$
     \end{enumerate}
 \end{lemma}
+\begin{proof}
+    We will prove the statements first for the reference element $\hat{I} = [-1,1]$ and then
+    use a scaling argument to show the general case by applying a simple substitution. \\
+    \begin{proofstep}[Setup]
+        We will make 
+        use of the Legendre orthonormal basis of $\mathcal{P}^r(\hat{I})$:
+        Let $P_0,\ldots,P_r$ denote the Legegndre polynomials on  $\mathcal{P}^r(\hat{I})$. 
+        Recall the following well known facts (see for example \cite{quarteroniNumericalMathematicSpringer2007}): 
+        \begin{enumerate}
+            \item $\{P_0,\ldots,P_r\}$ form an orthogonal basis of $\mathcal{P}^r(\hat{I})$ under the
+            $L^2(\hat{I})$ inner product. Meaning:
+            \[
+            \text{span}(P_0,\ldots,P_r) = \mathcal{P}^r(\hat{I}),\quad \int_{-1}^{1} P_i P_j \,\text{d}\xi = 
+            \begin{cases}
+                \frac{2}{2i + 1}, &\text{for } i=j \\
+                0, &\text{for } i\neq j   
+            \end{cases} 
+            \]    
+            \item $P_i(1) = 1, P_i(-1) = {(-1)}^i, \qquad \forall i = 0,\ldots,r$
+        \end{enumerate}
+        Let $\psi_i = \frac{(2i + 1)P_i}{2}$ for $i=0,\ldots,r$ denote the normed 
+        basis function. Clearly we now have 
+        \[
+            \psi_i(-1) = {(-1)}^i\sqrt{\frac{2i+1}{2}}, \qquad \psi_i(1) = \sqrt{\frac{2i+1}{2}}, 
+            \qquad \int_{-1}^{1}\psi_i \psi_j \text{d}\xi = \delta_{i,j}, \qquad \forall i = 0,\ldots,r
+        \]
+        where $\delta_{i,j} = 
+        \begin{cases}
+            1, &\text{for } i = j\\
+            0, &\text{for } i\neq j   
+        \end{cases}$, and hence $\{\psi_0,\ldots,\psi_r\}$ form an orthonomal basis.
+    \end{proofstep} 
+    \begin{proofstep}[Proof on reference element]
+        For any $v\in \mathcal{P}^r(\hat{I})$
+        there exist coefficients $v_0,\ldots,v_r \in \mathbb{R}$, such that 
+        $v = \sum_{i=0}^{r}v_i \psi_i$. By applying Cauchy-Schwarz we find
+        \[
+            |v(-1)|^2 = \Big|\sum_{i=0}^{r}v_i \psi_i(-1)\Big|^2 \leq \Big(\sum_{i=0}^{r} v_i^2 \Big)\Big(\sum_{i=0}^{r} \psi_i(-1)^2 \Big)
+            = \Big(\sum_{i=0}^{r} v_i^2 \Big)\Big(\sum_{i=0}^{r} \frac{2i+1}{2} \Big)
+            = \Big(\sum_{i=0}^{r} v_i^2 \Big)\frac{(r+1)^2}{2}
+        \]
+        and finally the orthonormality of the $\psi_i$ yields
+        \[
+            \frac{(r+1)^2}{2}\sum_{i=0}^{r} v_i^2  = \frac{(r+1)^2}{2}\sum_{i,j=0}^{r} v_i v_j \delta_{i,j}
+            = \frac{(r+1)^2}{2} \|v\|_{L^2(\hat{I})}^2
+        \]
+        This yields the first inequality for the reference element. The second inequality
+        can be proven analogously.
+    \end{proofstep} 
+    \begin{proofstep}[Scaling argument]
+        Now we assume that $v \in \mathcal{P}^r([a,b])$.
+        Using the affine (element) map 
+        \[
+            F:[-1,1] \to [a,b], \xi \mapsto \frac{a + b}{2} + \frac{|b-a|}{2}\xi
+        \] 
+        we can pull $v$ back to the reference element by defining
+        $\widehat{v}(\xi):=v(F(\xi))$ for all $\xi \in \hat{I}$.
+        Clearly $\widehat{v} \in \mathcal{P}^r(\hat{I})$ hence, by Step 2 we obtain
+        \[
+            |v(a)|^2 = |\widehat{v}(F^{-1}(a))|^2 = |\widehat{v}(-1)|^2 
+            \leq \frac{(r+1)^2}{2}\int_{-1}^{1}\widehat{v}(\xi)^2 \text{d}\xi =
+            \frac{(r+1)^2}{2}\frac{2}{|b-a|}\|v\|_{L^2([a,b])}^2 
+        \] 
+        where in the last equality we have applied a change of variable $x=F(\xi)$ to the integral.
+        Applying the same line of reasoning to $|v(b)|^2$ yields both inequalities
+        and so we are done.
+    \end{proofstep}
+    \\
+\end{proof}
+\medskip
+Recall the in previous sections established notations and let $r\in \mathbb{N}$ denote the polynomial 
+degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
+\begin{definition}
+    We define the \textbf{energy norm} on $V_h$ by 
+    \begin{equation}
+        \label{def:energy_norm}
+        \|v\|_h^2 := \sum_{n=0}^{N} \int_{I_n} c(x)v'(x)^2\text{d}x + \sum_{n=0}^{N+1}{\normalfont\texttt{a}}(x_n)[v(x_n)]^2 
+    \end{equation}
+    where {\normalfont\texttt{a}} denotes the penalization function in (\ref{def:penalization_function}).
+\end{definition}
+\begin{lemma}
+    $\|\cdot\|_h$ defines a norm on $V_h$.
+\end{lemma}
+\begin{proof}
+    Clearly we have $\|\lambda v\|_h =|\lambda|\, \|v\|_h$ for all $\lambda \in \mathbb{R}, v\in V_h$. \\ \\
+    By definition we have $\texttt{a}, c>0$ and by extension $\|v\|_h \geq 0$ for all
+    $v\in V_h$. Suppose now that $\|v\|_h = 0$ for some $v\in V_h$, then we must have $v|_{I_n} \equiv \text{const}$ 
+    and $[v(x_n)] = 0$ for all $n$. So $v$ must be constant on all elements and have a jump of zero at the element boundaries.
+    These two facts combined imply that $v$ is constant on all of $\Omega$. By the convention that the jump 
+    of any function is zero at the boundary nodes of $\Omega$ it immediately follows that $v=0$. Clearly
+    $\|0\|_h=0$, therefore $\|\cdot\|_h$ is positive definite. \\ \\
+    Using $[v(x_n) + w(x_n)] = [v(x_n)] + [w(x_n)] \quad \forall v,w \in V_h, n = 0,\ldots,N+1$ we find
+    \begin{align*}
+        \|v+w\|_h &\leq \Big(\sum_{n=0}^{N} (\|\sqrt{c}v'\|_{L^2(I_n)}+\|\sqrt{c}w'\|_{L^2(I_n)})^2 + 
+        \sum_{n=0}^{N+1} (\sqrt{\texttt{a}(x_n)}([v(x_n)] + [w(x_n)]))^2\Big)^{1/2} \\
+        &\leq \|v\|_h + \|w\|_h
+    \end{align*}
+    where in the last inequality we have used the triangle inequality of the euclidian vector norm on $\mathbb{R}^{2N+3}$, with the vector given
+    as 
+    
+    \[
+    \textbf{v} = \big[\|\sqrt{c}v'\|_{L^2(I_0)},\ldots,\|\sqrt{c}v'\|_{L^2(I_N)}, \sqrt{\texttt{a}(x_0)}[v(x_0)],\ldots,\sqrt{\texttt{a}(x_{N+1})}[v(x_{N+1})]\big]^T
+    \]
+    this shows the triangle inequality for $\|\cdot\|_h$ and hence it is a norm.
+\end{proof}
+
+\begin{theorem}
+    For any polynomial degree $r\in \mathbb{N}$ the bilinear form $b$ in (\ref{eq:discrete_var_form_elliptic})
+    is coercive and continuous on $V_h^r(\mathcal{T}_h)$.
+\end{theorem}
+\begin{proof}
+    \begin{proofstep}[coercivity]
+        Let $w\in V_h$. Note that 
+        \begin{equation}
+            b(w,w) = \|w\|_h^2 - 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]
+        \end{equation}
+        To derive the coercivity of $b$ we will estimate the term $2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]$
+        from above using Lemma \ref{lemma:inv_ineq} and additional smaller tools:\\
+        Using the general fact $2y_1y_2 \leq y_1^2 + y_2^2$
+    \end{proofstep}
+\end{proof}
 
 
 
