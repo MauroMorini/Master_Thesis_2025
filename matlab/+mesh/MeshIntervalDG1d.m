@@ -23,7 +23,7 @@ classdef MeshIntervalDG1d < handle
     properties
         nodes
         elements
-        boundary_interface_node_idx
+        boundary_node_idx
         dof
         h_max
         h_min
@@ -63,9 +63,9 @@ classdef MeshIntervalDG1d < handle
             end
             obj = updatePet(obj);
         end
-
+% UPDATE, GET, SET -------------------------------------------------------------------------------------------------------------------------
         function obj = updatePet(obj)
-            % updates connectivity matrix and edge matrix 
+            % updates connectivity matrix and edge matrix and sets nodes
             obj.element_interface_nodes = sort(obj.element_interface_nodes);        % possibly remove sorting
             if obj.element_interface_nodes(1) ~= obj.lower_interval_bound || obj.element_interface_nodes(end) ~= obj.upper_interval_bound
                 error("boundary points of element_interface_nodes don't coincide with properties of class")
@@ -102,15 +102,74 @@ classdef MeshIntervalDG1d < handle
             nodes_matrix_extended = nodes_matrix_extended.';
             obj.nodes = nodes_matrix_extended(:);
             num_nodes = length(obj.nodes);
-            obj.boundary_interface_node_idx = [1, num_nodes];
-            
+            obj.boundary_node_idx = [1, num_nodes];
         end
 
         function [nodes, boundary_interface_node_idx, elements] = getPet(obj)
             nodes = obj.nodes;
             elements = obj.elements;
-            boundary_interface_node_idx = obj.boundary_interface_node_idx;
+            boundary_interface_node_idx = obj.boundary_node_idx;
             return 
+        end
+
+% REFINE ------------------------------------------------------------------------------------------------
+        function obj = refineElementsByFact(obj, elements_to_be_refined_idx, refine_factor)
+            % refines a list of given elments by a factor
+            arguments (Input)
+                obj
+                elements_to_be_refined_idx 
+                refine_factor double = 2
+            end
+            arguments (Output)
+                obj
+            end
+
+            % calculate element sizes of to be refined elements and check hmin condition
+            h_loc_temp = diff(obj.element_interface_nodes);
+            h_loc_temp = h_loc_temp(elements_to_be_refined_idx);
+            h_loc = h_loc_temp/refine_factor;
+            non_refinable_element_idx = find(h_loc < obj.h_min - eps);
+            refIdx = elements_to_be_refined_idx;
+            if ~isempty(non_refinable_element_idx)
+                warning("some elements were to small to be refined: " + non_refinable_element_idx)
+                refIdx(non_refinable_element_idx) = [];
+                h_loc(non_refinable_element_idx) = [];
+            end
+
+            % add aditional faces
+            pLoc = zeros(length(refIdx), refine_factor);
+            pLoc(:,1) = obj.element_interface_nodes(refIdx);
+            for i = 1:(refine_factor-1)
+                pLoc(:,i+1) = pLoc(:,i) + h_loc;
+            end
+            untouched_elements = obj.element_interface_nodes;
+            untouched_elements(refIdx) = [];
+            total_face_nodes = [untouched_elements;pLoc(:)];
+            obj.element_interface_nodes = total_face_nodes;
+        end
+
+        function refinableTIdx = getRefinableElements(obj, refFactor)
+            % returns index of elements which can be refined by the factor
+            % given
+            arguments (Input)
+                obj
+                refFactor double = 2 
+            end
+            arguments (Output)
+                refinableTIdx
+            end
+            D = abs(diff(obj.element_interface_nodes));
+            refinableTIdx = find(D/refFactor >= obj.h_min);
+        end
+
+        function KIdx = findElementAt(obj, x)
+            % finds element containing point x, if x is in two elements it
+            % returns an array
+            % returns index of element
+            assert(obj.lower_interval_bound <= x & x <= obj.upper_interval_bound, "Point x is outside of the domain")
+            K = [obj.element_interface_nodes(obj.elements(:,1)), obj.element_interface_nodes(obj.elements(:,2))];
+            containsX = (K(:,1) <= x & x <= K(:,2)) | (K(:,2) <= x & x <= K(:,1));
+            KIdx = find(containsX);
         end
 
         function f = plotMesh(obj, f)
@@ -120,7 +179,7 @@ classdef MeshIntervalDG1d < handle
             figure(f);            
             plot(obj.element_interface_nodes,0,'b.','MarkerSize',10)
             hold on
-            plot(obj.element_interface_nodes(obj.boundary_interface_node_idx), [0,0], 'rx','MarkerSize',10)
+            plot(obj.nodes(obj.boundary_node_idx), [0,0], 'rx','MarkerSize',10)
             hold off
         end
     end
