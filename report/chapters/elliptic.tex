@@ -1,4 +1,10 @@
-First we will consider a time-independent elliptic problem. The derivation
+First we will consider a time-independent elliptic problem. Not only is it 
+usefull for initiation to the subsect to first consider a simpler elliptic problem, but it 
+is also an essential preparational step in deriving the SIPG bilinear form for the 
+elliptic part of the hyperbolic problem as well. \\
+The goal of this Chapter is to derive the symmetric interior penalty discontinous Galerkin
+variational formulation and elaborate in detail on the   
+The derivation
 of the bilinear form is inspired by 
 Chapter 1 in \cite{riviere2008} as well as \cite{georgoulis2011Springer} and \cite{grote2006}
 for cross reference.
@@ -45,9 +51,11 @@ of $\Omega$.
 We denote the element length by $h_n = x_{n+1} - x_{n}$ for $n=0,\ldots,N$ and the global meshsize by
 $h = \max_{n} h_n$.
 Next we define the discontinuous finite element space
+\begin{tcolorbox}[mythmstyle, colback=green!10!white]
 \begin{equation}
     V_h^r(\mathcal{T}_h) = \{v \in L^2(\Omega) |\, v|_{I_n} \in \mathcal{P}^r(I_n) \} 
 \end{equation}
+\end{tcolorbox}
 where $\mathcal{P}^r(I_n)$ denotes the space of polynomials $p:I_n \to \mathbb{R}$ with $\deg(p) = r$
 for $r \in \mathbb{N}$. When the context allows it, we will denote the
 finite element space with just $V_h$ for simplicity. 
@@ -148,14 +156,17 @@ Let $\sigma > 0$ constant, we define:
         h_n, &n\in \{0, N+1\}
     \end{cases}
 \end{equation*}
-with this we define our penalization parameter 
+with this we define our penalization parameter
+\begin{tcolorbox}[mythmstyle, colback=green!10!white]
 \begin{equation}
     \label{def:penalization_function}
     \texttt{a}_n := \frac{\sigma \texttt{c}_n}{\texttt{h}_n} > 0 \qquad \forall n=0\ldots,N+1  
 \end{equation}
+\end{tcolorbox}
 Similarly to Step 1 we can now add the term $\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]$
 on both sides of (\ref{eq:elliptic_sipg_var_form_incomplete}) and get the final
 \textit{discrete} SIPG variational formulation.\\
+\begin{tcolorbox}[mythmstyle, colback=green!10!white]
 Find $u_h \in V_h$ such that:
 \begin{equation}
     \label{eq:discrete_var_form_elliptic}
@@ -169,6 +180,7 @@ where
     \ell(v) &= (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
     + \texttt{a}_{N+1}g_1v(x_{N+1}) + \texttt{a}_0 g_0v(x_{0})
 \end{align*}
+\end{tcolorbox}
 
 %---Boundary Conditions----------------------------------------------------------
 \section{Boundary Conditions}
