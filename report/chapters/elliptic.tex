@@ -93,7 +93,7 @@ and integrate by parts locally
 \begin{equation*}
     \int_{x_n}^{x_{n+1}} fv\, \text{d}x = -\int_{x_n}^{x_{n+1}} (cu')'\, \text{d}x 
     = \int_{x_n}^{x_{n+1}} cu'v'\, \text{d}x 
-    - \left. cu'v\right|_{x_n}^{x_{n+1}} \qquad \forall n=0,\ldots,N
+    -  cu'v\Big|_{x_n}^{x_{n+1}} \qquad \forall n=0,\ldots,N
 \end{equation*}
 then sum over all elements
 \begin{equation}
@@ -101,7 +101,7 @@ then sum over all elements
     (f,v)_{L^2(\Omega)} = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
     -\sum_{n=0}^{N+1} [c(x_n)u'(x_n)v(x_n)]
 \end{equation}
-where we have used that $\sum_{n=0}^N \left. w \right|_{x_n}^{x_{n+1}} = w(x_{N+1}^-) - 
+where we have used that $\sum_{n=0}^N  w \Big|_{x_n}^{x_{n+1}} = w(x_{N+1}^-) - 
 w(x_{N}^+) + w(x_{N}^-) - \cdots - w(x_1^+) + w(x_1^-) - w(x_0^+) = \sum_{n=0}^{N+1} [w(x_n)]$ for any piece-wise continuous function $w$.
 \\
 By our construction are $c, u'$ continuous on $\Omega$, this means 
@@ -136,13 +136,13 @@ minimize discontinuous behaviors. Technically speaking this penalization term
 will guarantee coercivity of the bilinear form. \\
 Let $\sigma > 0$ constant, we define:
 \begin{equation*}
-    \texttt{c}(x_n) := 
+    \texttt{c}_n := 
     \begin{cases}
         \max(c(x_n^+), c(x_n^-)), &n=1,\ldots,N \\
         c(x_n^+), &n=0 \\
         c(x_n^-), &n=N+1
     \end{cases},
-    \qquad \texttt{h}(x_n) :=
+    \qquad \texttt{h}_n :=
     \begin{cases}
         \min(h_n, h_{n-1}), &n=1,\ldots,N \\
         h_n, &n\in \{0, N+1\}
@@ -151,23 +151,23 @@ Let $\sigma > 0$ constant, we define:
 with this we define our penalization parameter 
 \begin{equation}
     \label{def:penalization_function}
-    \texttt{a}(x_n) := \frac{\sigma \texttt{c}(x_n)}{\texttt{h}(x_n)} > 0 \qquad \forall n=0\ldots,N+1  
+    \texttt{a}_n := \frac{\sigma \texttt{c}_n}{\texttt{h}_n} > 0 \qquad \forall n=0\ldots,N+1  
 \end{equation}
-Similarly to Step 1 we can now add the term $\sum_{n=0}^{N+1} \texttt{a}(x_n)[u(x_n)][v(x_n)]$
+Similarly to Step 1 we can now add the term $\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]$
 on both sides of (\ref{eq:elliptic_sipg_var_form_incomplete}) and get the final
 \textit{discrete} SIPG variational formulation.\\
 Find $u_h \in V_h$ such that:
 \begin{equation}
     \label{eq:discrete_var_form_elliptic}
-    b(u_h, v) = \ell(v), \qquad \forall v\in V_h
+    b_h(u_h, v) = \ell(v), \qquad \forall v\in V_h
 \end{equation}
 where
 \begin{align*}
-    b(u,v) &= \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
+    b_h(u,v) &= \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
     -\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
-    +\sum_{n=0}^{N+1} \texttt{a}(x_n)[u(x_n)][v(x_n)] \\
+    +\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)] \\
     \ell(v) &= (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
-    + \texttt{a}(x_{N+1})g_1v(x_{N+1}) + \texttt{a}(x_{0})g_0v(x_{0})
+    + \texttt{a}_{N+1}g_1v(x_{N+1}) + \texttt{a}_0 g_0v(x_{0})
 \end{align*}
 
 %---Boundary Conditions----------------------------------------------------------
@@ -192,14 +192,14 @@ Next let $\{\Phi_0,\ldots,\Phi_M\}$ be a basis of $V_h$, where $M = \dim(V_h)$.
 We can represent the sought Galerkin approximation $u_h = \sum_{j=0}^{M} \alpha_j \Phi_j\in V_h$ for coefficients 
 $\alpha_j \in \mathbb{R}$. Then (\ref{eq:discrete_var_form_elliptic}) is equivalent to:
 \begin{equation*}
-    \sum_{j=0}^{M} \alpha_j b(\Phi_j, \Phi_i) = \ell(\Phi_i) \qquad \forall i=0,\ldots,M
+    \sum_{j=0}^{M} \alpha_j b_h(\Phi_j, \Phi_i) = \ell(\Phi_i) \qquad \forall i=0,\ldots,M
 \end{equation*}
 which corresponds to the system:
 \begin{equation}
     \label{eq:fully_discrete_dg_system_elliptic}
     \textbf{Bu} = \textbf{l}
 \end{equation}
-for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b(\Phi_j, \Phi_i), 
+for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \Phi_i), 
 \textbf{u} \in \mathbb{R}^M, [\textbf{U}]_j = \alpha_j, 
 \textbf{l}\in\mathbb{R}^M, [\textbf{l}]_j = \ell(\Phi_j)$.
 
@@ -231,9 +231,9 @@ Firstly we will recall some basic definitions:
 Since (\ref{eq:discrete_var_form_elliptic}) corresponds to the finite dimensional
 system (\ref{eq:fully_discrete_dg_system_elliptic}) uniqueness and existence of a solution
 are equivalent. 
-The bilinear form $b$ is \textit{symmetric} by construction 
-the goal of this section is to show that $b$ is also \textit{coercive}. 
-From the coercivity of $b$ it will follow that the matrix $B$ in (\ref{eq:fully_discrete_dg_system_elliptic})
+The bilinear form $b_h$ is \textit{symmetric} by construction 
+the goal of this section is to show that $b_h$ is also \textit{coercive}. 
+From the coercivity of $b_h$ it will follow that the matrix $\textbf{B}$ in (\ref{eq:fully_discrete_dg_system_elliptic})
 is positive definite and hence invertible, which means there exists a (unique) solution
 of (\ref{eq:discrete_var_form_elliptic}).
 \begin{lemma}
@@ -266,8 +266,8 @@ We will here rely on a result and proof as presented in \cite{warburtonHesthaven
     space of polynomials of degree $r$ defined on $[a,b]$. \\
     For any $v\in \mathcal{P}^r((a,b))$ we have:
     \begin{enumerate}
-        \item $|v(a)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$ 
-        \item $|v(b)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$
+        \item $\displaystyle |v(a)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$ 
+        \item $\displaystyle |v(b)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$
     \end{enumerate}
 \end{lemma}
 \begin{proof}
@@ -346,9 +346,9 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
     We define the \textbf{energy norm} on $V_h$ by 
     \begin{equation}
         \label{def:energy_norm}
-        \|v\|_h^2 := \sum_{n=0}^{N} \int_{I_n} c(x)v'(x)^2\text{d}x + \sum_{n=0}^{N+1}{\normalfont\texttt{a}}(x_n)[v(x_n)]^2 
+        \|v\|_h^2 := \sum_{n=0}^{N} \int_{I_n} c(x)v'(x)^2\text{d}x + \sum_{n=0}^{N+1}{\normalfont\texttt{a}_n}[v(x_n)]^2 
     \end{equation}
-    where {\normalfont\texttt{a}} denotes the penalization function in (\ref{def:penalization_function}).
+    where {\normalfont\texttt{a}} denotes the penalization term in (\ref{def:penalization_function}).
 \end{definition}
 \begin{lemma}
     $\|\cdot\|_h$ defines a norm on $V_h$.
@@ -364,31 +364,163 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
     Using $[v(x_n) + w(x_n)] = [v(x_n)] + [w(x_n)] \quad \forall v,w \in V_h, n = 0,\ldots,N+1$ we find
     \begin{align*}
         \|v+w\|_h &\leq \Big(\sum_{n=0}^{N} (\|\sqrt{c}v'\|_{L^2(I_n)}+\|\sqrt{c}w'\|_{L^2(I_n)})^2 + 
-        \sum_{n=0}^{N+1} (\sqrt{\texttt{a}(x_n)}([v(x_n)] + [w(x_n)]))^2\Big)^{1/2} \\
+        \sum_{n=0}^{N+1} (\sqrt{\texttt{a}_n}([v(x_n)] + [w(x_n)]))^2\Big)^{1/2} \\
         &\leq \|v\|_h + \|w\|_h
     \end{align*}
     where in the last inequality we have used the triangle inequality of the euclidian vector norm on $\mathbb{R}^{2N+3}$, with the vector given
     as 
     
     \[
-    \textbf{v} = \big[\|\sqrt{c}v'\|_{L^2(I_0)},\ldots,\|\sqrt{c}v'\|_{L^2(I_N)}, \sqrt{\texttt{a}(x_0)}[v(x_0)],\ldots,\sqrt{\texttt{a}(x_{N+1})}[v(x_{N+1})]\big]^T
+    \textbf{v} = \big[\|\sqrt{c}v'\|_{L^2(I_0)},\ldots,\|\sqrt{c}v'\|_{L^2(I_N)}, \sqrt{\texttt{a}_0}[v(x_0)],\ldots,\sqrt{\texttt{a}_{N+1}}[v(x_{N+1})]\big]^T
     \]
     this shows the triangle inequality for $\|\cdot\|_h$ and hence it is a norm.
 \end{proof}
 
 \begin{theorem}
-    For any polynomial degree $r\in \mathbb{N}$ the bilinear form $b$ in (\ref{eq:discrete_var_form_elliptic})
+    For any polynomial degree $r\in \mathbb{N}$ the bilinear form $b_h$ in (\ref{eq:discrete_var_form_elliptic})
     is coercive and continuous on $V_h^r(\mathcal{T}_h)$.
 \end{theorem}
 \begin{proof}
-    \begin{proofstep}[coercivity]
+    \begin{proofstep}[Coercivity]
         Let $w\in V_h$. Note that 
         \begin{equation}
-            b(w,w) = \|w\|_h^2 - 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]
+            \label{eq:coerc_thr_relation_bilin_form_with_norm}
+            b_h(w,w) = \|w\|_h^2 - 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)] 
         \end{equation}
-        To derive the coercivity of $b$ we will estimate the term $2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]$
-        from above using Lemma \ref{lemma:inv_ineq} and additional smaller tools:\\
-        Using the general fact $2y_1y_2 \leq y_1^2 + y_2^2$
+        To derive the coercivity of $b_h$ we will estimate the term $2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]$
+        from above applying Lemma \ref{lemma:inv_ineq} and additional smaller tools:\\
+        Using the general fact $2ab \leq a^2 + b^2, \forall a,b\in\mathbb{R}$ we estimate
+        \begin{align}
+            & 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)] = 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}
+            \Big(\frac{\texttt{a}_n}{2}\Big)^{-1/2} \Big(\frac{\texttt{a}_n}{2}\Big)^{1/2} [w(x_n)]\nonumber \\
+            &\leq 2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n} 
+            + \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \label{eq:2_coerc_thr_first_estimate}
+        \end{align}
+        Recalling $\texttt{a}_n = \sigma \texttt{c}_n\texttt{h}_n^{-1}$ from (\ref{def:penalization_function}) and noting the relations
+        $\texttt{h}_n \leq h_n, \texttt{c}_n^{-1} \leq c(x_n^-)^{-1}, c(x_n^+)^{-1}$ we find
+        \begin{align*}
+            & \texttt{a}_n^{-1} c(x_n^+) \leq \frac{h_n}{\sigma}, \quad \texttt{a}_n^{-1} c(x_n^-) \leq \frac{h_{n-1}}{\sigma}, \quad \forall n=1,\ldots,N \\
+            & \texttt{a}_0^{-1} c(x_0^+) = \frac{h_0}{\sigma} , \quad \texttt{a}_{N+1}^{-1} c(x_{N+1}^-) = \frac{h_{N}}{\sigma}
+        \end{align*}
+        applying this and the usefull inequality $(a+b)^2 \leq 2a^2 + 2b^2$ yields
+        \begin{align}
+            \label{eq:coerc_thr_second_estimate}
+            &2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n} \nonumber \\ 
+            &= 2\sum_{n=1}^{N} \frac{1}{4\texttt{a}_n}
+                \Big( c(x_n^-)w'(x_n^-) + c(x_n^+)w'(x_n^+) \Big)^2 + \frac{2}{\texttt{a}_0} \Big( c(x_0^+)w'(x_0^+) \Big)^2
+                + \frac{2}{\texttt{a}_{N+1}} \Big( c(x_{N+1}^-)w'(x_{N+1}^-) \Big)^2 \nonumber \\
+            &\leq 2\sum_{n=1}^{N} \frac{h_n}{2\sigma}
+                \Big( c(x_n^-)w'(x_n^-)^2 + c(x_n^+)w'(x_n^+)^2 \Big) + \frac{2h_0}{\sigma} c(x_0^+)w'(x_0^+)^2
+                + \frac{2h_{N}}{\sigma} c(x_{N+1}^-)w'(x_{N+1}^-)^2 \nonumber\\
+            &\leq c_{\max}\sum_{n=1}^{N} \frac{h_n}{\sigma}
+                \Big(w'(x_n^-)^2 + w'(x_n^+)^2 \Big) + \frac{2c_{\max}h_0}{\sigma} w'(x_0^+)^2
+                + \frac{2c_{\max}h_{N}}{\sigma} w'(x_{N+1}^-)^2 
+        \end{align}
+        Since $w\in V_h$ is a (broken) polynomial, we can apply Lemma \ref{lemma:inv_ineq} elementwise and find 
+        \begin{equation}
+            \label{eq:coerc_thr_application_inverse_estimate}
+            w'(x_n^+)^2,w'(x_{n+1}^-)^2  \leq \frac{(r+1)^2}{h_n} \|w'\|_{L^2(I_n)}^2 \quad \forall n = 0,\ldots,N
+        \end{equation}
+        By combining (\ref{eq:coerc_thr_second_estimate}), (\ref{eq:coerc_thr_application_inverse_estimate}) and 
+        inserting $1 = c_{\min}c_{\min}^{-1} \leq c(x)c_{\min}^{-1} \quad \forall x\in\Omega$ we find
+        \begin{equation}
+            \label{eq:coerc_thr_last_estimate}
+            2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n} \leq
+            2C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
+        \end{equation}
+        for $\displaystyle C_{\sigma} := \frac{ (r+1)^2 c_{\max} }{\sigma c_{\min}} > 0$. \\ \\
+        Finally putting together (\ref{eq:coerc_thr_relation_bilin_form_with_norm}), (\ref{eq:2_coerc_thr_first_estimate}) and 
+        (\ref{eq:coerc_thr_last_estimate}) yields
+        \begin{align*}
+            b_h(w,w) &\geq \|w\|_h^2 - 2C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
+            - \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber \\ 
+            &= (1 - 2C_{\sigma}) \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2 + \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber \\
+            &\geq \frac{1}{2} \|w\|_h^2
+        \end{align*}
+        for $\sigma \geq \frac{4 (r+1)^2 c_{\max} }{c_{\min}}$, which proves the coercivity
+        of $b_h$ on $V_h$. 
+    \end{proofstep}
+    \\
+    \begin{proofstep}[Continuity]
+        The proof the continuity of $b_h$ uses similar ideas as the coercivity proof. Let 
+        $u,v \in V_h$, by using Cauchy-Schwarz we 
+        immediately get
+        \begin{align}
+            |b_h(u,v)| &\leq \sum_{n=0}^{N} \|\sqrt{c}u'\|_{L^2(I_n)} \|\sqrt{c}v'\|_{L^2(I_n)} 
+            +  \sum_{n=0}^{N+1} \big| \{c(x_n)u'(x_n)\}[v(x_n)] \big| \nonumber \\ 
+            &+\sum_{n=0}^{N+1} \big|\{c(x_n)v'(x_n)\}[u(x_n)]\big|
+            +\sum_{n=0}^{N+1} \texttt{a}_n \big|[u(x_n)][v(x_n)]\big| \nonumber \\
+            &=: T_{\text{ell}} + T_{\text{cons}}^{(u)} + T_{\text{cons}}^{(v)} + T_{\text{penal}}
+            \label{eq:cont_thr_estimate_elliptic_part}            
+        \end{align}
+        The goal is now to estimate the consistency terms $T_{\text{cons}}$ from above by something of the form
+        $ \sum_{n=0}^{N+1} t_n(u) s_n(v) + \sum_{n=0}^{N+1} t_n(v) s_n(u)$, such that together with the terms
+        $T_{\text{ell}}, T_{\text{penal}}$ we can use discrete Cauchy-Schwarz on the sums and hence separate them into
+        a product of the two energy norms $C_{\text{cont}} \|u\|_{h}\|v\|_{h} $ scaled by a positive constant. \\ \\
+        We will show the estimate of $T_{\text{cons}}^{(u)}$, the procedure to estimate $T_{\text{cons}}^{(v)}$ is analogous. \\ 
+        First rewrite
+        \begin{equation}
+            \label{eq:continuity_thr_consistency_term}
+            T_{\text{cons}}^{(u)} = \sum_{n=0}^{N+1} \big| \{c(x_n)u'(x_n)\} \texttt{a}_n^{-1/2}\texttt{a}_n^{1/2} [v(x_n)] \big|
+        \end{equation} 
+        Next again using the definition of $\texttt{a}$ and estimates as in Step 1 we find for interior faces $n = 1,\ldots,N$
+        \begin{equation}
+            \big|\{c(x_n)u'(x_n)\}\big|\texttt{a}_n^{-1/2} 
+            \leq \frac{1}{2} \sqrt{\frac{\texttt{h}_n}{\sigma}} \sqrt{c_{\max}}
+            \left( |u'(x_n^-)| + |u'(x_n^+)| \right) \nonumber
+        \end{equation}
+        and for the boundary faces
+        \begin{equation}
+            \big|\{c(x_0)u'(x_0)\}\big|\texttt{a}_0^{-1/2} 
+            \leq \sqrt{\frac{\texttt{h}_0}{\sigma}} \sqrt{c_{\max}}
+            |u'(x_0^+)|, 
+            \quad \big|\{c(x_{N+1})u'(x_{N+1})\}\big|\texttt{a}_{N+1}^{-1/2} 
+            \leq \sqrt{\frac{\texttt{h}_{N}}{\sigma}} \sqrt{c_{\max}}
+            |u'(x_{N+1}^-)| \nonumber
+        \end{equation}
+        Applying Lemma (\ref{lemma:inv_ineq}) yields
+        \begin{align*}
+            &\big|\{c(x_n)u'(x_n)\}\big|\texttt{a}_n^{-1/2} \leq \frac{\sqrt{C_{\sigma}}}{2}
+            \|\sqrt{c}u'\|_{L^2(I_{n-1})} + \frac{\sqrt{C_{\sigma}}}{2}\|\sqrt{c}u'\|_{L^2(I_{n})}  
+            =: \beta_{n,1}(u) + \beta_{n,2}(u) \quad \text{for } n=1,\ldots,N\\
+            &\big|\{c(x_0)u'(x_0)\}\big|\texttt{a}_0^{-1/2} \leq \sqrt{C_{\sigma}}
+            \|\sqrt{c}u'\|_{L^2(I_{0})} =:\beta_0(u)  \\
+            &\big|\{c(x_{N+1})u'(x_{N+1})\}\big|\texttt{a}_{N+1}^{-1/2} \leq \sqrt{C_{\sigma}}
+            \|\sqrt{c}u'\|_{L^2(I_{N})} =:\beta_{N+1}(u)  \\
+        \end{align*}
+        which we can now plug back into (\ref{eq:continuity_thr_consistency_term}) to get
+        \begin{align}
+            T_{\text{cons}}^{(u)} 
+            \leq \beta_0(u)\gamma_0(v) + \beta_{N+1}(u)\gamma_{N+1}(v)
+            &+ \sum_{n=1}^{N} \beta_{n,1}(u)\gamma_{n} (v)+ \sum_{n=1}^{N} \beta_{n,2}(u)\gamma_n(v)
+        \end{align}
+        for $\displaystyle \gamma_n(v) := \sqrt{\texttt{a}_n}\big|[v(x_n)]\big| \, \forall n=0,\ldots,N+1$.
+        By furthermore denoting $ \alpha_n(u):= \|\sqrt{c}u'\|_{L^2(I_n)}$
+        we can represent
+
+        \begin{equation*}
+            T_{\text{ell}} = \sum_{n=0}^{N}\alpha_n(u)\alpha_n(v),\qquad 
+            T_{\text{penal}} = \sum_{n=0}^{N+1}\gamma_n(u)\gamma_n(v)
+        \end{equation*}
+    and in total for 
+    \begin{align*}
+        &\textbf{u}:= [ \alpha_0(u),\ldots,\alpha_{N}(u),\beta_0(u), \beta_{N+1}(u),\beta_{1,1}(u),\ldots,\beta_{N,1}(u), \beta_{1,2}(u),\ldots,\beta_{N,2}(u), \\
+        & \qquad \quad \gamma_{0}(u), \gamma_{N+1}(u), \gamma_{1}(u),\ldots,\gamma_{N}(u), \gamma_{1}(u),\ldots,\gamma_{N}(u),
+        \gamma_0(u),\ldots,\gamma_{N+1}(u)]^T \in \mathbb{R}^{4N + 7} \\
+        &\textbf{v}:= [ \alpha_0(v),\ldots,\alpha_{N}(v), \gamma_{0}(v), \gamma_{N+1}(v), \gamma_{1}(v),\ldots,\gamma_{N}(v),
+        \gamma_{1}(v),\ldots,\gamma_{N}(v), \\
+        &\qquad \quad \beta_0(v), \beta_{N+1}(v),\beta_{1,1}(v),\ldots,\beta_{N,1}(v), \beta_{1,2}(v),\ldots,\beta_{N,2}(v), \gamma_{0}(v),\ldots,\gamma_{N+1}(v)]^T \in \mathbb{R}^{4N + 7}
+    \end{align*}
+    we get 
+    \begin{align*}
+        & T_{\text{ell}} + T_{\text{cons}}^{(u)} + T_{\text{cons}}^{(v)} + T_{\text{penal}} \leq \textbf{u}^T \textbf{v}
+        \leq |\textbf{u}|\, |\textbf{v}| \\
+        & \leq \Big( \sum_{n=0}^{N}(1+2C_{\sigma}) \|\sqrt{c}u'\|_{L^2(I_n)}^2 + 2 \sum_{n=0}^{N+1} \texttt{a}_n [u(x_n)]^2\Big)
+        \Big( \sum_{n=0}^{N}(1+2C_{\sigma}) \|\sqrt{c}v'\|_{L^2(I_n)}^2 + 2 \sum_{n=0}^{N+1} \texttt{a}_n [v(x_n)]^2\Big) \\
+        & \leq C_{\text{cont}}\|u\|_h \|v\|_h
+    \end{align*}
+    where $\displaystyle C_{\text{cont}} := 4(1+2C_{\sigma})^2$. This last estimate together with
+    \ref{eq:cont_thr_estimate_elliptic_part} proves the continuity of $b_h$.
     \end{proofstep}
 \end{proof}
 

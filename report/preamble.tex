@@ -35,14 +35,14 @@
 
 % --------------------------------------------------------
 % Apply colors to each environment
-% \tcolorboxenvironment{theorem}{mythmstyle, colback=red!10!white}
-% \tcolorboxenvironment{lemma}{mythmstyle, colback=red!10!white}
-% \tcolorboxenvironment{definition}{mythmstyle, colback=green!10!white}
-% \tcolorboxenvironment{corollary}{mythmstyle, colback=red!10!white}
+\tcolorboxenvironment{theorem}{mythmstyle, colback=red!10!white}
+\tcolorboxenvironment{lemma}{mythmstyle, colback=red!10!white}
+\tcolorboxenvironment{definition}{mythmstyle, colback=green!10!white}
+\tcolorboxenvironment{corollary}{mythmstyle, colback=red!10!white}
 
 % --------------------------------------------------------
 % Proof step environment
-\newcounter{proofstep}
+\newcounter{proofstep}[theorem]
 \newenvironment{proofstep}[1][]{
   \refstepcounter{proofstep}
   \par\noindent\textbf{Step \theproofstep} (\textit{#1})\textbf{.} \par\nobreak
