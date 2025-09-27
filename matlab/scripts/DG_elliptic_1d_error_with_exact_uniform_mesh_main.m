@@ -9,7 +9,7 @@ import fem1d.*
 c_handle_idx = 2;
 u_exact_handle_idx = 6;
 sigma = 5;
-dof = 5;
+dof = 3;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -44,8 +44,9 @@ else
 end
 
 % initialize parameters and preallocate
-H_meshsizes = 2.^-(2:10);
+H_meshsizes = 2.^-(2:9);
 errors = zeros(1, length(H_meshsizes));
+condition_B = zeros(1,length(H_meshsizes));
 
 for i = 1:length(H_meshsizes)
     % initialize mesh
@@ -68,7 +69,7 @@ for i = 1:length(H_meshsizes)
     
     % solve system
     uh = B\rhs_vector;
-    disp("cond(B) is: " + condest(B));
+    condition_B(i) = condest(B);
 
     % calculate errors 
     [errors(1,i),errors(2,i)] = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
@@ -81,6 +82,13 @@ plot(nodes, uh, nodes, u_exact_handle(nodes))
 xlabel("x")
 ylabel("y")
 legend("uh", "u\_exact")
+
+% plot condition
+figure;
+loglog(H_meshsizes, H_meshsizes.^(-2), '--', H_meshsizes, condition_B);
+xlabel('Step Size (H)');
+ylabel('Condition of B');
+legend("h^{-2}", "cond(B)")
 
 % plot errors
 figure;
