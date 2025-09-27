@@ -70,7 +70,7 @@ classdef MeshIntervalDG1d < handle
             if obj.element_interface_nodes(1) ~= obj.lower_interval_bound || obj.element_interface_nodes(end) ~= obj.upper_interval_bound
                 error("boundary points of element_interface_nodes don't coincide with properties of class")
             end
-            % check that Hmin and Hmax are maintained
+            % check that h_min and h_max are maintained
             D = abs(diff(obj.element_interface_nodes));
             corrSize = all(obj.h_min-10*eps <= D & D <= obj.h_max+10*eps);
             if ~corrSize
@@ -117,14 +117,14 @@ classdef MeshIntervalDG1d < handle
             % refines a list of given elments by a factor
             arguments (Input)
                 obj
-                elements_to_be_refined_idx 
+                elements_to_be_refined_idx      % (N, 1) index vector (could also boolean vector be) N<=num_el
                 refine_factor double = 2
             end
             arguments (Output)
                 obj
             end
 
-            % calculate element sizes of to be refined elements and check hmin condition
+            % calculate element sizes of to be refined elements and check h_min condition
             h_loc_temp = diff(obj.element_interface_nodes);
             h_loc_temp = h_loc_temp(elements_to_be_refined_idx);
             h_loc = h_loc_temp/refine_factor;
@@ -172,6 +172,106 @@ classdef MeshIntervalDG1d < handle
             KIdx = find(containsX);
         end
 
+% CREATE MESH ROUTINES --------------------------------------------------------------------------------------------------
+        function obj = createRngMesh(obj, seed)
+            % Function creates a pseudorandom mesh with random inner points for
+            % a given seed
+            arguments (Input)
+                obj
+                seed double = 1 
+            end
+            arguments (Output)
+                obj
+            end
+            r = rng(seed, "twister");
+            h = rand(1);
+            h = obj.h_min*h + obj.h_max*(1-h);
+            pLoc = [obj.lower_interval_bound];
+            i = 1;
+            while pLoc(i)+h < obj.upper_interval_bound - obj.h_max
+                i = i + 1;
+                h = rand(1);
+                h = obj.h_min*h + obj.h_max*(1-h);
+                pLoc(i) = pLoc(i-1)+h;
+            end
+            while pLoc(i)+obj.h_max/2 < obj.upper_interval_bound-obj.h_min
+                i = i+1;
+                pLoc(i) = pLoc(i-1)+obj.h_max/2;
+            end
+            obj.element_interface_nodes = [pLoc'; obj.upper_interval_bound];
+        end
+
+        function obj = buildResonatorMesh(obj, resonators_mat, stepsizes_vector)
+            % build a mesh with uniform stepsizes except some intervalls coresponding to resonators
+            % which are more refined
+            arguments (Input)
+                obj
+                resonators_mat (:,2)        % (num_res, 2) matrix which contains the intervals which correspond with a resonator 
+                                            % each row has to be sorted from small to big
+                stepsizes_vector (1,2)      % stepsize vector which has the bigger stepsize (background) in the first entry and 
+                                            % the resonator stepsize in the second entry (will be sorted though)
+            end
+            arguments (Output)
+                obj
+            end
+
+            if isempty(resonators_mat)
+                return
+            end
+
+            % check that inputs are admissible
+            if any(resonators_mat(:,1) >=  resonators_mat(:,2))
+                error("the resonator pairs are not arranged properly, they should be of the form: resonators_mat = [r1, R1; r2, R2;...] where ri < Ri")
+            end
+            if max(resonators_mat, [], 'all') > obj.upper_interval_bound || min(resonators_mat, [], 'all') < obj.lower_interval_bound
+                error("a resonator is place outside of the domain")
+            end
+            stepsizes_vector = sort(stepsizes_vector,'descend');
+            h_background = stepsizes_vector(1);
+            h_resonator = stepsizes_vector(2);
+            if  h_resonator <= obj.h_min || h_background > obj.h_max
+                error("the stepsizes are either too big or too small in comparison to h_max, h_min")
+            end
+            if h_resonator >= min(abs(resonators_mat(:,1)- resonators_mat(:,2)))
+                error("the resonator stepsize is bigger or equal the length of one of thhe resonators")
+            end
+
+            % sort resonators 
+            resonators_mat_sorted = resonators_mat;
+            [resonators_mat_sorted(:, 1), sort_idx] = sort(resonators_mat(:,1));
+            resonators_mat_sorted(:,2) = resonators_mat(sort_idx, 2);
+
+            % build resonator mesh by setting face nodes
+            last_node_in_chain = obj.lower_interval_bound;
+            local_faces = [];
+            for resonator_idx = 1:size(resonators_mat_sorted,1)
+
+                % build up to lower resonator boundary node
+                resonators = resonators_mat_sorted(resonator_idx, :);
+                local_faces = [local_faces, last_node_in_chain:h_background:resonators(1)-obj.h_min];
+                while abs(resonators(1) - local_faces(end-1)) > h_background
+                    local_faces = [local_faces, (local_faces(end)+resonators(1))/2];
+                end
+                last_node_in_chain = resonators(1);
+
+                % build up to upper resonator boundary node
+                local_faces = [local_faces, last_node_in_chain:h_resonator:resonators(2)-obj.h_min];
+                while abs(resonators(2) - local_faces(end)) > h_resonator
+                    local_faces = [local_faces, (local_faces(end)+resonators(2))/2];
+                end          
+                last_node_in_chain = resonators(2);    
+            end
+
+            % build up to upper boundary node
+            local_faces = [local_faces, last_node_in_chain:h_background:obj.upper_interval_bound-obj.h_min];
+            while abs(obj.upper_interval_bound - local_faces(end)) > h_background
+                local_faces = [local_faces, (local_faces(end)+obj.upper_interval_bound)/2];
+            end
+
+            obj.element_interface_nodes = [local_faces';obj.upper_interval_bound];
+        end
+
+% VISUALIZE MESH ------------------------------------------------------------------------------------------------------
         function f = plotMesh(obj, f)
             if nargin == 1
                 f = figure;

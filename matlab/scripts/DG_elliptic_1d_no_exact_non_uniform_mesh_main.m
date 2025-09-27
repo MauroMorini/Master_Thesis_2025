@@ -6,17 +6,17 @@ import mesh.*
 import fem1d.*
 
 % Settings
-c_handle_idx = 1;
-u_exact_handle_idx = 6;
+c_handle_idx = 2;
+u_exact_handle_idx = 10;
 sigma = 5;
-dof = 2;
+dof = 3;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
 syms x
 cell_exact_fun = {
     x.^2;                   % polynomial
-    x.^3;                   % polynomial
+    x.^9;                   % polynomial
     sin(pi*x);              % sine
     cos(pi*x);              % cosine
     x.^2 .* (1-x);          % cubic-like
@@ -44,19 +44,22 @@ else
 end
 
 % initialize parameters and preallocate
-num_refinement_iterations = 5;
+refine_factor = 2;
+num_refinement_iterations = 10;
 boundary_nodes = [0,1];
-initial_meshsize = abs(boundary_nodes(1) - boundary_nodes(2));
-errors = zeros(1, length(H_meshsizes));
+initial_meshsize = abs(boundary_nodes(1) - boundary_nodes(2))/3;
+errors = zeros(1, num_refinement_iterations);
 
 % create initial mesh
-Mesh = mesh.MeshIntervalDG1d(boundary_nodes, [initial_meshsize, initial_meshsize/100]);
+H_meshsizes = zeros(1,num_refinement_iterations); 
+h = initial_meshsize/2;
+H_meshsizes(1) = h;
+Mesh = mesh.MeshIntervalDG1d(boundary_nodes, [h, h/100]);
 Mesh.dof = dof;
+Mesh.buildResonatorMesh([0.7,0.85; 0.3, 0.5], [h, h/10]);
+for i = 1:num_refinement_iterations
 
-for i = 1:length(H_meshsizes)
-
-    % refine mesh
-    
+    % update mesh
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 
@@ -78,6 +81,14 @@ for i = 1:length(H_meshsizes)
     % calculate errors 
     [errors(1,i),errors(2,i)] = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
     disp("calculated uh for h = " + h)
+
+    % refine mesh
+    h = h/refine_factor;
+    H_meshsizes(i) = h;
+    Mesh.h_min = Mesh.h_min/refine_factor;
+    refine_idx = true(size(elements, 1),1);
+    Mesh.refineElementsByFact(refine_idx, refine_factor);
+    Mesh.h_max = Mesh.h_max/refine_factor;
 end
 
 % plot solution
