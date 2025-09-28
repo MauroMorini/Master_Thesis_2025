@@ -1,9 +1,16 @@
-First we will consider a time-independent elliptic problem. Not only is it 
-usefull for initiation to the subsect to first consider a simpler elliptic problem, but it 
+First we consider a time-independent elliptic problem. Not only is it 
+useful for initiation to the subject to first consider a simpler elliptic problem, but it 
 is also an essential preparational step in deriving the SIPG bilinear form for the 
-elliptic part of the hyperbolic problem as well. \\
-The goal of this Chapter is to derive the symmetric interior penalty discontinous Galerkin
-variational formulation and elaborate in detail on the   
+elliptic part of the hyperbolic problem as well.
+\\
+The goal of this chapter is to build all the necessary theoretical and practical 
+tools to solve a given elliptic problem 
+numerically and then experimentally test the method for different scenarios. 
+We will define the necessary notation and derive
+the SIPG variational formulation as well as in detail describe further implementation steps as 
+for example what basis of the finite element space we chose and how to derive local matrices. 
+Finally this chapter will also include some well established theoretical results in 
+the context of discontinuous Galerkin methods.
 The derivation
 of the bilinear form is inspired by 
 Chapter 1 in \cite{riviere2008} as well as \cite{georgoulis2011Springer} and \cite{grote2006}
@@ -46,8 +53,8 @@ denotes the $L^2$-inner product.
 
 %---Discretization---------------------------------------------------------
 \section{Discretization}
-Let $0=x_0 < \cdots < x_{N+1} = 1$, $I_n = (x_n, x_{n+1})$ for $n = 0,\ldots,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ a partition
-of $\Omega$.
+Let $0=x_0 < \cdots < x_{N+1} = 1$ be the mesh faces, $I_n = (x_n, x_{n+1})$ for $n = 0,\ldots,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ a partition
+of $\Omega$ for some fixed $N\in \mathbb{N}$.
 We denote the element length by $h_n = x_{n+1} - x_{n}$ for $n=0,\ldots,N$ and the global meshsize by
 $h = \max_{n} h_n$.
 Next we define the discontinuous finite element space
@@ -56,7 +63,7 @@ Next we define the discontinuous finite element space
     V_h^r(\mathcal{T}_h) = \{v \in L^2(\Omega) |\, v|_{I_n} \in \mathcal{P}^r(I_n) \} 
 \end{equation}
 \end{tcolorbox}
-where $\mathcal{P}^r(I_n)$ denotes the space of polynomials $p:I_n \to \mathbb{R}$ with $\deg(p) = r$
+where $\mathcal{P}^r(I_n)$ denotes the space of polynomials $p:I_n \to \mathbb{R}$ of degree $r$
 for $r \in \mathbb{N}$. When the context allows it, we will denote the
 finite element space with just $V_h$ for simplicity. 
 $V_h$ is our final approximation space in which the numerical solution
@@ -125,8 +132,8 @@ and
 To derive the final variational form we will now have to add two additional terms
 to (\ref{eq:elliptic_sipg_var_form_incomplete}): \\
 \textbf{Step 1:} Firstly we need to symmetrize our currently non-symmetrical right hand side
-which will correspond to the SIPG bilinear form.
-For that we subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[v(x_n)]$ on both sides of
+which will correspond to the SIPG bilinear form. To do so
+we subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[u(x_n)]$ on both sides of
 (\ref{eq:elliptic_sipg_var_form_incomplete}):
 \begin{align*}
     &(f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+) \\
@@ -136,12 +143,12 @@ For that we subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[v(x_n)]$ on both sides 
 note that on the left hand side of the equation we have applied (\ref{eq:id_2_u_jump_zero})
 for the interior node contributions of the sum (which therefore vanish), and the boundary condition (\ref{eq:elliptic_pde_bc}) 
 ensuring the left hand side to be soley dependent on $v$.\\
-\textbf{Step 2:} The bilinear form we seek to create will be defined on $V_h\times V_h$
+\textbf{Step 2:} The bilinear form we seek to create will (for now) be defined on $V_h\times V_h$
 meaning it will intake discontinuous functions. In particular the numerical
 solution will be a discontinuous function wheras the exact solution is continuous.
 To counterweigh this discrepancy we need to integrate a penalization mechanism, seeking to 
 minimize discontinuous behaviors. Technically speaking this penalization term 
-will guarantee coercivity of the bilinear form. \\
+will guarantee coercivity of the bilinear form (see section \ref{sec:existence_uniqueness_elliptic_discrete_problem}). \\
 Let $\sigma > 0$ constant, we define:
 \begin{equation*}
     \texttt{c}_n := 
@@ -178,13 +185,14 @@ where
     -\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
     +\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)] \\
     \ell(v) &= (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
-    + \texttt{a}_{N+1}g_1v(x_{N+1}) + \texttt{a}_0 g_0v(x_{0})
+    + \texttt{a}_{N+1}g_1v(x_{N+1}^-) + \texttt{a}_0 g_0v(x_{0}^+) 
 \end{align*}
+for $u,v\in V_h$.
 \end{tcolorbox}
 
 %---Boundary Conditions----------------------------------------------------------
 \section{Boundary Conditions}
-By subtracting the term $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[v(x_n)]$ on both sides
+By adding the terms $-\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[u(x_n)], \sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]$ on both sides
 of (\ref{eq:elliptic_sipg_var_form_incomplete}) we \textit{weakly} imposed the Dirichlet
 boundary conditions into the variational form. This stands in contrast to how boundary 
 conditions are usually imposed in continuous FEM. Indeed one could also impose them strongly,
@@ -194,6 +202,8 @@ meaning we could define
 \end{equation*}
 but this soley as a side note, we will continue to work with purely weakly imposed 
 boundary conditions.  
+
+%% TODO: Neumann b.c.
 
 %---Matrix-Vector System---------------------------------------------------------
 \section{Matrix-Vector System}
@@ -219,6 +229,7 @@ for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \P
 \section{Basis of Finite Element Space}
 %---Existence-------------------------------------------------------------------------
 \section{Existence of Discrete Solution}
+\label{sec:existence_uniqueness_elliptic_discrete_problem}
 Firstly we will recall some basic definitions:
 \begin{definition} Let $V$ be a normed vector space and $b:V\times V \to \mathbb{R}$
     be a bilinear form.
