@@ -10,7 +10,7 @@ import fem1d.*
 c_handle_idx = 2;
 u_exact_handle_idx = 10;
 sigma = 10;
-dof = 3;
+dof = 2;
 num_refinement_iterations = 10;
 
 % define function handles (real solution)   
@@ -80,7 +80,7 @@ for i = 1:num_refinement_iterations
     condition_B(i) = condest(B);
 
     % calculate errors 
-    [errors(1,i),errors(2,i)] = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
+    [errors(1,i),errors(2,i)] = fem1d.errors1DBetweenFemSol(nodes, elements, uh, u_exact_vals);
     disp("calculated uh for h = " + Mesh.h_max)
 
     % refine mesh
