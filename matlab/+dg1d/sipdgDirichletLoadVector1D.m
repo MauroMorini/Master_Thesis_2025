@@ -11,7 +11,6 @@ function rhs = sipdgDirichletLoadVector1D(nodes, elements, f_vals, c_vals, g_val
     end
     arguments (Output)
         rhs             % (num_nodes, 1) full rhs vector for sipdg
-
     end
 
     load_vector = fem1d.loadVector1D(nodes, elements, f_vals);

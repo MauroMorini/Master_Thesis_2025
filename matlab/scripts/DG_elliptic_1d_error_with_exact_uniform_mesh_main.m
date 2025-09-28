@@ -8,7 +8,7 @@ import fem1d.*
 % Settings
 c_handle_idx = 2;
 u_exact_handle_idx = 6;
-sigma = 5;
+sigma = 10;
 dof = 3;
 
 % define function handles (real solution)   
@@ -44,7 +44,7 @@ else
 end
 
 % initialize parameters and preallocate
-H_meshsizes = 2.^-(2:9);
+H_meshsizes = 2.^-(2:11);
 errors = zeros(1, length(H_meshsizes));
 condition_B = zeros(1,length(H_meshsizes));
 

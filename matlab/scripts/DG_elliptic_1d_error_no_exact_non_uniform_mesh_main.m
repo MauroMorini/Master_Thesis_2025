@@ -1,5 +1,5 @@
 % Solves elliptic problem without exact solution and with non uniform mesh using SIPG 
-% approximates errors using another numerical soluution
+% approximates errors using another numerical solution
 clc;clear;close all;
 
 % Imports
@@ -8,7 +8,7 @@ import fem1d.*
 
 % Settings
 c_handle_idx = 2;
-u_exact_handle_idx = 10;
+u_exact_handle_idx = 4;
 sigma = 10;
 dof = 2;
 num_refinement_iterations = 10;
@@ -52,6 +52,9 @@ initial_meshsize = abs(boundary_nodes(1) - boundary_nodes(2))/3;
 errors = zeros(1, num_refinement_iterations);
 condition_B = zeros(1,num_refinement_iterations);
 
+% set boundary conditions
+boundary_cond = struct("values", [-du_exact_handle(boundary_nodes(1)), u_exact_handle(1)], "lower_boundary_type", "neumann", "upper_boundary_type", "dirichlet");
+
 % create initial mesh
 H_meshsizes = zeros(1,num_refinement_iterations); 
 H_meshsizes(1) = initial_meshsize;
@@ -77,6 +80,8 @@ for i = 1:num_refinement_iterations
     
     % solve system
     uh = B\rhs_vector;
+
+    [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);
 
     % calculate errors 

@@ -31,6 +31,8 @@ classdef MeshIntervalDG1d < handle
         upper_interval_bound
         element_interface_nodes
         face_node_to_element_map
+        lower_boundary_element_idx
+        upper_boundary_element_idx
     end
 
     methods
@@ -87,6 +89,10 @@ classdef MeshIntervalDG1d < handle
 
             % face_node_to_element_map
             obj.face_node_to_element_map = [NaN, 1; (1:N-2).', (2:N-1).'; N-1, NaN];
+            
+            % find boundary element indices
+            obj.lower_boundary_element_idx = 1;
+            obj.upper_boundary_element_idx = size(obj.elements, 1);
         end
 
         function obj = setNodes(obj)
@@ -112,9 +118,14 @@ classdef MeshIntervalDG1d < handle
             return 
         end
 
+        function[lower_boundary_element_idx, upper_boundary_element_idx] = getBoundaryElementIdx(obj)
+            lower_boundary_element_idx = obj.lower_boundary_element_idx;
+            upper_boundary_element_idx = obj.upper_boundary_element_idx;
+        end
+
 % REFINE ------------------------------------------------------------------------------------------------
         function obj = refineElementsByFact(obj, elements_to_be_refined_idx, refine_factor)
-            % refines a list of given elments by a factor
+            % refines a list of given elements by a factor
             arguments (Input)
                 obj
                 elements_to_be_refined_idx      % (N, 1) index vector (could also boolean vector be) N<=num_el

@@ -1,4 +1,4 @@
-function dirichlet_vect = dirichletbcVector1D(nodes, elements, c_vals, g_vals, sigma)
+function neumann_vect = neumannbcVector1D(nodes, elements, c_vals, g_vals)
     % this method assembles the rhs dirichlet vector of the SIP-DG method in 1d
     % (purely boundary conditions, no load).
     % this means all the boundary values of the additionally introduced terms
@@ -9,10 +9,9 @@ function dirichlet_vect = dirichletbcVector1D(nodes, elements, c_vals, g_vals, s
         elements        % (num_el, dof) connectivity (element index) matrix 
         c_vals          % (num_nodes,1) (elliptic inner function)
         g_vals          % (num_nodes,1)  matrix of the b.c.
-        sigma           % scalar penalty coefficient
     end
     arguments (Output)
-        dirichlet_vect  % (num_nodes, 1) boundary condition rhs vector
+        neumann_vect  % (num_nodes, 1) boundary condition rhs vector
     end
 
     % initializations 
@@ -31,13 +30,13 @@ function dirichlet_vect = dirichletbcVector1D(nodes, elements, c_vals, g_vals, s
     lower_boundary_element_idx = 1;
     h = abs(nodes(elements(lower_boundary_element_idx,end))-nodes(elements(lower_boundary_element_idx,1)));
     triplet_list_rows(1:dof) = elements(lower_boundary_element_idx,:).';
-    triplet_list_entries(1:dof) = c_vals(elements(lower_boundary_element_idx,1))/h*g_vals(elements(lower_boundary_element_idx,1))*(sigma*phi_val(:,1) + dphi_val(:,1)*(2));
+    triplet_list_entries(1:dof) = c_vals(elements(lower_boundary_element_idx,1))*g_vals(elements(lower_boundary_element_idx,1))*(phi_val(:,1));
 
     % upper boundary face contribution     
     upper_boundary_element_idx = size(elements,1);
     h = abs(nodes(elements(upper_boundary_element_idx,end))-nodes(elements(upper_boundary_element_idx,1)));
     triplet_list_rows(dof+1:end) = elements(upper_boundary_element_idx,:).';
-    triplet_list_entries(dof+1:end) = c_vals(elements(upper_boundary_element_idx,end))/h*g_vals(elements(upper_boundary_element_idx,end))*(sigma*phi_val(:,end) - dphi_val(:,end)*(2));
+    triplet_list_entries(dof+1:end) = c_vals(elements(upper_boundary_element_idx,end))*g_vals(elements(upper_boundary_element_idx,end))*(-phi_val(:,end)); % note here the signs are flipped because g = n*du
 
-    dirichlet_vect = sparse(triplet_list_rows, 1, triplet_list_entries, num_nodes, 1);
+    neumann_vect = sparse(triplet_list_rows, 1, triplet_list_entries, num_nodes, 1);
 end
