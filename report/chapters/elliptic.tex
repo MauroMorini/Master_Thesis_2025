@@ -480,11 +480,11 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
             &= 2\sum_{n=1}^{N} \frac{1}{4\texttt{a}_n}
                 \Big( c(x_n^-)w'(x_n^-) + c(x_n^+)w'(x_n^+) \Big)^2 + \frac{2}{\texttt{a}_0} \Big( c(x_0^+)w'(x_0^+) \Big)^2
                 + \frac{2}{\texttt{a}_{N+1}} \Big( c(x_{N+1}^-)w'(x_{N+1}^-) \Big)^2 \nonumber \\
-            &\leq 2\sum_{n=1}^{N} \frac{h_n}{2\sigma}
-                \Big( c(x_n^-)w'(x_n^-)^2 + c(x_n^+)w'(x_n^+)^2 \Big) + \frac{2h_0}{\sigma} c(x_0^+)w'(x_0^+)^2
+            &\leq 2\sum_{n=1}^{N} \frac{1}{2\sigma}
+                \Big( h_{n-1}c(x_n^-)w'(x_n^-)^2 + h_{n}c(x_n^+)w'(x_n^+)^2 \Big) + \frac{2h_0}{\sigma} c(x_0^+)w'(x_0^+)^2
                 + \frac{2h_{N}}{\sigma} c(x_{N+1}^-)w'(x_{N+1}^-)^2 \nonumber\\
-            &\leq c_{\max}\sum_{n=1}^{N} \frac{h_n}{\sigma}
-                \Big(w'(x_n^-)^2 + w'(x_n^+)^2 \Big) + \frac{2c_{\max}h_0}{\sigma} w'(x_0^+)^2
+            &\leq \frac{c_{\max}}{\sigma}\sum_{n=1}^{N} 
+                \Big(h_{n-1}w'(x_n^-)^2 + h_{n}w'(x_n^+)^2 \Big) + \frac{2c_{\max}h_0}{\sigma} w'(x_0^+)^2
                 + \frac{2c_{\max}h_{N}}{\sigma} w'(x_{N+1}^-)^2 
         \end{align}
         Since $w\in V_h$ is a (broken) polynomial, we can apply Lemma \ref{lemma:inv_ineq} elementwise and find 
@@ -497,18 +497,18 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
         \begin{equation}
             \label{eq:coerc_thr_last_estimate}
             2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n} \leq
-            2C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
+            3C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
         \end{equation}
         for $\displaystyle C_{\sigma} := \frac{ (r+1)^2 c_{\max} }{\sigma c_{\min}} > 0$. \\ \\
         Finally putting together (\ref{eq:coerc_thr_relation_bilin_form_with_norm}), (\ref{eq:2_coerc_thr_first_estimate}) and 
         (\ref{eq:coerc_thr_last_estimate}) yields
         \begin{align*}
-            b_h(w,w) &\geq \|w\|_h^2 - 2C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
+            b_h(w,w) &\geq \|w\|_h^2 - 3C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
             - \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber \\ 
-            &= (1 - 2C_{\sigma}) \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2 + \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber \\
+            &= (1 - 3C_{\sigma}) \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2 + \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber \\
             &\geq \frac{1}{2} \|w\|_h^2
         \end{align*}
-        for $\sigma \geq \frac{4 (r+1)^2 c_{\max} }{c_{\min}}$, which proves the coercivity
+        for $\sigma \geq \frac{6 (r+1)^2 c_{\max} }{c_{\min}}$, which proves the coercivity
         of $b_h$ on $V_h$. 
     \end{proofstep}
     \\
@@ -549,21 +549,19 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
             \leq \sqrt{\frac{\texttt{h}_{N}}{\sigma}} \sqrt{c_{\max}}
             |u'(x_{N+1}^-)| \nonumber
         \end{equation}
-        Applying Lemma (\ref{lemma:inv_ineq}) yields
+        Applying Lemma (\ref{lemma:inv_ineq}) yields for 
+        $\displaystyle \beta_n(u) := \sqrt{C_{\sigma}} \|\sqrt{c}u'\|_{L^2(I_{n})}, n=0,\ldots,N$
         \begin{align*}
-            &\big|\{c(x_n)u'(x_n)\}\big|\texttt{a}_n^{-1/2} \leq \frac{\sqrt{C_{\sigma}}}{2}
-            \|\sqrt{c}u'\|_{L^2(I_{n-1})} + \frac{\sqrt{C_{\sigma}}}{2}\|\sqrt{c}u'\|_{L^2(I_{n})}  
-            =: \beta_{n,1}(u) + \beta_{n,2}(u) \quad \text{for } n=1,\ldots,N\\
-            &\big|\{c(x_0)u'(x_0)\}\big|\texttt{a}_0^{-1/2} \leq \sqrt{C_{\sigma}}
-            \|\sqrt{c}u'\|_{L^2(I_{0})} =:\beta_0(u)  \\
-            &\big|\{c(x_{N+1})u'(x_{N+1})\}\big|\texttt{a}_{N+1}^{-1/2} \leq \sqrt{C_{\sigma}}
-            \|\sqrt{c}u'\|_{L^2(I_{N})} =:\beta_{N+1}(u)  \\
+            &\big|\{c(x_n)u'(x_n)\}\big|\texttt{a}_n^{-1/2} \leq \frac{\beta_{n-1}(u)}{2}
+             + \frac{\beta_n(u)}{2}  \quad \text{for } n=1,\ldots,N\\
+            &\big|\{c(x_0)u'(x_0)\}\big|\texttt{a}_0^{-1/2} \leq \beta_0(u)  \\
+            &\big|\{c(x_{N+1})u'(x_{N+1})\}\big|\texttt{a}_{N+1}^{-1/2} \leq \beta_{N}(u)  \\
         \end{align*}
         which we can now plug back into (\ref{eq:continuity_thr_consistency_term}) to get
         \begin{align}
             T_{\text{cons}}^{(u)} 
-            \leq \beta_0(u)\gamma_0(v) + \beta_{N+1}(u)\gamma_{N+1}(v)
-            &+ \sum_{n=1}^{N} \beta_{n,1}(u)\gamma_{n} (v)+ \sum_{n=1}^{N} \beta_{n,2}(u)\gamma_n(v)
+            \leq \beta_0(u)\gamma_0(v) + \beta_{N}(u)\gamma_{N+1}(v)
+            &+ \sum_{n=1}^{N} \frac{\beta_{n-1}(u)}{2} \gamma_{n} (v)+ \sum_{n=1}^{N} \frac{\beta_{n}(u)}{2} \gamma_n(v)
         \end{align}
         for $\displaystyle \gamma_n(v) := \sqrt{\texttt{a}_n}\big|[v(x_n)]\big| \, \forall n=0,\ldots,N+1$.
         By furthermore denoting $ \alpha_n(u):= \|\sqrt{c}u'\|_{L^2(I_n)}$
@@ -575,22 +573,22 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
         \end{equation*}
     and in total for 
     \begin{align*}
-        &\textbf{u}:= [ \alpha_0(u),\ldots,\alpha_{N}(u),\beta_0(u), \beta_{N+1}(u),\beta_{1,1}(u),\ldots,\beta_{N,1}(u), \beta_{1,2}(u),\ldots,\beta_{N,2}(u), \\
+        &\textbf{u}:= [ \alpha_0(u),\ldots,\alpha_{N}(u),\beta_0(u), \beta_{N}(u),\frac{\beta_{0}(u)}{2},\ldots, \frac{ \beta_{N-1}(u)}{2}, \frac{\beta_{1}(u)}{2},\ldots,\frac{\beta_{N}(u)}{2}, \\
         & \qquad \quad \gamma_{0}(u), \gamma_{N+1}(u), \gamma_{1}(u),\ldots,\gamma_{N}(u), \gamma_{1}(u),\ldots,\gamma_{N}(u),
-        \gamma_0(u),\ldots,\gamma_{N+1}(u)]^T \in \mathbb{R}^{4N + 7} \\
+        \gamma_0(u),\ldots,\gamma_{N+1}(u)]^T \in \mathbb{R}^{6N + 7} \\
         &\textbf{v}:= [ \alpha_0(v),\ldots,\alpha_{N}(v), \gamma_{0}(v), \gamma_{N+1}(v), \gamma_{1}(v),\ldots,\gamma_{N}(v),
         \gamma_{1}(v),\ldots,\gamma_{N}(v), \\
-        &\qquad \quad \beta_0(v), \beta_{N+1}(v),\beta_{1,1}(v),\ldots,\beta_{N,1}(v), \beta_{1,2}(v),\ldots,\beta_{N,2}(v), \gamma_{0}(v),\ldots,\gamma_{N+1}(v)]^T \in \mathbb{R}^{4N + 7}
+        &\qquad \quad \beta_0(v), \beta_{N}(v),\frac{\beta_{0}(v)}{2},\ldots,\frac{\beta_{N-1}(v)}{2}, \frac{\beta_{1}(v)}{2},\ldots,\frac{\beta_{N}(v)}{2}, \gamma_{0}(v),\ldots,\gamma_{N+1}(v)]^T \in \mathbb{R}^{6N + 7}
     \end{align*}
     we get 
     \begin{align*}
         & T_{\text{ell}} + T_{\text{cons}}^{(u)} + T_{\text{cons}}^{(v)} + T_{\text{penal}} \leq \textbf{u}^T \textbf{v}
         \leq |\textbf{u}|\, |\textbf{v}| \\
-        & \leq \Big( \sum_{n=0}^{N}(1+2C_{\sigma}) \|\sqrt{c}u'\|_{L^2(I_n)}^2 + 2 \sum_{n=0}^{N+1} \texttt{a}_n [u(x_n)]^2\Big)
-        \Big( \sum_{n=0}^{N}(1+2C_{\sigma}) \|\sqrt{c}v'\|_{L^2(I_n)}^2 + 2 \sum_{n=0}^{N+1} \texttt{a}_n [v(x_n)]^2\Big) \\
+        & \leq \Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}u'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n [u(x_n)]^2\Big)^{1/2}
+        \Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}v'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n [v(x_n)]^2\Big)^{1/2} \\
         & \leq C_{\text{cont}}\|u\|_h \|v\|_h
     \end{align*}
-    where $\displaystyle C_{\text{cont}} := 4(1+2C_{\sigma})^2$. This last estimate together with
+    where $\displaystyle C_{\text{cont}} := (3+\frac{5}{4}C_{\sigma})$. This last estimate together with
     \ref{eq:cont_thr_estimate_elliptic_part} proves the continuity of $b_h$.
     \end{proofstep}
 \end{proof}
