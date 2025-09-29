@@ -7,7 +7,7 @@ import fem1d.*
 
 % Settings
 c_handle_idx = 2;
-u_exact_handle_idx = 10;
+u_exact_handle_idx = 9;
 sigma = 10;
 dof = 6;
 overwrite_functions_bool = true;
@@ -50,12 +50,16 @@ boundary_nodes = [0,1];
 resonators_mat = [0.5, 0.6];
 initial_meshsize = abs(boundary_nodes(1) - boundary_nodes(2))/20;
 
+% set boundary conditions
+boundary_cond = struct("values", [1, 10], "lower_boundary_type", "dirichlet", "upper_boundary_type", "neumann");
+
 % overwrite function handles
 if overwrite_functions_bool
     c_handle = @(x) 2*(x>=boundary_nodes(1) & x< resonators_mat(1)) + ...
                     0.5*(x<=boundary_nodes(2) & x>resonators_mat(2)) + ...
-                    (3+sin(500*x)).*(x>=resonators_mat(1) & x<=resonators_mat(2));
-    f_exact_handle = @(x) ones(size(x));
+                    (11+10*sin(300*x)).*(x>=resonators_mat(1) & x<=resonators_mat(2));
+    f_exact_handle = @(x) zeros(size(x));
+    % f_exact_handle = @(x) 100*sin(3*x).*(x < 0.4 & x >= 0) + x.^2.*(x >= 0.4 & x <= 1);
 end
 
 % create initial mesh
@@ -72,13 +76,7 @@ c_vals = c_handle(nodes);
 f_vals = f_exact_handle(nodes);
 g_vals = zeros(size(nodes));g_vals(1) = 1; g_vals(end) = 5;
 
-% assemble matrices
-num_nodes = length(nodes);
-B = dg1d.sipdgMatrix1D(nodes, elements, c_vals, sigma);
-rhs_vector = dg1d.sipdgDirichletLoadVector1D(nodes, elements, f_vals, c_vals, g_vals, sigma);
-
-% solve system
-uh = B\rhs_vector;
+[uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
 
 % refine mesh
 Mesh.h_min = Mesh.h_min/refine_factor;

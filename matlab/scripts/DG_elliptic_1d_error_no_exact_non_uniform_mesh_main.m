@@ -7,8 +7,8 @@ import mesh.*
 import fem1d.*
 
 % Settings
-c_handle_idx = 2;
-u_exact_handle_idx = 4;
+c_handle_idx = 1;
+u_exact_handle_idx = 6;
 sigma = 10;
 dof = 2;
 num_refinement_iterations = 10;
@@ -53,7 +53,7 @@ errors = zeros(1, num_refinement_iterations);
 condition_B = zeros(1,num_refinement_iterations);
 
 % set boundary conditions
-boundary_cond = struct("values", [-du_exact_handle(boundary_nodes(1)), u_exact_handle(1)], "lower_boundary_type", "neumann", "upper_boundary_type", "dirichlet");
+boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), du_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "neumann");
 
 % create initial mesh
 H_meshsizes = zeros(1,num_refinement_iterations); 
