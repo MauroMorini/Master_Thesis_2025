@@ -265,6 +265,16 @@ for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \P
 
 %---Basis-of-FE-Space------------------------------------------------------------
 \section{Basis of Finite Element Space}
+There are many ways of choosing basis functions for finite element spaces. We choose a Lagrangian 
+nodal elementwise basis where the nodes per element correspond to the Gauss-Lobatto quadrature nodes.
+This is a commonly used basis in CFEM as well as in DGFEM, although alternatives might be more
+effective depending on the specific problem. The quadrature nodes
+corresponding to the basis nodes simplifies the matrix assemblies and yields a diagonal mass matrix (\textit{mass lumping}), which 
+is crucial especially in the time-dependent hyperbolic case, where a mass matrix has to be inverted 
+in each integration step. For more general information on choosing basis functions see for example 
+Appendix A.2 in \cite{diPietro2012}. \\
+
+
 %---Existence-------------------------------------------------------------------------
 \section{Existence of Discrete Solution}
 \label{sec:existence_uniqueness_elliptic_discrete_problem}
