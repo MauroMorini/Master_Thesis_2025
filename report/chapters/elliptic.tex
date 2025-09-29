@@ -131,7 +131,7 @@ and
 \end{equation}
 To derive the final variational form we will now have to add two additional terms
 to (\ref{eq:elliptic_sipg_var_form_incomplete}): \\
-\textbf{Step 1:} Firstly we need to symmetrize our currently non-symmetrical right hand side
+\textbf{Step 1.} Firstly we need to symmetrize our currently non-symmetrical right hand side
 which will correspond to the SIPG bilinear form. To do so
 we subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[u(x_n)]$ on both sides of
 (\ref{eq:elliptic_sipg_var_form_incomplete}):
@@ -143,7 +143,7 @@ we subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[u(x_n)]$ on both sides of
 note that on the left hand side of the equation we have applied (\ref{eq:id_2_u_jump_zero})
 for the interior node contributions of the sum (which therefore vanish), and the boundary condition (\ref{eq:elliptic_pde_bc}) 
 ensuring the left hand side to be soley dependent on $v$.\\
-\textbf{Step 2:} The bilinear form we seek to create will (for now) be defined on $V_h\times V_h$
+\textbf{Step 2.} The bilinear form we seek to create will (for now) be defined on $V_h\times V_h$
 meaning it will intake discontinuous functions. In particular the numerical
 solution will be a discontinuous function wheras the exact solution is continuous.
 To counterweigh this discrepancy we need to integrate a penalization mechanism, seeking to 
@@ -201,17 +201,55 @@ meaning we could define
     V_h^r(\mathcal{T}_h) = \{v \in L^2(\Omega) |\, v|_{I_n} \in \mathcal{P}^r(I_n), v(x_0)=g_0, v(x_{N+1})=g_1 \}
 \end{equation*}
 but this soley as a side note, we will continue to work with purely weakly imposed 
-boundary conditions.  
+boundary conditions.  \\ \\
 
-%% TODO: Neumann b.c.
+One could alternatively desire to implement \textit{Neumann} boundary conditions, this slightly changes the variational formulation.
+We illustrate the idea on the following example boundary condition. A solution
+$u$ should satisfy:
+\[
+    u(0) = g_{0}, u'(1)\cdot n_1 = g_{1}
+\]
+where again $g_0, g_1 \in \mathbb{R}$ are the boundary values and $n_1$ denotes the outward normal
+of the domain at the upper boundary. In 1d we trivially have $n_1 = 1, n_0 = -1$, where $n_0$ denotes the outward 
+normal at the lower boundary.
+
+Now recall the initial incomplete formulation (\ref{eq:elliptic_sipg_var_form_incomplete}). First we take the 
+Neumann boundary contribution $\{c(x_{N+1})u'(x_{N+1})\}[v(x_{N+1})]$ to the other side of the equation. We get 
+\[
+    \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
+    -\sum_{n=0}^{N} \{c(x_n)u'(x_n)\}[v(x_n)] = (f,v)_{L^2(\Omega)}
+    + g_1c(x_{N+1}^-)v(x_{N+1}^-)
+\]
+We have used $\{c(x_{N+1})u'(x_{N+1})\}[v(x_{N+1})] = c(x_{N+1}^-)u'(x_{N+1}^-)v(x_{N+1}^-)\cdot n_1 = g_1 c(x_{N+1}^-)v(x_{N+1}^-)$
+
+From here on 
+we proceed similarly as in the Dirichlet case. The main difference is that we always ommit the boundary face with the Neumann
+boundary condition. \\
+We add the terms 
+\[
+    -\sum_{n=0}^{N} \{c(x_n)v'(x_n)\}[u(x_n)] 
+    +\sum_{n=0}^{N} \texttt{a}_n[u(x_n)][v(x_n)]
+\]
+to both sides, using again that the real solution has zero jump on the interior faces and 
+applying the boundary conditions we finally derive the variational form
+
+\begin{align*}
+     &\sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
+     -\sum_{n=0}^{N} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
+    +\sum_{n=0}^{N} \texttt{a}_n[u(x_n)][v(x_n)] \\
+    & = (f,v)_{L^2(\Omega)} + g_0c(x_0^+)v(x_0^+) + \texttt{a}_0 g_0v(x_{0}^+) 
+    + g_1c(x_{N+1}^-)v(x_{N+1}^-)
+\end{align*}
+
 
 %---Matrix-Vector System---------------------------------------------------------
 \section{Matrix-Vector System}
 We will now in derive the fully discrete Matrix-Vector system given by
 the variational form (\ref{eq:discrete_var_form_elliptic}). To do so let
-$r \in \mathbb{N}$ denote the polynomial degree and consequently the element degree of freedom. Note that in this thesis we will only consider global polynomial degrees.
+$r \in \mathbb{N}$ denote the polynomial degree and consequently the element degree of freedom. 
+Note that in this thesis we will only consider global polynomial degrees, meaning one set polynomial degree for all elements.
 Next let $\{\Phi_0,\ldots,\Phi_M\}$ be a basis of $V_h$, where $M = \dim(V_h)$.
-We can represent the sought Galerkin approximation $u_h = \sum_{j=0}^{M} \alpha_j \Phi_j\in V_h$ for coefficients 
+We can represent the sought Galerkin approximation as $u_h = \sum_{j=0}^{M} \alpha_j \Phi_j\in V_h$ for coefficients 
 $\alpha_j \in \mathbb{R}$. Then (\ref{eq:discrete_var_form_elliptic}) is equivalent to:
 \begin{equation*}
     \sum_{j=0}^{M} \alpha_j b_h(\Phi_j, \Phi_i) = \ell(\Phi_i) \qquad \forall i=0,\ldots,M
@@ -222,7 +260,7 @@ which corresponds to the system:
     \textbf{Bu} = \textbf{l}
 \end{equation}
 for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \Phi_i), 
-\textbf{u} \in \mathbb{R}^M, [\textbf{U}]_j = \alpha_j, 
+\textbf{u} \in \mathbb{R}^M, [\textbf{u}]_j = \alpha_j, 
 \textbf{l}\in\mathbb{R}^M, [\textbf{l}]_j = \ell(\Phi_j)$.
 
 %---Basis-of-FE-Space------------------------------------------------------------
@@ -260,18 +298,18 @@ From the coercivity of $b_h$ it will follow that the matrix $\textbf{B}$ in (\re
 is positive definite and hence invertible, which means there exists a (unique) solution
 of (\ref{eq:discrete_var_form_elliptic}).
 \begin{lemma}
-    Let $V = \text{span}(\varphi_1,\ldots,\varphi_N)$ be a finite dimensional 
-    normed vector space with $\dim(V) = N\in \mathbb{N}$ and let
+    Let $V = \text{span}(\varphi_1,\ldots,\varphi_M)$ be a finite dimensional 
+    normed vector space with $\dim(V) = M\in \mathbb{N}$ and let
     $b:V \times V \to \mathbb{R}$ be a symmetric, coercive bilinear form,
     then the matrix ${[\textbf{B}]}_{i,j} = {[b(\varphi_j, \varphi_i)]}_{i,j}\in \mathbb{R}^{N\times N}$
     is symmetric positive definite.
 \end{lemma}
 \begin{proof}
     Clearly $\textbf{B}$ is symmetric. \\
-    Let $\textbf{v}=(v_1,\ldots,v_N)\in \mathbb{R}^N$ then $v = \sum_{i=1}^{N}
+    Let $\textbf{v}=(v_1,\ldots,v_M)\in \mathbb{R}^M$ then $v = \sum_{i=1}^{M}
     v_i \varphi_i\in V$ and we have:
     \[
-        \textbf{v}^{T}\textbf{B}\textbf{v} = \sum_{i,j=1}^{N}v_i v_j b(\varphi_j,\varphi_i) = b(v,v) \geq
+        \textbf{v}^{T}\textbf{B}\textbf{v} = \sum_{i,j=1}^{M}v_i v_j b(\varphi_j,\varphi_i) = b(v,v) \geq
         C_{\text{coer}} \|w\|^2
     \]
     where we have used the biliniearity and the coercivity of $b$.
@@ -287,7 +325,7 @@ We will here rely on a result and proof as presented in \cite{warburtonHesthaven
     Let $r\in \mathbb{N}$ be the polynomial degree, 
     $a,b\in \mathbb{R}$ with $a<b$ and let $\mathcal{P}^r([a,b])$ denote the 
     space of polynomials of degree $r$ defined on $[a,b]$. \\
-    For any $v\in \mathcal{P}^r((a,b))$ we have:
+    For any $v\in \mathcal{P}^r([a,b])$ we have:
     \begin{enumerate}
         \item $\displaystyle |v(a)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$ 
         \item $\displaystyle |v(b)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$
@@ -313,7 +351,7 @@ We will here rely on a result and proof as presented in \cite{warburtonHesthaven
             \]    
             \item $P_i(1) = 1, P_i(-1) = {(-1)}^i, \qquad \forall i = 0,\ldots,r$
         \end{enumerate}
-        Let $\psi_i = \frac{(2i + 1)P_i}{2}$ for $i=0,\ldots,r$ denote the normed 
+        Let $\psi_i = \sqrt{\frac{(2i + 1)}{2}}P_i$ for $i=0,\ldots,r$ denote the normed 
         basis function. Clearly we now have 
         \[
             \psi_i(-1) = {(-1)}^i\sqrt{\frac{2i+1}{2}}, \qquad \psi_i(1) = \sqrt{\frac{2i+1}{2}}, 
@@ -357,13 +395,13 @@ We will here rely on a result and proof as presented in \cite{warburtonHesthaven
             \frac{(r+1)^2}{2}\frac{2}{|b-a|}\|v\|_{L^2([a,b])}^2 
         \] 
         where in the last equality we have applied a change of variable $x=F(\xi)$ to the integral.
-        Applying the same line of reasoning to $|v(b)|^2$ yields both inequalities
+        Applying the same line of reasoning to $|v(b)|^2$ proves both inequalities
         and so we are done.
     \end{proofstep}
     \\
 \end{proof}
 \medskip
-Recall the in previous sections established notations and let $r\in \mathbb{N}$ denote the polynomial 
+Recall the in previous sections established notations, let $r\in \mathbb{N}$ denote the polynomial 
 degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 \begin{definition}
     We define the \textbf{energy norm} on $V_h$ by 
@@ -381,8 +419,8 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
     By definition we have $\texttt{a}, c>0$ and by extension $\|v\|_h \geq 0$ for all
     $v\in V_h$. Suppose now that $\|v\|_h = 0$ for some $v\in V_h$, then we must have $v|_{I_n} \equiv \text{const}$ 
     and $[v(x_n)] = 0$ for all $n$. So $v$ must be constant on all elements and have a jump of zero at the element boundaries.
-    These two facts combined imply that $v$ is constant on all of $\Omega$. By the convention that the jump 
-    of any function is zero at the boundary nodes of $\Omega$ it immediately follows that $v=0$. Clearly
+    These two facts combined imply that $v$ is constant on all of $\Omega$. By the definition of the jump 
+    at the boundary nodes of $\Omega$ it immediately follows that $v=0$. Clearly
     $\|0\|_h=0$, therefore $\|\cdot\|_h$ is positive definite. \\ \\
     Using $[v(x_n) + w(x_n)] = [v(x_n)] + [w(x_n)] \quad \forall v,w \in V_h, n = 0,\ldots,N+1$ we find
     \begin{align*}
