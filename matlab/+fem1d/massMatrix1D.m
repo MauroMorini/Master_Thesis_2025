@@ -16,7 +16,6 @@ function M = massMatrix1D(nodes, elements, c_vals)
     num_nodes = length(nodes);
     dof = size(elements, 2);
     triplet_list_iterator = 1;
-    c_vals_el = c_vals(elements);
 
     % preallocation
     M_max_entries = nEl*dof^2;
