@@ -265,6 +265,7 @@ for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \P
 
 %---Basis-of-FE-Space------------------------------------------------------------
 \section{Basis of Finite Element Space}
+\label{sec:ell_basis}
 There are many ways of choosing basis functions for finite element spaces. We choose a Lagrangian 
 nodal elementwise basis where the nodes per element correspond to the Gauss-Lobatto quadrature nodes.
 This is a commonly used basis in CFEM as well as in DGFEM, although alternatives might be more
@@ -272,7 +273,132 @@ effective depending on the specific problem. The quadrature nodes
 corresponding to the basis nodes simplifies the matrix assemblies and yields a diagonal mass matrix (\textit{mass lumping}), which 
 is crucial especially in the time-dependent hyperbolic case, where a mass matrix has to be inverted 
 in each integration step. For more general information on choosing basis functions see for example 
-Appendix A.2 in \cite{diPietro2012}. \\
+Appendix A.2 in \cite{diPietro2012}. \\ \\
+Let $n\in \{1,\ldots,N\}$ and $I_n \in \mathcal{T}_h$ be an arbitrary element. 
+We denote $\hat{I} = (-1,1)$ the \textit{reference element} and $\displaystyle F_n : \hat{I} \to I_n, \, \xi \mapsto \frac{x_n + x_{n+1}}{2} + \frac{h_n}{2} \xi $
+the \textit{element map}. This now allows us to define a basis on the reference element and 
+extend it to all elements using the element map. \\
+For a fixed polynomial degree $r \geq 2$ let $\xi_0,\ldots,\xi_{r} \in [-1,1]$ be the
+Gauss-Lobatto nodes. \\
+\begin{equation*}
+    \begin{tabular}{c|c}
+    \centering
+    $r = 2$ & $\{-1, 1\}$ \\
+    $r = 3$ & $\{-1,0, 1\}$ \\
+    $r = 4$ & $\{-1,-\frac{1}{\sqrt{5}}, \frac{1}{\sqrt{5}}, 1\}$ \\
+    \vdots  & \vdots \\
+\end{tabular} 
+\end{equation*}
+
+We define the basis on the reference element as the Lagrangian nodal basis
+
+\begin{equation}
+    \label{def:lagrange_ref_basis}
+    \widehat{\phi}_i(\xi) := \prod_{\substack{j = 0 \\ j\neq i}}^{r}\frac{\xi - \xi_j}{\xi_i - \xi_j},
+    \qquad \text{for } i=0,\ldots,r \nonumber
+\end{equation}
+and define the basis functions on the element $I_n$ as 
+\begin{equation}
+    \phi^n_i : I_n \to \mathbb{R}, \quad \phi^n_i(x) := \widehat{\phi}_i(F_n^{-1}(x))
+    \nonumber
+\end{equation}
+as a last step we extend the basis functions to the whole domain $\Omega$ by zero 
+\begin{equation}
+    \Phi_i^n: \Omega \to \mathbb{R}, \quad \Phi_i^n(x) := 
+    \begin{cases}
+        \phi_i^n(x),  & \text{for } x\in I_n \\
+        0, & \text{else}
+    \end{cases}
+    \label{def:lagrange_basis_of_Vh}
+\end{equation}
+for $n=0,\ldots,N$ and $i=0,\ldots,r$. Clearly we have $\text{span}( \widehat{\phi}_0, \ldots, \widehat{\phi}_r) = \mathcal{P}^r(\hat{I})$
+and by extension $\text{span}(\Phi_0^0,\ldots,\Phi_r^N) = V_h^r(\mathcal{T}_h)$. It is essential 
+that our basis has only local support, meaning the basis functions are zero on most of the domain. This is the key property which 
+allows the final matrices to be sparse. If we chose basis functions with global support, the computational cost would be unfeasible for 
+small mesh sizes. \\
+By having chosen a Lagrangian nodal basis the mesh nodes exactly coincide with the Gauss-Lobatto nodes on each
+element. 
+To simplify the notation we introduce a \textit{local-to-global} index map
+\begin{equation}
+    \label{def:local_to_global_map}
+    T: \{0,\ldots,N\} \times \{0,\ldots,r\} \to \{1,\ldots,M\} 
+\end{equation}
+where $M = (r+1)(N+1) = \dim(V_h)$. $T$ takes an element and a local basis function index $i$ as inputs
+and returns the globally assigned node index $T(n,i)$. $T$ corresponds to the 
+\textit{connectivity matrix}. In the simplest case we have the global index ordered from left to right and get
+$T(n,i) = nr + i$.
+
+
+%---Matrix Assembly-------------------------------------------------------------------
+\section{Matrix Assembly}
+With the basis functions in (\ref{def:lagrange_basis_of_Vh}) defined we can now in detail investigate how 
+to assemble the matrix $\textbf{B}$ in (\ref{eq:fully_discrete_dg_system_elliptic}). To do so we firstly separate 
+the bilinear form $b_h$ into different components
+
+\begin{align*}
+    a_h(u,v) & := \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x \\
+    b_h^{\text{cons}}(u,v) & := -\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)] \\
+    b_h^{\text{penal}}(u,v) &:= \sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)] \\
+\end{align*}
+
+Let $\displaystyle u_h = \sum_{m=0}^{N} \sum_{j=0}^{r} \alpha_j^m \Phi_j^m \in V_h$ denote
+the Galerkin approximation, then as discussed in section \ref{sec:ell_basis} the discrete variational formulation (\ref{eq:discrete_var_form_elliptic}) is equivalent 
+to 
+\begin{equation}
+    \sum_{m=0}^{N} \sum_{j=0}^{r} \alpha_j^m \Big(
+    a_h(\Phi_j^m,\Phi_i^n) + b_h^{\text{cons}}(\Phi_j^m,\Phi_i^n) + b_h^{\text{penal}}(\Phi_j^m,\Phi_i^n)
+    \Big)
+    = \ell(\Phi_i^n), \qquad \forall n=0,\ldots,N, i=0,\ldots,r
+\end{equation}
+which corresponds to the matrix vector system (\ref{eq:fully_discrete_dg_system_elliptic}) 
+where we can write 
+\begin{equation*}
+    \textbf{B} = \textbf{A} + \textbf{B}_{\text{cons}} + \textbf{B}_{\text{penal}} 
+\end{equation*}
+we will assemble the three (symmetric) matrices separately. 
+\begin{align*}
+    &[\textbf{B}]_{T(n,i),T(m,j)} = b_h(\Phi_j^m, \Phi_i^n),
+    &[\textbf{A}]_{T(n,i),T(m,j)} = a_h(\Phi_j^m, \Phi_i^n) \\
+    &[\textbf{B}_{\text{cons}}]_{T(n,i),T(m,j)} = b_h^{\text{cons}} (\Phi_j^m, \Phi_i^n)
+    &[\textbf{B}_{\text{penal}}]_{T(n,i),T(m,j)} = b_h^{\text{penal}} (\Phi_j^m, \Phi_i^n)
+\end{align*}
+where $T$ is given by (\ref{def:local_to_global_map})
+
+\subsection{Assembly of A}
+$\textbf{A}$ is assembled exactly as the standard stiffness matrix in continuous finite element.
+We can rewrite $\textbf{A} = \sum_{s=0}^{N} \textbf{A}^{(s)}$, where 
+$[\textbf{A}^{(s)}]_{T(n,i),T(m,j)} = \int_{I_s} c \,(\Phi_j^m)' (\Phi_i^n)' \, \text{d}x$.
+Now since we have $\text{supp}(\Phi_i^n)\subset I_n$ the only non-zero entries of $\textbf{A}^{(s)} $ are the ones where both $n=m=s$. Pulling back the integral 
+to the reference element using the chain rule and the substitution $F_s^{-1}(x) = \xi$ we find
+\begin{equation*}
+    \int_{I_s} c \,(\Phi_j^m)' (\Phi_i^n)' \, \text{d}x = 
+    \frac{2}{h_s} \int_{\hat{I}} c(F_s(\xi)) \, \phi_j'(\xi) \phi_i'(\xi) \, \text{d}\xi
+\end{equation*}
+This integral now only depends on the reference shape functions, the element length $h_s$
+and the values of the coefficient $c$. Using the Gauss-Lobatto quadrature rule we can approximate the integral
+only requiring the values of $c$ at the nodes, whilst having the values of $\phi, \phi'$ preloaded.
+The total assembly of $\textbf{A}$ can therefore be achieved by calculating a local contribution matrix 
+$\widehat{\textbf{A}}^{(s)} \in \mathbb{R}^{(r+1)\times (r+1)}$ for each element $I_s$ and adding it into $\textbf{A}$. \\ \\
+As an example if we consider $c\equiv 1$ for $\mathcal{P}^1$-elements $(r=1)$ we have 
+\begin{equation*}
+    \widehat{\textbf{A}}^{(s)} = \frac{1}{h_s}
+    \begin{bmatrix}
+         1  & -1 \\
+        -1  &  1 
+    \end{bmatrix}
+\end{equation*}
+
+\subsection{Assembly of B consistency part}
+As before we rewrite $\textbf{B}_{\text{cons}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{cons}}^{(s)} $, where 
+
+\begin{equation*}
+    [\textbf{B}_{\text{cons}}^{(s)}]_{T(n,i),T(m,j)} = \{c(x_s) \Phi_j^{m \, \prime} (x_s)\}[\Phi_i^n(x_s)] + \{c(x_s)\Phi_i^{n\, \prime} (x_s)\}[\Phi_j^m(x_s)]
+\end{equation*}
+
+First let $s \in \{1,\ldots,N\}$ denote an interior face, we observe again that the entries of 
+$\textbf{B}_{\text{cons}}^{(s)}$ are only non-zero for an index tuple $(T(n,i),T(m,j))$ if 
+$n,m \in \{s, s-1\}$ by the local support of the basis functions.
+
 
 
 %---Existence-------------------------------------------------------------------------
@@ -295,7 +421,6 @@ Firstly we will recall some basic definitions:
             b(u,u)\geq C_{\text{coer}}\, \|u\|^2 \qquad \forall u \in V
         \]
     \end{enumerate}
-    
 \end{definition}
 
 
