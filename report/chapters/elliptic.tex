@@ -295,7 +295,7 @@ We define the basis on the reference element as the Lagrangian nodal basis
 \begin{equation}
     \label{def:lagrange_ref_basis}
     \widehat{\phi}_i(\xi) := \prod_{\substack{j = 0 \\ j\neq i}}^{r}\frac{\xi - \xi_j}{\xi_i - \xi_j},
-    \qquad \text{for } i=0,\ldots,r \nonumber
+    \qquad \text{for } i=0,\ldots,r 
 \end{equation}
 and define the basis functions on the element $I_n$ as 
 \begin{equation}
@@ -395,11 +395,31 @@ As before we rewrite $\textbf{B}_{\text{cons}} = \sum_{s=0}^{N+1} \textbf{B}_{\t
     [\textbf{B}_{\text{cons}}^{(s)}]_{T(n,i),T(m,j)} = \{c(x_s) \Phi_j^{m \, \prime} (x_s)\}[\Phi_i^n(x_s)] + \{c(x_s)\Phi_i^{n\, \prime} (x_s)\}[\Phi_j^m(x_s)]
 \end{equation*}
 
-First let $s \in \{1,\ldots,N\}$ denote an interior face, we observe again that the entries of 
-$\textbf{B}_{\text{cons}}^{(s)}$ are only non-zero for an index tuple $(T(n,i),T(m,j))$ if 
+First let $s \in \{1,\ldots,N\}$ denote an interior face, we observe again, that the entries of 
+$\textbf{B}_{\text{cons}}^{(s)}$ can only be non-zero for an index tuple $(T(n,i),T(m,j))$ if 
 $n,m \in \{s, s-1\}$ by the local support of the basis functions.
+Therefore assembling $ \textbf{B}_{\text{cons}}$ again comes down to calculating a local contribution matrix 
 
-
+\begin{equation*}
+    \widehat{\textbf{B}}_{\text{cons}}^{(s)} = 
+    \begin{bmatrix}
+        \textbf{C}_{\text{cons}}^{(s-1,s-1)} & \textbf{C}_{\text{cons}}^{(s-1,s)} \\
+        \textbf{C}_{\text{cons}}^{(s,s-1)} & \textbf{C}_{\text{cons}}^{(s,s)} 
+    \end{bmatrix}
+    \in \mathbb{R}^{2(r+1) \times 2(r+1)}
+\end{equation*}
+for each interior face $x_s$ consisting of four blocks we will now lay out in more detail.
+We discuss the boundary case separately.
+By the definition of the basis functions and the chain rule 
+\begin{align*}
+    & \Phi_i^s(x_s^+) = \widehat{\phi}_i(-1) , & \Phi^{s-1}_i(x_s^-) = \widehat{\phi}_i(1) \\
+    & \Phi_i^{s\, \prime }(x_s^+) = \frac{2}{h_{s}} \widehat{\phi}_i^{\,\prime}(-1), 
+    & \Phi_i^{s-1\, \prime }(x_s^-) = \frac{2}{h_{s-1}} \widehat{\phi}_i^{\,\prime}(1), 
+\end{align*}
+and using again the local support of the basis functions we find
+\begin{equation*}
+    \textbf{C}_{\text{cons}}^{(s-1,s-1)} = c(x_s^-)
+\end{equation*}
 
 %---Existence-------------------------------------------------------------------------
 \section{Existence of Discrete Solution}
