@@ -76,6 +76,7 @@ Any discontinuous element of $V_h$ can therefore not be in $H^1(\Omega)$. \\
 To proceed we will require the following trace operators:
 
 \begin{definition} 
+    \label{def:jump_average}
     Let $v:\Omega \to \mathbb{R}$ be piecewise continuous and let $n \in
     \{1,\ldots,N\}$
     \begin{enumerate}[label=\textnormal{(\roman*)}]
@@ -337,7 +338,7 @@ the bilinear form $b_h$ into different components
 
 \begin{align*}
     a_h(u,v) & := \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x \\
-    b_h^{\text{cons}}(u,v) & := -\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)] \\
+    b_h^{\text{cons}}(u,v) & := \sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)] \\
     b_h^{\text{penal}}(u,v) &:= \sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)] \\
 \end{align*}
 
@@ -346,14 +347,14 @@ the Galerkin approximation, then as discussed in section \ref{sec:ell_basis} the
 to 
 \begin{equation}
     \sum_{m=0}^{N} \sum_{j=0}^{r} \alpha_j^m \Big(
-    a_h(\Phi_j^m,\Phi_i^n) + b_h^{\text{cons}}(\Phi_j^m,\Phi_i^n) + b_h^{\text{penal}}(\Phi_j^m,\Phi_i^n)
+    a_h(\Phi_j^m,\Phi_i^n) - b_h^{\text{cons}}(\Phi_j^m,\Phi_i^n) + b_h^{\text{penal}}(\Phi_j^m,\Phi_i^n)
     \Big)
     = \ell(\Phi_i^n), \qquad \forall n=0,\ldots,N, i=0,\ldots,r
 \end{equation}
 which corresponds to the matrix vector system (\ref{eq:fully_discrete_dg_system_elliptic}) 
 where we can write 
 \begin{equation*}
-    \textbf{B} = \textbf{A} + \textbf{B}_{\text{cons}} + \textbf{B}_{\text{penal}} 
+    \textbf{B} = \textbf{A} - \textbf{B}_{\text{cons}} + \textbf{B}_{\text{penal}} 
 \end{equation*}
 we will assemble the three (symmetric) matrices separately. 
 \begin{align*}
@@ -378,8 +379,9 @@ This integral now only depends on the reference shape functions, the element len
 and the values of the coefficient $c$. Using the Gauss-Lobatto quadrature rule we can approximate the integral
 only requiring the values of $c$ at the nodes, whilst having the values of $\phi, \phi'$ preloaded.
 The total assembly of $\textbf{A}$ can therefore be achieved by calculating a local contribution matrix 
-$\widehat{\textbf{A}}^{(s)} \in \mathbb{R}^{(r+1)\times (r+1)}$ for each element $I_s$ and adding it into $\textbf{A}$. \\ \\
-As an example if we consider $c\equiv 1$ for $\mathcal{P}^1$-elements $(r=1)$ we have 
+$\widehat{\textbf{A}}^{(s)} \in \mathbb{R}^{(r+1)\times (r+1)}$ for each element $I_s$ and adding it into $\textbf{A}$. 
+\begin{example}
+    For $c\equiv 1$ with $\mathcal{P}^1$-elements $(r=1)$ we have 
 \begin{equation*}
     \widehat{\textbf{A}}^{(s)} = \frac{1}{h_s}
     \begin{bmatrix}
@@ -387,6 +389,7 @@ As an example if we consider $c\equiv 1$ for $\mathcal{P}^1$-elements $(r=1)$ we
         -1  &  1 
     \end{bmatrix}
 \end{equation*}
+\end{example}
 
 \subsection{Assembly of B consistency part}
 As before we rewrite $\textbf{B}_{\text{cons}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{cons}}^{(s)} $, where 
@@ -395,6 +398,7 @@ As before we rewrite $\textbf{B}_{\text{cons}} = \sum_{s=0}^{N+1} \textbf{B}_{\t
     [\textbf{B}_{\text{cons}}^{(s)}]_{T(n,i),T(m,j)} = \{c(x_s) \Phi_j^{m \, \prime} (x_s)\}[\Phi_i^n(x_s)] + \{c(x_s)\Phi_i^{n\, \prime} (x_s)\}[\Phi_j^m(x_s)]
 \end{equation*}
 
+\subsubsection{Interior Faces}
 First let $s \in \{1,\ldots,N\}$ denote an interior face, we observe again, that the entries of 
 $\textbf{B}_{\text{cons}}^{(s)}$ can only be non-zero for an index tuple $(T(n,i),T(m,j))$ if 
 $n,m \in \{s, s-1\}$ by the local support of the basis functions.
@@ -410,16 +414,69 @@ Therefore assembling $ \textbf{B}_{\text{cons}}$ again comes down to calculating
 \end{equation*}
 for each interior face $x_s$ consisting of four blocks we will now lay out in more detail.
 We discuss the boundary case separately.
-By the definition of the basis functions and the chain rule 
+Using again the local support of the basis functions we find
+\begin{align*}
+    &[\textbf{C}_{\text{cons}}^{(s-1,s-1)}]_{i,j} = \frac{c(x_s^-)}{2} \Phi_j^{s-1\, \prime}(x_s^-) \Phi_i^{s-1}(x_s^-) + \frac{c(x_s^-)}{2} \Phi_i^{s-1\, \prime}(x_s^-) \Phi_j^{s-1}(x_s^-) \\
+    &[\textbf{C}_{\text{cons}}^{(s-1,s)}]_{i,j} = \frac{c(x_s^-)}{2} \Phi_j^{s-1\, \prime}(x_s^-) \Phi_i^{s}(x_s^+) - \frac{c(x_s^+)}{2} \Phi_i^{s\, \prime}(x_s^+) \Phi_j^{s-1}(x_s^-) \\
+    &[\textbf{C}_{\text{cons}}^{(s,s)}]_{i,j} = -\frac{c(x_s^+)}{2} \Phi_j^{s\, \prime}(x_s^+) \Phi_i^{s}(x_s^+) - \frac{c(x_s^+)}{2} \Phi_i^{s\, \prime}(x_s^+) \Phi_j^{s}(x_s^+)
+\end{align*}
+where we have used the definitions of jump and average in (\ref{def:jump_average})
+and note that $ \textbf{C}_{\text{cons}}^{(s-1,s)} = (\textbf{C}_{\text{cons}}^{(s,s-1)})^T$ by the symmetry of the bilinear form $b_h^{\text{cons}}$.
+Next we represent the values of the basis functions $ \Phi $ at the element boundary by the values of the reference 
+shape functions $\widehat{\phi}$
 \begin{align*}
     & \Phi_i^s(x_s^+) = \widehat{\phi}_i(-1) , & \Phi^{s-1}_i(x_s^-) = \widehat{\phi}_i(1) \\
     & \Phi_i^{s\, \prime }(x_s^+) = \frac{2}{h_{s}} \widehat{\phi}_i^{\,\prime}(-1), 
     & \Phi_i^{s-1\, \prime }(x_s^-) = \frac{2}{h_{s-1}} \widehat{\phi}_i^{\,\prime}(1), 
 \end{align*}
-and using again the local support of the basis functions we find
+which finally yields
+\begin{align*}
+    &[\textbf{C}_{\text{cons}}^{(s-1,s-1)}]_{i,j} = \frac{c(x_s^-)}{h_{s-1}} \widehat{\phi}_j^{\,\prime}(1) \widehat{\phi}_i(1) + \frac{c(x_s^-)}{h_{s-1}} \widehat{\phi}_i^{\,\prime} (1) \widehat{\phi}_j(1) \\
+    &[\textbf{C}_{\text{cons}}^{(s-1,s)}]_{i,j} = \frac{c(x_s^-)}{h_{s-1}} \widehat{\phi}_j^{\,\prime} (1) \widehat{\phi}_i (-1) - \frac{c(x_s^+)}{h_{s}} \widehat{\phi}_i^{\,\prime} (-1) \widehat{\phi}_j (1) \\
+    &[\textbf{C}_{\text{cons}}^{(s,s)}]_{i,j} = -\frac{c(x_s^+)}{h_s} \widehat{\phi}_j^{\,\prime} (-1) \widehat{\phi}_i (-1) - \frac{c(x_s^+)}{h_s} \widehat{\phi}_i^{\,\prime} (-1) \widehat{\phi}_j (-1)
+\end{align*}
+\begin{example}
+Consider $c\equiv 1$ for $\mathcal{P}^1$-elements $(r=1)$ 
+with an equidistant mesh with meshsize $h$ we have
 \begin{equation*}
-    \textbf{C}_{\text{cons}}^{(s-1,s-1)} = c(x_s^-)
-\end{equation*}
+    \widehat{\textbf{B}}_{\text{cons}}^{(s)} = \frac{1}{h}
+    \begin{bmatrix}
+        0       & -1/2  & 1/2   & 0     \\
+        -1/2    & 1     & -1    & 1/2   \\
+        1/2     & -1    & 1     & -1/2  \\
+        0       & 1/2   & -1/2  & 0
+    \end{bmatrix}
+\end{equation*}    
+\end{example}
+
+\subsubsection{Boundary Faces}
+For $s\in \{0, N+1 \}$ and $x_s$ a boundary face we now have a smaller local contribution matrix 
+since the contribution can only come from the one element to which $x_s$ belongs. Meaning we have
+$\widehat{\textbf{B}}_{\text{cons}}^{(0)}, \widehat{\textbf{B}}_{\text{cons}}^{(N+1)} \in \mathbb{R}^{(r+1)\times (r+1)}$
+with
+\begin{align*}
+    & [\widehat{\textbf{B}}_{\text{cons}}^{(0)}]_{i,j} = 
+    -\frac{2 c(x_0^+)}{h_{0}} \widehat{\phi}_j^{\,\prime}(-1) \widehat{\phi}_i(-1) - \frac{2 c(x_0^+)}{h_{0}} \widehat{\phi}_i^{\,\prime} (-1) \widehat{\phi}_j(-1) \\
+    & [\widehat{\textbf{B}}_{\text{cons}}^{(N+1)}]_{i,j} = 
+    \frac{2 c(x_{N+1}^-)}{h_{N+1}} \widehat{\phi}_j^{\,\prime}(1) \widehat{\phi}_i(1) + \frac{ 2 c(x_{N+1}^-)}{h_{N+1}} \widehat{\phi}_i^{\,\prime} (1) \widehat{\phi}_j(1) \\
+\end{align*}
+
+\begin{example}
+    For $c\equiv 1$ with $\mathcal{P}^1$-elements $(r=1)$ we have 
+    \begin{equation*}
+        \widehat{\textbf{B}}_{\text{cons}}^{(0)} = \frac{1}{h_0}
+        \begin{bmatrix}
+            2 & -1 \\
+            -1 & 0
+        \end{bmatrix}
+        ,\qquad 
+        \widehat{\textbf{B}}_{\text{cons}}^{(N+1)} = \frac{1}{h_{N+1}}
+        \begin{bmatrix}
+            0 & -1 \\
+            -1 & 2
+        \end{bmatrix}
+    \end{equation*}
+\end{example}
 
 %---Existence-------------------------------------------------------------------------
 \section{Existence of Discrete Solution}
