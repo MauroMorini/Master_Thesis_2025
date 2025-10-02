@@ -77,7 +77,7 @@ for i = 1:length(H_stepsizes)
     uh(interior_nodes_idx) = LHS(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - LHS(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
 
     % calculate errors 
-    [errors(1,i), errors(2,i)] = fem1d.errors1D(nodes, elements, uh, u_exact_vals, du_exact_vals);
+    [errors(1,i), errors(2,i)] = fem1d.errors1DWithExactSol(nodes, elements, uh, u_exact_vals, du_exact_vals);
     disp("calculated h = "+ h + "  i = " + i + " cond(A) = " + condest(A(interior_nodes_idx, interior_nodes_idx)))
 end
 

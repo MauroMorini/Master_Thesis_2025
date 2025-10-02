@@ -4,6 +4,7 @@ function M = l2projectionMassMatrix1D(nodes_1,elements_1,nodes_2,elements_2)
         % note for projection here V2 is the projected space.
         % To project a solution u_2 in V_2 onto the space V_1 solve the system M*P(u_2) = u_2 
         % where P(u_2) is the projection of u_2 onto V_1 
+        % only works currently if both spaces have same global dof
     arguments (Input)
         nodes_1           % (num_nodes1,1) node vector
         elements_1        % (num_el1, dof) connectivity matrix
@@ -16,29 +17,39 @@ function M = l2projectionMassMatrix1D(nodes_1,elements_1,nodes_2,elements_2)
     end
 
     % Initializations
-    N1 = length(p1);
-    N2 = length(p2);
-    M = sparse(N2, N1);
+    num_el_1 = size(elements_1, 1); 
+    num_el_2 = size(elements_2, 1);
+    num_nodes_1 = length(nodes_1);
+    num_nodes_2 = length(nodes_2);
+    dof = size(elements_1, 2);
+    triplet_list_iterator = 1;
+    c_vals_el = c_vals(elements);
 
-    % % functions
-    % N0 = @(x) (1-x)/2;
-    % N1 = @(x) (1+x)/2;
-    % FKInv = @(x,h,m) 2*(x-m)/h;
+    % preallocation
+    M_max_entries = num_el_1*dof^2;
+    triplet_list_rows = zeros(M_max_entries, 1);
+    triplet_list_cols = zeros(M_max_entries, 1);
+    triplet_list_entries = zeros(M_max_entries, 1);
+
+    assert(size(elements_2, 2) == dof)
+
+    % collect quadrature information
+    [phi_val, ~, quad_weights] = common.getShapeFunctionValueMatrix(dof);
     
     % iterate over elements of V1
-    for i = 1:size(t1, 1)
-        K1 = p1(t1(i,:));
+    for k = 1:size(elements_1, 1)
+        K1 = nodes_1(elements_1(k,:));
 
         % h1 = abs(K1(1)-K1(end));
         % m1 = (K1(1)+K1(end))/2;
 
         % find elements in V2 which have a non empty intersection with
         % K
-        p2El = [p2(t2(:,1)), p2(t2(:,end))];
+        p2El = [nodes_2(elements_2(:,1)), nodes_2(elements_2(:,end))];
         idxEmpty = p2El(:,2) <= K1(1) | K1(end) <= p2El(:,1);        % elements with empty intersection
         idxEl = find(~idxEmpty);
         for j = 1:length(idxEl)
-            K2 = p2(t2(idxEl(j),:));
+            K2 = p2(elements_2(idxEl(j),:));
 
             % h2 = abs(K2(1)-K2(end));
             % m2 = (K2(1) + K2(end))/2;

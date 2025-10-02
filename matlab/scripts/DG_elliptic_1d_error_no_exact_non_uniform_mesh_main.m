@@ -10,7 +10,7 @@ import fem1d.*
 c_handle_idx = 1;
 u_exact_handle_idx = 6;
 sigma = 10;
-dof = 2;
+dof = 10;
 num_refinement_iterations = 10;
 
 % define function handles (real solution)   
@@ -51,6 +51,8 @@ boundary_nodes = [0,1];
 initial_meshsize = abs(boundary_nodes(1) - boundary_nodes(2))/3;
 errors = zeros(1, num_refinement_iterations);
 condition_B = zeros(1,num_refinement_iterations);
+numerical_solutions = cell(1, num_refinement_iterations);
+exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact_handle, "type", "exact_solution");
 
 % set boundary conditions
 boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), du_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "neumann");
@@ -83,17 +85,44 @@ for i = 1:num_refinement_iterations
 
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);
+    disp("calculated uh for h = " + Mesh.h_max)
+
+    % collect solution
+    numerical_solutions{i} = struct("mesh", copy(Mesh), "sol", uh, "type", "numerical_solution");
 
     % calculate errors 
-    [errors(1,i),errors(2,i)] = fem1d.errors1DBetweenFemSol(nodes, elements, uh, u_exact_vals);
-    disp("calculated uh for h = " + Mesh.h_max)
+    % [errors(1,i),errors(2,i)] = fem1d.errors1DBetweenFemSol(nodes, elements, uh, u_exact_vals);
 
     % refine mesh
     H_meshsizes(i) = Mesh.h_max;
-    Mesh.h_min = Mesh.h_min/refine_factor;
+    if i < num_refinement_iterations
+        Mesh.h_min = Mesh.h_min/refine_factor;
+        refine_idx = true(size(elements, 1),1);
+        Mesh.refineElementsByFact(refine_idx, refine_factor);
+        Mesh.h_max = Mesh.h_max/refine_factor;
+    end
+end
+
+% calculate high h-refined FEM sol
+    Mesh.h_min = Mesh.h_min/8;
     refine_idx = true(size(elements, 1),1);
-    Mesh.refineElementsByFact(refine_idx, refine_factor);
-    Mesh.h_max = Mesh.h_max/refine_factor;
+    Mesh.refineElementsByFact(refine_idx, 8);
+    Mesh.h_max = Mesh.h_max/8;
+    % update mesh
+    Mesh.updatePet();
+    [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
+
+    % set values from handles
+    c_vals = c_handle(nodes);
+    f_vals = f_exact_handle(nodes);
+    [uh_ref, ~] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
+    uh_ref = u_exact_handle(nodes);
+    reference_sol_struct = struct("mesh", copy(Mesh), "sol", uh_ref, "type", "numerical_solution");
+    exact_solution_struct = reference_sol_struct;
+
+% calculate errors
+for i = 1:num_refinement_iterations
+    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solutions{i}, exact_solution_struct);
 end
 
 % plot solution
@@ -115,6 +144,6 @@ figure;
 loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors(1,:),H_meshsizes, errors(2,:));
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h^"+(dof-1), "h^"+(dof), "L2", "H1")
+legend("h^"+{dof-1}, "h^"+{dof}, "L2", "H1")
 title("Convergence of Errors for P^"+(dof-1)+ "elements");
 

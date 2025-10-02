@@ -1,46 +1,32 @@
-function [l2_error, h1_error] = errors1D(nodes, elements, uh_vals, u_exact_vals, du_exact_vals)
-    % calculates the error in L^2 and H^1 norm for FEM. For this to work u_exact_vals
-    % has to contain the values of the exact solution at the exact quadrature points
-    % (so far just at the nodes since quadrature and nodes coincide for Gauss-Lobatto)
+function [l2_error, h1_error] = errors1D(numerical_sol_struct, exact_sol_struct)
+    % calculates the error in L^2 and H^1 norm for FEM. Can deal with FEM solution of high h-refinement 
+    % as exact solution or just taking the exact solution and it's derivative as function handles 
+    % note that for FEM solution as reference the H^1 norm is too good!
+    % and FEM solution is interpolated, so the FEM-space should be a subset of the numerical solution space
     arguments (Input)
-        nodes                   % (num_nodes, 1) node vector
-        elements                % (num_nodes, num_el) connectivity matrix
-        uh_vals                 % (num_nodes, 1) values (coefficients) of numerical sol 
-        u_exact_vals            % (num_nodes, 1) values of exact sol AT quadrature points in elements
-        du_exact_vals           % (num_nodes, 1) values of derivative of exact sol AT quadrature points in elements
+        numerical_sol_struct    % struct: {"mesh": MeshIntervalDG1d, "sol": (num_nodes, 1) sol vector, "type": string "numerical_solution"}
+        exact_sol_struct        % struct either like numerical sol (for FEM exact sol), or struct: {"u_handle": @(x) u, "du_handle": @(x) du}
     end
     arguments (Output)
         l2_error                % scalar value of L^2 error over domain
         h1_error                % scalar value of H^1 error over domain     
     end
-    % initialization
-    [num_el, dof] = size(elements);
-
-    % preallocation
-    l2_error = 0;
-    h1_error = 0;
-
-    % collect quadrature information
-    [phi_val, dphi_val, quad_weights] = common.getShapeFunctionValueMatrix(dof);
     
-    % iterate over elements
-    for k = 1:num_el
-    
-        % element
-        K = nodes(elements(k, :));
-    
-        % element length
-        h = abs(K(1) - K(end));
-        
-        % values of u_h, du_h at quadrature points
-        uh_loc_val = (uh_vals(elements(k,:)).'*phi_val);
-        duh_loc_val = (uh_vals(elements(k,:)).'*dphi_val);
+    % extract numerical solution
+    [nodes_num, ~, elements_num] = numerical_sol_struct.mesh.getPet();
+    uh = numerical_sol_struct.sol;
 
-        l2_error = l2_error + (h/2)*(u_exact_vals(elements(k,:)).' - uh_loc_val).^2*quad_weights.';
-        h1_error = h1_error + (h/2)*(du_exact_vals(elements(k,:)).' - (2/h)*duh_loc_val).^2*quad_weights.';
-       
+    if exact_sol_struct.type == "numerical_solution"
+        [nodes_exact, ~, ~] = exact_sol_struct.mesh.getPet();
+        u_exact = exact_sol_struct.sol;
+        u_exact_vals = interp1(nodes_exact, u_exact, nodes_num);
+        fem1d.errors1DBetweenFemSol(nodes_num, elements_num, uh, u_exact_vals);
+    elseif exact_sol_struct.type == "exact_solution"
+        u_exact_vals = exact_sol_struct.u_handle(nodes_num);
+        du_exact_vals = exact_sol_struct.du_handle(nodes_num);
+        [l2_error, h1_error] = fem1d.errors1DWithExactSol(nodes_num, elements_num, uh, u_exact_vals, du_exact_vals);
+    else
+        error("wrong type of exact solution:  " + exact_sol_struct.type)
     end
-    h1_error = sqrt(h1_error + l2_error);
-    l2_error = sqrt(l2_error);
-        
+
 end

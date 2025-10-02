@@ -1,4 +1,4 @@
-classdef MeshIntervalDG1d < handle
+classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
     % MeshIntervalDG1d is a class for creating and managing a 1D mesh
     % for discontinuous Galerkin methods.
     %
@@ -118,9 +118,25 @@ classdef MeshIntervalDG1d < handle
             return 
         end
 
-        function[lower_boundary_element_idx, upper_boundary_element_idx] = getBoundaryElementIdx(obj)
+        function [lower_boundary_element_idx, upper_boundary_element_idx] = getBoundaryElementIdx(obj)
             lower_boundary_element_idx = obj.lower_boundary_element_idx;
             upper_boundary_element_idx = obj.upper_boundary_element_idx;
+        end
+% UTILS---------------------------------------------------------------------------------------------------
+        function barycentric_weights = calculate_barycentric_weights(obj)
+            % calculates barycentric_weights for each node 
+            nodes_loc = obj.nodes(obj.elements);
+            barycentric_weights = zeros(size(nodes_loc));
+            for i = 1:obj.dof
+                for j = 1:obj.dof
+                    if i == j
+                        continue
+                    end
+                    barycentric_weights(:,i) = barycentric_weights * 1./(nodes_loc(i) - nodes_loc(j));
+                end
+            end
+            barycentric_weights = barycentric_weights';
+            barycentric_weights = barycentric_weights(:);
         end
 
 % REFINE ------------------------------------------------------------------------------------------------
@@ -292,6 +308,12 @@ classdef MeshIntervalDG1d < handle
             hold on
             plot(obj.nodes(obj.boundary_node_idx), [0,0], 'rx','MarkerSize',10)
             hold off
+        end
+    end
+
+    methods (Access = protected)
+        function cp = copyElement(obj)
+            cp = copyElement@matlab.mixin.Copyable(obj);
         end
     end
 end
