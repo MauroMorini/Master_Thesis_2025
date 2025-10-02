@@ -7,7 +7,7 @@
 \usepackage{enumitem}       % enumerate (i)
 \usepackage[most]{tcolorbox}
 \tcbuselibrary{theorems}
-\usepackage{hyperref}       % clickable links
+\usepackage[colorlinks=true, allcolors=black]{hyperref}       % clickable links
 
 % --------------------------------------------------------
 % Theorem declarations (must come BEFORE tcolorbox styling!)
@@ -15,6 +15,7 @@
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{example}[theorem]{Example}
 
 % --------------------------------------------------------
 % Shared tcolorbox style for all theorem-like environments
@@ -44,6 +45,13 @@
 % Proof step environment
 \newcounter{proofstep}[theorem]
 \newenvironment{proofstep}[1][]{
-  \refstepcounter{proofstep}
-  \par\noindent\textbf{Step \theproofstep} (\textit{#1})\textbf{.} \par\nobreak
+  \refstepcounter{proofstep}%
+  \par\noindent\textbf{Step \theproofstep}%
+  \if\relax\detokenize{#1}\relax
+    \textbf{.}%
+  \else
+    \ (\textit{#1})\textbf{.}%
+  \fi
+  \par\nobreak
 }{\vspace{0.5em}}
+
