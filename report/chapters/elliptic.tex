@@ -5,7 +5,7 @@ elliptic part of the hyperbolic problem as well.
 \\
 The goal of this chapter is to build all the necessary theoretical and practical 
 tools to solve a given elliptic problem 
-numerically and then experimentally test the method for different scenarios. 
+numerically and then experimentally test the method for different parameters. 
 We will define the necessary notation and derive
 the SIPG variational formulation as well as in detail describe further implementation steps as 
 for example what basis of the finite element space we chose and how to derive local matrices. 
@@ -331,7 +331,7 @@ $T(n,i) = nr + i$.
 
 
 %---Matrix Assembly-------------------------------------------------------------------
-\section{Matrix Assembly}
+\section{System Matrix Assembly}
 With the basis functions in (\ref{def:lagrange_basis_of_Vh}) defined we can now in detail investigate how 
 to assemble the matrix $\textbf{B}$ in (\ref{eq:fully_discrete_dg_system_elliptic}). To do so we firstly separate 
 the bilinear form $b_h$ into different components
@@ -392,6 +392,7 @@ $\widehat{\textbf{A}}^{(s)} \in \mathbb{R}^{(r+1)\times (r+1)}$ for each element
 \end{example}
 
 \subsection{Assembly of B consistency part}
+\label{subsec:assembly_cons}
 As before we rewrite $\textbf{B}_{\text{cons}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{cons}}^{(s)} $, where 
 
 \begin{equation*}
@@ -424,11 +425,11 @@ where we have used the definitions of jump and average in (\ref{def:jump_average
 and note that $ \textbf{C}_{\text{cons}}^{(s-1,s)} = (\textbf{C}_{\text{cons}}^{(s,s-1)})^T$ by the symmetry of the bilinear form $b_h^{\text{cons}}$.
 Next we represent the values of the basis functions $ \Phi $ at the element boundary by the values of the reference 
 shape functions $\widehat{\phi}$
-\begin{align*}
-    & \Phi_i^s(x_s^+) = \widehat{\phi}_i(-1) , & \Phi^{s-1}_i(x_s^-) = \widehat{\phi}_i(1) \\
+\begin{align}
+    & \Phi_i^s(x_s^+) = \widehat{\phi}_i(-1) , & \Phi^{s-1}_i(x_s^-) = \widehat{\phi}_i(1) \label{eq:shape_fun_and_basis_fun_values_equality}\\ 
     & \Phi_i^{s\, \prime }(x_s^+) = \frac{2}{h_{s}} \widehat{\phi}_i^{\,\prime}(-1), 
-    & \Phi_i^{s-1\, \prime }(x_s^-) = \frac{2}{h_{s-1}} \widehat{\phi}_i^{\,\prime}(1), 
-\end{align*}
+    & \Phi_i^{s-1\, \prime }(x_s^-) = \frac{2}{h_{s-1}} \widehat{\phi}_i^{\,\prime}(1) \nonumber
+\end{align}
 which finally yields
 \begin{align*}
     &[\textbf{C}_{\text{cons}}^{(s-1,s-1)}]_{i,j} = \frac{c(x_s^-)}{h_{s-1}} \widehat{\phi}_j^{\,\prime}(1) \widehat{\phi}_i(1) + \frac{c(x_s^-)}{h_{s-1}} \widehat{\phi}_i^{\,\prime} (1) \widehat{\phi}_j(1) \\
@@ -477,6 +478,140 @@ with
         \end{bmatrix}
     \end{equation*}
 \end{example}
+
+\subsection{Assembly of B penalty part}
+Again we rewrite $\textbf{B}_{\text{penal}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{penal}}^{(s)}$, where
+\begin{equation*}
+    [\textbf{B}_{\text{penal}}^{(s)}]_{T(n,i), T(m,j)} = { \texttt{a}_s} [\Phi_j^m(x_s)] [\Phi_i^n(x_s)]
+\end{equation*}
+We proceed analogously to \ref{subsec:assembly_cons}.
+\subsubsection{Interior Faces}
+Let $s\in \{1,\ldots,N\} $ and $x_s$ denote an interior face. As before we have that 
+the entries of $ \textbf{B}_{\text{penal}}^{(s)} $ can only be nonzero for an index tuple
+$ (T(n,i), T(m,j)) $ if $ n,m \in \{s, s-1\} $, similar to \ref{subsec:assembly_cons} we find
+that the assembly boils down to adding up local contributions represented in a local contribution
+matrix
+
+\begin{equation*}
+    \widehat{\textbf{B}}_{\text{penal}}^{(s)} = 
+    \begin{bmatrix}
+        \textbf{C}_{\text{penal}}^{(s-1,s-1)} & \textbf{C}_{\text{penal}}^{(s-1,s)} \\
+        \textbf{C}_{\text{penal}}^{(s,s-1)} & \textbf{C}_{\text{penal}}^{(s,s)} 
+    \end{bmatrix}
+    \in \mathbb{R}^{2(r+1) \times 2(r+1)}
+\end{equation*}
+
+and using (\ref{eq:shape_fun_and_basis_fun_values_equality}), and the definition of the penalization
+parameter (\ref{def:penalization_function}) we specifically find
+
+\begin{align*}
+    &[\textbf{C}_{\text{penal}}^{(s-1,s-1)}]_{i,j} = \texttt{a}_s \widehat{\phi}_j(1) \widehat{\phi}_i(1)  \\
+    &[\textbf{C}_{\text{penal}}^{(s-1,s)}]_{i,j} = -\texttt{a}_s \widehat{\phi}_j(-1) \widehat{\phi}_i(1) \\
+    &[\textbf{C}_{\text{penal}}^{(s,s)}]_{i,j} = \texttt{a}_s \widehat{\phi}_j(-1) \widehat{\phi}_i(-1)
+\end{align*}
+
+where again by symmetry of the penalty term we have 
+$ \textbf{C}_{\text{penal}}^{(s-1,s)} = (\textbf{C}_{\text{penal}}^{(s,s-1)})^T$
+and $\texttt{a}_s$ only depends on the two adjacent elements $I_{s-1}, I_s$.
+
+\begin{example}
+    Consider $c\equiv 1$ for $\mathcal{P}^1$-elements $(r=1)$ 
+    with an equidistant mesh with meshsize $h$ we have
+    \begin{equation*}
+        \widehat{\textbf{B}}_{\text{penal}}^{(s)} = \frac{\sigma}{h}
+        \begin{bmatrix}
+            0   & 0     & 0     & 0     \\
+            0   & 1     & -1    & 0     \\
+            0   & -1    & 1     & 0     \\
+            0   & 0     & 0     & 0     
+        \end{bmatrix}
+    \end{equation*}    
+\end{example}
+
+\subsubsection{Boundary Faces}
+For $s \in  \{0, N+1\} $ we again have only the respective boundary element contributing. 
+So the local contribution matrices satisfy
+
+\begin{align*}
+    [\widehat{\textbf{B}}_{\text{penal}}^{(0)}]_{i,j} = 
+    \texttt{a}_0 \widehat{\phi}_j(-1) \widehat{\phi}_i(-1), \qquad
+    [\widehat{\textbf{B}}_{\text{penal}}^{(N+1)}]_{i,j} = 
+    \texttt{a}_{N+1} \widehat{\phi}_j(1) \widehat{\phi}_i(1) \\
+\end{align*}
+
+\begin{example}
+    For $c\equiv 1$ with $\mathcal{P}^1$-elements $(r=1)$ we have 
+    \begin{equation*}
+        \widehat{\textbf{B}}_{\text{penal}}^{(0)} = \frac{\sigma}{h_0}
+        \begin{bmatrix}
+            1 & 0 \\
+            0 & 0
+        \end{bmatrix}
+        ,\qquad 
+        \widehat{\textbf{B}}_{\text{penal}}^{(N+1)} = \frac{\sigma}{h_{N+1}}
+        \begin{bmatrix}
+            0 & 0 \\
+            0 & 1
+        \end{bmatrix}
+    \end{equation*}
+\end{example}
+
+\subsection{System Vector Assembly}
+We divide assembling the vector \textbf{l} in (\ref{eq:fully_discrete_dg_system_elliptic}) into two parts.
+\begin{equation*}
+    \textbf{l} = \textbf{l}_{\text{load}} + \textbf{l}_{\text{bc}}
+\end{equation*}
+First we recall the assembly of the load vector $\textbf{l}_{\text{load}}$, i.e. the vector containing the contributions of the forcing term $f$
+and secondly we will describe how to add the Dirichlet boundary condition contributions ($\textbf{l}_{\text{bc}}$).
+\subsubsection{Load Vector}
+The assembly of the load vector is completely analogous to the continuous finite element case.
+Using the local support of $\Phi_i^n$ we can rewrite
+
+\begin{equation*}
+    \int_{\Omega} f \Phi_i^n \text{d}x = \sum_{s=0}^{N} \int_{I_s} f \Phi_i^n \text{d} x = \int_{I_n} f(x) \Phi_i^n(x) \text{d} x
+    = \frac{h_n}{2} \int_{-1}^{1} f(F_n(\xi))\widehat{\phi}_i(\xi)\text{d}\xi
+\end{equation*}
+
+meaning as before we can assemble $\textbf{l}_{\text{load}} = \sum_{s=0}^{N} \textbf{l}_{\text{load}}^{(s)}$ where
+$[\textbf{l}_{\text{load}}^{(s)}]_{T(n,i)} = \int_{I_s} f \Phi_i^n \text{d} x$.
+which can be characterized by the local contribution vector $\widehat{\textbf{l}}_{\text{load}}^{\,(s)} \in \mathbb{R}^{r+1}$ defined as
+
+\begin{equation*} 
+    [\widehat{\textbf{l}}_{\text{load}}^{\,(s)}]_{i} 
+    = \frac{h_s}{2} \int_{-1}^{1} f(F_s(\xi))\widehat{\phi}_i(\xi)\text{d}\xi
+\end{equation*}
+where we approximate the integral using the Gauss-Lobatto quadrature.
+
+\begin{example}
+    For $f$ piecewise constant (i.e. $f|_{I_s} \equiv f_s \in \mathbb{R} \quad \forall s=0,\ldots,N$) with $\mathcal{P}^1$-elements $(r=1)$ we have
+    \begin{equation*}
+        \normalfont \widehat{\textbf{l}}_{\text{load}}^{\,(s)} = \frac{f_s h_s}{2}
+        \begin{bmatrix}
+            1 \\
+            1
+        \end{bmatrix}
+    \end{equation*}
+\end{example}
+
+\subsubsection{Dirichlet Boundary Condition Vector}
+We have 
+
+\begin{equation*}
+    [\textbf{l}_{\text{bc}}]_{T(n,i)} = 
+    -g_1c(x_{N+1}^-)\Phi_i^n(x_{N+1}^-) + g_0c(x_0^+)\Phi_i^n(x_0^+)
+    + \texttt{a}_{N+1}g_1\Phi_i^n(x_{N+1}^-) + \texttt{a}_0 g_0\Phi_i^n(x_{0}^+)
+\end{equation*}
+
+where the entries can clearly only be non-zero at indices corresponding to 
+boundary elements.
+We characterize the assembly using the local contribution vectors 
+$\widehat{\textbf{l}}_{\text{bc}}^{\,(N+1)}, \widehat{\textbf{l}}_{\text{bc}}^{\,(0)} \in \mathbb{R}^{r+1}$
+where
+
+\begin{equation*}
+     [\widehat{\textbf{l}}_{\text{bc}}^{\,(0)}]_{i} = g_0c(x_{0}^-) \widehat{\phi}_i(-1) + \texttt{a}_{0}g_0\widehat{\phi}_i(-1), \qquad
+     [\widehat{\textbf{l}}_{\text{bc}}^{\,(N+1)}]_{i} = -g_1c(x_{N+1}^-) \widehat{\phi}_i(1) + \texttt{a}_{N+1}g_1\widehat{\phi}_i(1)
+\end{equation*}
 
 %---Existence-------------------------------------------------------------------------
 \section{Existence of Discrete Solution}
