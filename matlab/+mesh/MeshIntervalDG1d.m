@@ -123,21 +123,6 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             upper_boundary_element_idx = obj.upper_boundary_element_idx;
         end
 % UTILS---------------------------------------------------------------------------------------------------
-        function barycentric_weights = calculate_barycentric_weights(obj)
-            % calculates barycentric_weights for each node 
-            nodes_loc = obj.nodes(obj.elements);
-            barycentric_weights = zeros(size(nodes_loc));
-            for i = 1:obj.dof
-                for j = 1:obj.dof
-                    if i == j
-                        continue
-                    end
-                    barycentric_weights(:,i) = barycentric_weights * 1./(nodes_loc(i) - nodes_loc(j));
-                end
-            end
-            barycentric_weights = barycentric_weights';
-            barycentric_weights = barycentric_weights(:);
-        end
 
 % REFINE ------------------------------------------------------------------------------------------------
         function obj = refineElementsByFact(obj, elements_to_be_refined_idx, refine_factor)
