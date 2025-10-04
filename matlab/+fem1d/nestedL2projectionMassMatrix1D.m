@@ -22,6 +22,7 @@ function M = nestedL2projectionMassMatrix1D(nodes_coarse,elements_coarse,nodes_f
     dof_c = size(elements_coarse, 2);
     dof_f = size(elements_fine, 2);
     triplet_list_iterator = 1;
+    maxdof = max(dof_f, dof_c);
 
     % preallocation
     elements_ratio = ceil(num_el_fine/num_el_coarse);
@@ -34,7 +35,8 @@ function M = nestedL2projectionMassMatrix1D(nodes_coarse,elements_coarse,nodes_f
     assert(num_el_fine >= num_el_coarse, "the second input space has to be finer than the first")
 
     % collect quadrature information
-    [phi_val, ~, quad_weights] = common.getShapeFunctionValueMatrix(dof_f);
+    [phi_val, ~, quad_weights] = common.getShapeFunctionValueMatrix(dof_f, maxdof + 1);
+    [quad_nodes, ~] = common.getLobattoQuadrature(maxdof+1);
     barycentric_weights_coarse = common.calculateBarycentricWeights(nodes_coarse, elements_coarse);
 
     % categorize finer mesh into coarser one
@@ -45,7 +47,9 @@ function M = nestedL2projectionMassMatrix1D(nodes_coarse,elements_coarse,nodes_f
         % find fine elements in coarse one
         fine_el_idx = find(fine_to_coarse_idx_map == k);
         fine_el_loc = elements_fine(fine_el_idx, :);
-        fine_nodes_loc = nodes_fine(fine_el_loc);
+
+        % find quadrature points in fine elements
+        fine_nodes_loc = nodes_fine(fine_el_loc(:, 1));
         fine_nodes_loc = fine_nodes_loc(:);
 
         % calculate basis function values at coarser nodes 
