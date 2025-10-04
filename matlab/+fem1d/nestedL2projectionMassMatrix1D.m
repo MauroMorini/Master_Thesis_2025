@@ -36,8 +36,14 @@ function M = nestedL2projectionMassMatrix1D(nodes_coarse,elements_coarse,nodes_f
 
     % collect quadrature information
     [phi_val, ~, quad_weights] = common.getShapeFunctionValueMatrix(dof_f, maxdof + 1);
-    [quad_nodes, ~] = common.getLobattoQuadrature(maxdof+1);
+    [quad_nodes_ref, ~] = common.getLobattoQuadrature(maxdof+1);
     barycentric_weights_coarse = common.calculateBarycentricWeights(nodes_coarse, elements_coarse);
+
+
+    % find quadrature points in fine elements
+    fine_lower_boundary_faces = nodes_fine(elements_fine(:, 1));
+    fine_meshsizes = abs(nodes_fine(elements_fine(:,end)) - nodes_fine(elements_fine(:,1)));
+    fine_quadrature_nodes = fine_lower_boundary_faces + fine_meshsizes/2 + fine_meshsizes/2.*quad_nodes_ref;
 
     % categorize finer mesh into coarser one
     faces_coarse = [nodes_coarse(elements_coarse(:,1)); nodes_coarse(end)];
@@ -47,19 +53,17 @@ function M = nestedL2projectionMassMatrix1D(nodes_coarse,elements_coarse,nodes_f
         % find fine elements in coarse one
         fine_el_idx = find(fine_to_coarse_idx_map == k);
         fine_el_loc = elements_fine(fine_el_idx, :);
-
-        % find quadrature points in fine elements
-        fine_nodes_loc = nodes_fine(fine_el_loc(:, 1));
-        fine_nodes_loc = fine_nodes_loc(:);
+        fine_quad_nodes_loc = fine_quadrature_nodes(fine_el_idx, :);
+        fine_quad_nodes_loc = reshape(fine_quad_nodes_loc.', [], 1);
 
         % calculate basis function values at coarser nodes 
         weights_loc = barycentric_weights_coarse(elements_coarse(k,:));
         coarse_nodes_loc = nodes_coarse(elements_coarse(k,:));
-        Phi_loc = common.evaluateLagrangeBarycentric(fine_nodes_loc, weights_loc, coarse_nodes_loc);
+        Phi_loc = common.evaluateLagrangeBarycentric(fine_quad_nodes_loc, weights_loc, coarse_nodes_loc);
 
         for s = 1:length(fine_el_idx)
-            h = abs(nodes_fine(elements_fine(fine_el_idx(s), end))-nodes_fine(elements_fine(fine_el_idx(s), 1)));
-            Phi_loc_s = Phi_loc(:, ((s-1)*dof_f+1):(s*dof_f)).*quad_weights;
+            h = fine_meshsizes(fine_el_idx(s));
+            Phi_loc_s = Phi_loc(:, ((s-1)*(maxdof+1)+1):(s*(maxdof+1))).*quad_weights;
             entry_loc = Phi_loc_s*phi_val.';
             row_idx_loc = repmat(elements_coarse(k,:).', 1, dof_f);
             cols_idx_loc = repmat(elements_fine(fine_el_idx(s), :), dof_c, 1);

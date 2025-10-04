@@ -10,7 +10,7 @@ import fem1d.*
 c_handle_idx = 1;
 u_exact_handle_idx = 6;
 sigma = 10;
-dof = 3;
+dof = 2;
 num_refinement_iterations = 9;
 
 % define function handles (real solution)   

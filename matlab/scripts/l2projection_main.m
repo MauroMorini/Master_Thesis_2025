@@ -8,8 +8,8 @@ import fem1d.*
 
 % Settings
 c_handle_idx = 1;
-u_exact_handle_idx = 1;
-dof = 3;
+u_exact_handle_idx = 6;
+dof = 2;
 num_refinement_iterations = 9;
 
 % define function handles (real solution)   
@@ -43,9 +43,6 @@ if isnumeric(c_handle)
 else
     c_handle = matlabFunction(c_handle, 'vars', {x});
 end
-
-u_exact_handle = @(x) ones(size(x));
-du_exact_handle = @(x) zeros(size(x));
 
 % initialize parameters and preallocate
 refine_factor = 2;
@@ -106,7 +103,7 @@ end
 
 % plot errors
 figure;
-loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors(1,:));
+loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors(1,:)/errors(1,1)*H_meshsizes(1)^(dof));
 xlabel('Step Size (H)');
 ylabel('Error');
 legend("h^"+{dof-1}, "h^"+{dof}, "L2")
