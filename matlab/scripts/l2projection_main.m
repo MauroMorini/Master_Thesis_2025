@@ -8,15 +8,15 @@ import fem1d.*
 
 % Settings
 c_handle_idx = 1;
-u_exact_handle_idx = 6;
-dof = 2;
-num_refinement_iterations = 10;
+u_exact_handle_idx = 1;
+dof = 3;
+num_refinement_iterations = 9;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
 syms x
 cell_exact_fun = {
-    x.^2;                   % polynomial
+    x;                   % polynomial
     x.^9;                   % polynomial
     sin(pi*x);              % sine
     cos(pi*x);              % cosine
@@ -44,10 +44,13 @@ else
     c_handle = matlabFunction(c_handle, 'vars', {x});
 end
 
+u_exact_handle = @(x) ones(size(x));
+du_exact_handle = @(x) zeros(size(x));
+
 % initialize parameters and preallocate
 refine_factor = 2;
 boundary_nodes = [0,1];
-initial_meshsize = abs(boundary_nodes(1) - boundary_nodes(2))/3;
+initial_meshsize = abs(boundary_nodes(1) - boundary_nodes(2))/2;
 errors = zeros(1, num_refinement_iterations);
 exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact_handle, "type", "exact_solution");
 
@@ -56,16 +59,15 @@ H_meshsizes = zeros(1,num_refinement_iterations);
 H_meshsizes(1) = initial_meshsize;
 Mesh = mesh.MeshIntervalDG1d(boundary_nodes, [initial_meshsize, initial_meshsize/100]);
 Mesh.dof = dof;
-Mesh.buildResonatorMesh([0.7,0.75; 0.3, 0.4], [0.2, 0.01]);
+% Mesh.buildResonatorMesh([0.7,0.75; 0.3, 0.4], [0.2, 0.01]);
 
 for i = 1:num_refinement_iterations
 
     % update mesh
     Mesh.updatePet();
-    [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
+    [nodes, ~, elements] = Mesh.getPet();
 
     u_exact_vals = u_exact_handle(nodes);
-    M = fem1d.nestedL2projectionMassMatrix1D(nodes, elements, nodes, elements);
     
     % collect solution
     numerical_solutions{i} = struct("mesh", copy(Mesh), "sol", u_exact_vals, "type", "numerical_solution");
@@ -80,9 +82,32 @@ for i = 1:num_refinement_iterations
     end
 end
 
-% calculate errors
-for i = 1:num_refinement_iterations
-    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solutions{i}, exact_solution_struct);
+% calculate high h-refined FEM sol
+    Mesh.h_min = Mesh.h_min/8;
+    refine_idx = true(size(elements, 1),1);
+    Mesh.refineElementsByFact(refine_idx, 8);
+    Mesh.h_max = Mesh.h_max/8;
+    % update mesh
+    Mesh.updatePet();
+    [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
+
+    uh_ref = u_exact_handle(nodes);
+    reference_sol_struct = struct("mesh", copy(Mesh), "sol", uh_ref, "type", "numerical_solution");
+
+% project and calculate errors
+for i = 1:num_refinement_iterations-1
+    [nodes_origin,~,elements_origin] = numerical_solutions{i}.mesh.getPet();
+    [nodes_target,~,elements_target] = numerical_solutions{i+1}.mesh.getPet();
+    values_origin = numerical_solutions{i}.sol;
+    u_projected = l2projection1D(nodes_origin, elements_origin, values_origin, nodes_target, elements_target, true);
+    projection_solution = struct("mesh", numerical_solutions{i+1}.mesh, "sol", u_projected, "type", "numerical_solution");
+    [errors(1,i),~] = fem1d.errors1D(projection_solution, exact_solution_struct);
 end
 
-
+% plot errors
+figure;
+loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors(1,:));
+xlabel('Step Size (H)');
+ylabel('Error');
+legend("h^"+{dof-1}, "h^"+{dof}, "L2")
+title("Convergence of Errors for P^"+(dof-1)+ "elements");

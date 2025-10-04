@@ -10,8 +10,8 @@ import fem1d.*
 c_handle_idx = 1;
 u_exact_handle_idx = 6;
 sigma = 10;
-dof = 10;
-num_refinement_iterations = 10;
+dof = 3;
+num_refinement_iterations = 9;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -91,7 +91,7 @@ for i = 1:num_refinement_iterations
     numerical_solutions{i} = struct("mesh", copy(Mesh), "sol", uh, "type", "numerical_solution");
 
     % calculate errors 
-    % [errors(1,i),errors(2,i)] = fem1d.errors1DBetweenFemSol(nodes, elements, uh, u_exact_vals);
+    % [errors(1,i),errors(2,i)] = fem1d.errors1DWithExactSol(nodes, elements, uh, u_exact_vals, zeros(size(u_exact_vals)));
 
     % refine mesh
     H_meshsizes(i) = Mesh.h_max;
@@ -118,7 +118,7 @@ end
     [uh_ref, ~] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     uh_ref = u_exact_handle(nodes);
     reference_sol_struct = struct("mesh", copy(Mesh), "sol", uh_ref, "type", "numerical_solution");
-    exact_solution_struct = reference_sol_struct;
+    % exact_solution_struct = reference_sol_struct;
 
 % calculate errors
 for i = 1:num_refinement_iterations
@@ -126,8 +126,9 @@ for i = 1:num_refinement_iterations
 end
 
 % plot solution
+plot_idx = 1;
 figure;
-plot(nodes, uh, nodes, u_exact_handle(nodes))
+plot(numerical_solutions{plot_idx}.mesh.nodes,numerical_solutions{plot_idx}.sol , numerical_solutions{plot_idx}.mesh.nodes, u_exact_handle(numerical_solutions{plot_idx}.mesh.nodes))
 xlabel("x")
 ylabel("y")
 legend("uh", "u\_exact")
@@ -141,7 +142,7 @@ legend("h^{-2}", "cond(B)")
 
 % plot errors
 figure;
-loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors(1,:),H_meshsizes, errors(2,:));
+loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors(1,:)/errors(1,1)*(H_meshsizes(1)^(dof)),H_meshsizes, errors(2,:)/errors(2,1)*(H_meshsizes(1)^(dof-1)));
 xlabel('Step Size (H)');
 ylabel('Error');
 legend("h^"+{dof-1}, "h^"+{dof}, "L2", "H1")

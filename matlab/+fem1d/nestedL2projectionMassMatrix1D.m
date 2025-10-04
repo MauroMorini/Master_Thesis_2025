@@ -57,8 +57,8 @@ function M = nestedL2projectionMassMatrix1D(nodes_coarse,elements_coarse,nodes_f
             h = abs(nodes_fine(elements_fine(fine_el_idx(s), end))-nodes_fine(elements_fine(fine_el_idx(s), 1)));
             Phi_loc_s = Phi_loc(:, ((s-1)*dof_f+1):(s*dof_f)).*quad_weights;
             entry_loc = Phi_loc_s*phi_val.';
-            row_idx_loc = repmat(elements_fine(fine_el_idx(s), :).', 1, dof_c);
-            cols_idx_loc = repmat(elements_coarse(k,:), dof_f, 1);
+            row_idx_loc = repmat(elements_coarse(k,:).', 1, dof_f);
+            cols_idx_loc = repmat(elements_fine(fine_el_idx(s), :), dof_c, 1);
             entry_length = dof_c*dof_f;
             triplet_list_entries(triplet_list_iterator:triplet_list_iterator+entry_length-1) = entry_loc(:)*(h/2);
             triplet_list_rows(triplet_list_iterator:triplet_list_iterator+entry_length-1) = row_idx_loc(:);
@@ -69,5 +69,5 @@ function M = nestedL2projectionMassMatrix1D(nodes_coarse,elements_coarse,nodes_f
     triplet_list_entries = triplet_list_entries(1:triplet_list_iterator-1);
     triplet_list_rows = triplet_list_rows(1:triplet_list_iterator-1);
     triplet_list_cols = triplet_list_cols(1:triplet_list_iterator-1);
-    M = sparse(triplet_list_rows, triplet_list_cols, triplet_list_entries, num_nodes_fine, num_nodes_coarse);
+    M = sparse(triplet_list_rows, triplet_list_cols, triplet_list_entries, num_nodes_coarse, num_nodes_fine);
 end
