@@ -9,9 +9,10 @@ import fem1d.*
 % Settings
 c_handle_idx = 1;
 u_exact_handle_idx = 6;
-sigma = 10;
-dof = 4;
+dof = 2;
+sigma = 100*dof;
 num_refinement_iterations = 10;
+overwrite_functions_bool = true;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -30,7 +31,7 @@ cell_exact_fun = {
 };
 cell_c_fun = {
     1;
-    sin(10*x) + 2
+    (sin(10*x) + 2)*(x+1)
 };
 c_handle = cell_c_fun{c_handle_idx};
 u_exact_handle = cell_exact_fun{u_exact_handle_idx};
@@ -58,16 +59,29 @@ exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact
 boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), du_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "neumann");
 
 % create initial mesh
+resonators_mat = [0.5, 0.6];
 H_meshsizes = zeros(1,num_refinement_iterations); 
 H_meshsizes(1) = initial_meshsize;
 Mesh = mesh.MeshIntervalDG1d(boundary_nodes, [initial_meshsize, initial_meshsize/100]);
 Mesh.dof = dof;
-Mesh.buildResonatorMesh([0.7,0.75; 0.3, 0.4], [0.2, 0.01]);
+Mesh.buildResonatorMesh(resonators_mat, [initial_meshsize/2, initial_meshsize/20]);
+
+% overwrite function handles
+if overwrite_functions_bool
+    c_handle = @(x) 2*(x>=boundary_nodes(1) & x< resonators_mat(1)) + ...
+                    0.5*(x<=boundary_nodes(2) & x>resonators_mat(2)) + ...
+                    (11+10*sin(300*x)).*(x>=resonators_mat(1) & x<=resonators_mat(2));
+    % c_handle = @(x) ones(size(x));
+    f_exact_handle = @(x) zeros(size(x));
+    f_exact_handle = @(x) 100*sin(3*x).*(x < 0.4 & x >= 0) + x.^2.*(x >= 0.4 & x <= 1);
+    boundary_cond = struct("values", [0, 1], "lower_boundary_type", "dirichlet", "upper_boundary_type", "neumann");
+end
+
 for i = 1:num_refinement_iterations
 
     % update mesh
     Mesh.updatePet();
-    [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
+    [nodes, ~, elements] = Mesh.getPet();
 
     % set values from handles
     c_vals = c_handle(nodes);
@@ -81,17 +95,12 @@ for i = 1:num_refinement_iterations
     rhs_vector = dg1d.sipdgDirichletLoadVector1D(nodes, elements, f_vals, c_vals, u_exact_vals, sigma);
     
     % solve system
-    uh = B\rhs_vector;
-
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);
     disp("calculated uh for h = " + Mesh.h_max + "   ...   i = " + i)
 
     % collect solution
     numerical_solutions{i} = struct("mesh", copy(Mesh), "sol", uh, "type", "numerical_solution");
-
-    % calculate errors 
-    % [errors(1,i),errors(2,i)] = fem1d.errors1DWithExactSol(nodes, elements, uh, u_exact_vals, zeros(size(u_exact_vals)));
 
     % refine mesh
     H_meshsizes(i) = Mesh.h_max;
@@ -122,14 +131,19 @@ end
     
 
 % calculate errors
+reference_struct = exact_solution_struct;
 for i = 1:num_refinement_iterations-1
-    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solutions{i}, numerical_solutions{i+1});
+    if overwrite_functions_bool
+        reference_struct = numerical_solutions{i+1};
+    end
+    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solutions{i}, reference_struct);
 end
 
 % plot solution
-plot_idx = 1;
+plot_idx = num_refinement_iterations;
 figure;
-plot(numerical_solutions{plot_idx}.mesh.nodes,numerical_solutions{plot_idx}.sol , numerical_solutions{plot_idx}.mesh.nodes, u_exact_handle(numerical_solutions{plot_idx}.mesh.nodes))
+% plot(numerical_solutions{plot_idx}.mesh.nodes,numerical_solutions{plot_idx}.sol , numerical_solutions{plot_idx}.mesh.nodes, u_exact_handle(numerical_solutions{plot_idx}.mesh.nodes))
+plot(numerical_solutions{plot_idx}.mesh.nodes,numerical_solutions{plot_idx}.sol)
 xlabel("x")
 ylabel("y")
 legend("uh", "u\_exact")
@@ -143,10 +157,10 @@ legend("h^{-2}", "cond(B)")
 
 % scale errors for better plot
 errors_plot = errors;
-if errors(1,1) > 0
+if errors(1,1) > 1e-10
     errors_plot(1,:) = errors(1,:)/(errors(1,1))*H_meshsizes(1)^(dof);
 end
-if errors(2,1) > 0
+if errors(2,1) > 1e-10
     errors_plot(2,:) = errors(2,:)/(errors(2,1))*H_meshsizes(1)^(dof-1);
 end
 

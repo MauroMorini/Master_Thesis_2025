@@ -52,5 +52,22 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
     system_vector = load_vector + dirichlet_vector + neumann_vector;
 
     % solve system
-    uh = system_matrix\system_vector;
+    % uh = system_matrix\system_vector;
+
+    % solve system using pcg
+    tol = Mesh.h_max^Mesh.dof;
+    maxit = 1000;
+    try
+        L = ichol(system_matrix, struct('michol', 'on'));
+    catch exception
+        warning("ichol has failed shifted ichol is used")
+        alpha = max(sum(abs(system_matrix),2)./diag(system_matrix));
+        ichol(system_matrix, struct('type','ict','droptol',1e-3,'diagcomp',alpha));
+    end
+    [uh, failed_to_converge_flag] = pcg(system_matrix,system_vector,tol,maxit,L,L');
+    if failed_to_converge_flag
+        warning("pcg has failed to converge normal mldivide is used")
+        uh = system_matrix\system_vector;
+    end
+    % uh = system_matrix\system_vector;
 end
