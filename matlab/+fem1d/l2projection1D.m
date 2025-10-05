@@ -36,6 +36,7 @@ function u_projected = l2projection1D(nodes_origin, elements_origin, values_orig
     
     if ~isNested
         % TODO implement non-nested case first create union space and project solution onto that one
+        error("non nested mesh projection has not been implemented yet")
     end
 
     % assemble matrices

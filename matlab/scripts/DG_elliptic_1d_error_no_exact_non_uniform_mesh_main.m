@@ -10,8 +10,8 @@ import fem1d.*
 c_handle_idx = 1;
 u_exact_handle_idx = 6;
 sigma = 10;
-dof = 2;
-num_refinement_iterations = 9;
+dof = 4;
+num_refinement_iterations = 10;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -85,7 +85,7 @@ for i = 1:num_refinement_iterations
 
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);
-    disp("calculated uh for h = " + Mesh.h_max)
+    disp("calculated uh for h = " + Mesh.h_max + "   ...   i = " + i)
 
     % collect solution
     numerical_solutions{i} = struct("mesh", copy(Mesh), "sol", uh, "type", "numerical_solution");
@@ -112,17 +112,18 @@ end
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 
-    % set values from handles
-    c_vals = c_handle(nodes);
-    f_vals = f_exact_handle(nodes);
-    [uh_ref, ~] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
-    uh_ref = u_exact_handle(nodes);
-    reference_sol_struct = struct("mesh", copy(Mesh), "sol", uh_ref, "type", "numerical_solution");
+    % % set values from handles
+    % c_vals = c_handle(nodes);
+    % f_vals = f_exact_handle(nodes);
+    % [uh_ref, ~] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
+    % reference_sol_struct = struct("mesh", copy(Mesh), "sol", uh_ref, "type", "numerical_solution");
+    % error_ref = errors1D(reference_sol_struct, exact_solution_struct);
     % exact_solution_struct = reference_sol_struct;
+    
 
 % calculate errors
-for i = 1:num_refinement_iterations
-    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solutions{i}, exact_solution_struct);
+for i = 1:num_refinement_iterations-1
+    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solutions{i}, numerical_solutions{i+1});
 end
 
 % plot solution
@@ -140,9 +141,18 @@ xlabel('Step Size (H)');
 ylabel('Condition of B');
 legend("h^{-2}", "cond(B)")
 
+% scale errors for better plot
+errors_plot = errors;
+if errors(1,1) > 0
+    errors_plot(1,:) = errors(1,:)/(errors(1,1))*H_meshsizes(1)^(dof);
+end
+if errors(2,1) > 0
+    errors_plot(2,:) = errors(2,:)/(errors(2,1))*H_meshsizes(1)^(dof-1);
+end
+
 % plot errors
 figure;
-loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors(1,:)/errors(1,1)*(H_meshsizes(1)^(dof)),H_meshsizes, errors(2,:)/errors(2,1)*(H_meshsizes(1)^(dof-1)));
+loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors_plot(1,:), H_meshsizes, errors_plot(2,:));
 xlabel('Step Size (H)');
 ylabel('Error');
 legend("h^"+{dof-1}, "h^"+{dof}, "L2", "H1")
