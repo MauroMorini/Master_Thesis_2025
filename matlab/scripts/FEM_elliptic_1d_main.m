@@ -8,8 +8,8 @@ import fem1d.*
 
 % Settings
 c_handle_idx = 1;
-u_exact_handle_idx = 3;
-dof = 3;
+u_exact_handle_idx = 10;
+dof = 7;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -44,11 +44,11 @@ else
 end
 
 % initialize 
-H_stepsizes = 2.^-(1:10);
-errors = zeros(2, length(H_stepsizes));
-for i = 1:length(H_stepsizes)
+H_meshsizes = 2.^-(1:10);
+errors = zeros(2, length(H_meshsizes));
+for i = 1:length(H_meshsizes)
     % initialize mesh
-    h = H_stepsizes(i);
+    h = H_meshsizes(i);
     Mesh = mesh.MeshIntervalFEM1d([0,1], [h, h/100]);
     Mesh.dof = dof;
     Mesh.updatePet();
@@ -74,7 +74,32 @@ for i = 1:length(H_stepsizes)
     % solve interior problem:
     interior_nodes_idx = 1:num_nodes;
     interior_nodes_idx(boundary_nodes_idx) = [];
-    uh(interior_nodes_idx) = LHS(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - LHS(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
+    uh_loc = LHS(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - LHS(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
+    system_matrix = LHS(interior_nodes_idx, interior_nodes_idx);
+    system_vector = (load_vec(interior_nodes_idx) - LHS(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
+
+        % rescale system 
+    scaling_factor = max(diag(system_matrix));
+    system_matrix = system_matrix/scaling_factor;
+    system_vector = system_vector/scaling_factor;
+
+     % solve system using pcg
+    tol = Mesh.h_max^Mesh.dof;
+    maxit = numel(system_matrix);
+    try
+        L = ichol(system_matrix, struct('michol', 'on'));
+    catch exception
+        warning("ichol has failed shifted ichol is used")
+        alpha = max(sum(abs(system_matrix),2)./diag(system_matrix));
+        L = ichol(system_matrix, struct('type','ict','droptol',1e-3,'diagcomp',alpha));
+    end
+    [uh_loc, failed_to_converge_flag] = pcg(system_matrix,system_vector,tol,maxit,L,L');
+    if failed_to_converge_flag
+        warning("pcg has failed to converge normal mldivide is used")
+        uh_loc = system_matrix\system_vector;
+    end
+    % uh_loc = LHS(interior_nodes_idx, interior_nodes_idx)\(load_vec(interior_nodes_idx) - LHS(interior_nodes_idx, boundary_nodes_idx)*uh(boundary_nodes_idx));
+    uh(interior_nodes_idx) = uh_loc;
 
     % calculate errors 
     [errors(1,i), errors(2,i)] = fem1d.errors1DWithExactSol(nodes, elements, uh, u_exact_vals, du_exact_vals);
@@ -88,11 +113,20 @@ xlabel("x")
 ylabel("y")
 legend("uh", "u\_exact")
 
+% scale errors for better plot
+errors_plot = errors;
+if errors(1,1) > 1e-10
+    errors_plot(1,:) = errors(1,:)/(errors(1,1))*H_meshsizes(1)^(dof);
+end
+if errors(2,1) > 1e-10
+    errors_plot(2,:) = errors(2,:)/(errors(2,1))*H_meshsizes(1)^(dof-1);
+end
+
 % plot errors
 figure;
-loglog(H_stepsizes, H_stepsizes, '--', H_stepsizes, H_stepsizes.^2, '--', H_stepsizes, H_stepsizes.^3, '--', H_stepsizes, errors(1,:), H_stepsizes, errors(2,:));
+loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors_plot(1,:), H_meshsizes, errors_plot(2,:));
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h", "h^2", "h^3", "L2", "H1")
-title('Convergence of Errors');
+legend("h^"+{dof-1}, "h^"+{dof}, "L2", "H1")
+title("Convergence of Errors for P^"+(dof-1)+ "elements");
 

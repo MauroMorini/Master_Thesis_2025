@@ -9,10 +9,10 @@ import fem1d.*
 % Settings
 c_handle_idx = 1;
 u_exact_handle_idx = 6;
-dof = 2;
-sigma = 100*dof;
+dof = 3;
+sigma = 10*dof^2;
 num_refinement_iterations = 10;
-overwrite_functions_bool = true;
+overwrite_functions_bool = false;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -171,4 +171,3 @@ xlabel('Step Size (H)');
 ylabel('Error');
 legend("h^"+{dof-1}, "h^"+{dof}, "L2", "H1")
 title("Convergence of Errors for P^"+(dof-1)+ "elements");
-

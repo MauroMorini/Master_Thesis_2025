@@ -51,18 +51,20 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
     system_matrix = A - B_flux_bound - B_flux_int + B_penalty_int + B_penalty_bound;
     system_vector = load_vector + dirichlet_vector + neumann_vector;
 
-    % solve system
-    % uh = system_matrix\system_vector;
+    % rescale system 
+    scaling_factor = max(diag(system_matrix));
+    system_matrix = system_matrix/scaling_factor;
+    system_vector = system_vector/scaling_factor;
 
     % solve system using pcg
     tol = Mesh.h_max^Mesh.dof;
-    maxit = 1000;
+    maxit = numel(system_matrix);
     try
         L = ichol(system_matrix, struct('michol', 'on'));
     catch exception
         warning("ichol has failed shifted ichol is used")
         alpha = max(sum(abs(system_matrix),2)./diag(system_matrix));
-        ichol(system_matrix, struct('type','ict','droptol',1e-3,'diagcomp',alpha));
+        L = ichol(system_matrix, struct('type','ict','droptol',1e-3,'diagcomp',alpha));
     end
     [uh, failed_to_converge_flag] = pcg(system_matrix,system_vector,tol,maxit,L,L');
     if failed_to_converge_flag
