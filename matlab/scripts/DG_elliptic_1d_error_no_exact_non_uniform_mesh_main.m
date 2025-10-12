@@ -8,7 +8,7 @@ import fem1d.*
 
 % Settings
 c_handle_idx = 1;
-u_exact_handle_idx = 6;
+u_exact_handle_idx = 10;
 dof = 3;
 sigma = 10*dof^2;
 num_refinement_iterations = 10;
@@ -86,14 +86,7 @@ for i = 1:num_refinement_iterations
     % set values from handles
     c_vals = c_handle(nodes);
     f_vals = f_exact_handle(nodes);
-    u_exact_vals = u_exact_handle(nodes);
-    du_exact_vals = du_exact_handle(nodes);
-    
-    % assemble matrices
-    num_nodes = length(nodes);
-    B = dg1d.sipdgMatrix1D(nodes, elements, c_vals, sigma);
-    rhs_vector = dg1d.sipdgDirichletLoadVector1D(nodes, elements, f_vals, c_vals, u_exact_vals, sigma);
-    
+
     % solve system
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);

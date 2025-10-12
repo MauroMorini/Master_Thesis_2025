@@ -61,14 +61,15 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
     maxit = numel(system_matrix);
     try
         L = ichol(system_matrix, struct('michol', 'on'));
+        [uh, failed_to_converge_flag] = pcg(system_matrix,system_vector,tol,maxit,L,L');
     catch exception
-        warning("ichol has failed shifted ichol is used")
-        alpha = max(sum(abs(system_matrix),2)./diag(system_matrix));
-        L = ichol(system_matrix, struct('type','ict','droptol',1e-3,'diagcomp',alpha));
+        warning("ichol has failed minres is used")
+        [L,U] = ilu(system_matrix);
+        [uh, failed_to_converge_flag] = minres(system_matrix, system_vector, tol, maxit, L, U);
     end
-    [uh, failed_to_converge_flag] = pcg(system_matrix,system_vector,tol,maxit,L,L');
+    
     if failed_to_converge_flag
-        warning("pcg has failed to converge normal mldivide is used")
+        warning("iterative solver has failed to converge normal mldivide is used")
         uh = system_matrix\system_vector;
     end
     % uh = system_matrix\system_vector;
