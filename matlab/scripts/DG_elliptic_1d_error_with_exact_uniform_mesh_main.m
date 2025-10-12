@@ -8,7 +8,7 @@ import fem1d.*
 % Settings
 c_handle_idx = 1;
 u_exact_handle_idx = 10;
-dof = 3;
+dof = 2;
 sigma = 10*dof^2;
 
 % define function handles (real solution)   
@@ -44,7 +44,7 @@ else
 end
 
 % initialize parameters and preallocate
-H_meshsizes = 2.^-(2:11);
+H_meshsizes = 2.^-(2:10);
 errors = zeros(1, length(H_meshsizes));
 condition_B = zeros(1,length(H_meshsizes));
 exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact_handle, "type", "exact_solution");
@@ -57,7 +57,8 @@ boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), du_exact_ha
 for i = 1:length(H_meshsizes)
     % initialize mesh
     h = H_meshsizes(i);
-    Mesh = mesh.MeshIntervalDG1d([0,1], [h, h/100]);
+    Mesh = mesh.MeshIntervalDG1d([0,1], [2*h, 2*h/100]);
+    Mesh.createUniformMesh(h);
     Mesh.dof = dof;
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
@@ -91,8 +92,14 @@ ylabel('Condition of B');
 legend("h^{-2}", "cond(B)")
 
 % plot errors
+line_width = 1.3;
 figure;
-loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', H_meshsizes, H_meshsizes.^(dof),'--', H_meshsizes, errors(1,:),H_meshsizes, errors(2,:));
+loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', 'LineWidth', line_width);
+hold on
+loglog(H_meshsizes, H_meshsizes.^(dof), '--', 'LineWidth', line_width);
+loglog(H_meshsizes, errors(1,:), 'LineWidth', line_width);
+loglog(H_meshsizes, errors(2,:), 'LineWidth', line_width);
+hold off
 xlabel('Step Size (H)');
 ylabel('Error');
 legend("h^"+(dof-1), "h^"+(dof), "L2", "H1")

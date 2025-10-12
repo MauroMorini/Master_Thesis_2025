@@ -21,9 +21,9 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
     %   getPet - Returns the current nodes, elements, and boundary node indices.
     %   plotMesh - Plots the mesh and highlights the boundary nodes.
     properties
-        nodes
-        elements
-        boundary_node_idx
+        nodes                       % (num_nodes, 1) node matrix (with duplicates)
+        elements                    % (num_el, dof) connectivity matrix
+        boundary_node_idx           % (1,2) index vector with 
         dof
         h_max
         h_min
@@ -185,6 +185,15 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
         end
 
 % CREATE MESH ROUTINES --------------------------------------------------------------------------------------------------
+        function obj = createUniformMesh(obj, h)
+            % creates a uniform mesh for a given meshsize h in (h_min, h_max)
+            arguments (Input)
+                obj
+                h
+            end
+            assert(h < obj.h_max && h > obj.h_min, "h needs to be in (h_min, h_max)")
+            obj.element_interface_nodes = (obj.lower_interval_bound:h:obj.upper_interval_bound).';
+        end
         function obj = createRngMesh(obj, seed)
             % Function creates a pseudorandom mesh with random inner points for
             % a given seed

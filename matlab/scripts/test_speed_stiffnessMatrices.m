@@ -37,7 +37,7 @@ end
 
 % plot results  
 figure;
-plot(num_nodes_list, times_mat(1,:), num_nodes_list, times_mat(2,:),num_nodes_list, times_mat(3,:))
+semilogy(num_nodes_list, times_mat(1,:), num_nodes_list, times_mat(2,:),num_nodes_list, times_mat(3,:))
 title("comparison time needed to assemble stiffness matrices")
 legend("matlab v0", "matlab v1", "matlab v2")
 xlabel("number of nodes")
