@@ -57,7 +57,8 @@ boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), du_exact_ha
 for i = 1:length(H_meshsizes)
     % initialize mesh
     h = H_meshsizes(i);
-    Mesh = mesh.MeshIntervalDG1d([0,1], [h, h/100]);
+    Mesh = mesh.MeshIntervalDG1d([0,1], [2*h, 2*h/100]);
+    Mesh.createUniformMesh(h);
     Mesh.dof = dof;
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
