@@ -9,7 +9,7 @@ import fem1d.*
 c_handle_idx = 1;
 u_exact_handle_idx = 10;
 dof = 2;
-sigma = 10*dof^2;
+sigma = 1000*dof^2;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -45,7 +45,7 @@ end
 
 % initialize parameters and preallocate
 H_meshsizes = 2.^-(2:10);
-errors = zeros(1, length(H_meshsizes));
+errors = zeros(3, length(H_meshsizes));
 condition_B = zeros(1,length(H_meshsizes));
 exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact_handle, "type", "exact_solution");
 boundary_nodes = [0,1];
@@ -66,6 +66,8 @@ for i = 1:length(H_meshsizes)
     % set values from handles
     c_vals = c_handle(nodes);
     f_vals = f_exact_handle(nodes);
+    u_exact_vals = u_exact_handle(nodes);
+    du_exact_vals = du_exact_handle(nodes);
     
     % solve system
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
@@ -75,6 +77,7 @@ for i = 1:length(H_meshsizes)
 
     % calculate errors 
     [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solution, exact_solution_struct);
+    errors(3,i) = dg1d.energyNormError1D(nodes, elements, uh, c_vals, sigma, u_exact_vals, du_exact_vals);
 end
 
 % plot solution
@@ -92,16 +95,17 @@ ylabel('Condition of B');
 legend("h^{-2}", "cond(B)")
 
 % plot errors
-line_width = 1.3;
+line_width = 1;
 figure;
 loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', 'LineWidth', line_width);
 hold on
 loglog(H_meshsizes, H_meshsizes.^(dof), '--', 'LineWidth', line_width);
 loglog(H_meshsizes, errors(1,:), 'LineWidth', line_width);
 loglog(H_meshsizes, errors(2,:), 'LineWidth', line_width);
+loglog(H_meshsizes, errors(3,:), 'LineWidth', line_width);
 hold off
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h^"+(dof-1), "h^"+(dof), "L2", "H1")
+legend("h^"+(dof-1), "h^"+(dof), "L2", "H1", "energy")
 title("Convergence of Errors for P^"+(dof-1)+ "elements");
 
