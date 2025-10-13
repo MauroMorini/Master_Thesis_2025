@@ -6,11 +6,10 @@ import mesh.*
 import fem1d.*
 
 % Settings
-c_handle_idx = 2;
-u_exact_handle_idx = 6;
-dof = 4;
-sigma = 10*dof;
-
+c_handle_idx = 1;
+u_exact_handle_idx = 10;
+dof = 3;
+sigma = 10*dof^2;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -50,14 +49,17 @@ H_meshsizes = 2.^-(2:11);
 errors = zeros(1, length(H_meshsizes));
 condition_B = zeros(1,length(H_meshsizes));
 exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact_handle, "type", "exact_solution");
+boundary_nodes = [0,1];
 
 % set boundary conditions
-boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), u_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "dirichlet");
+boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), du_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "neumann");
+
 
 for i = 1:length(H_meshsizes)
     % initialize mesh
     h = H_meshsizes(i);
-    Mesh = mesh.MeshIntervalDG1d([0,1], [h, h/100]);
+    Mesh = mesh.MeshIntervalDG1d([0,1], [2*h, 2*h/100]);
+    Mesh.createUniformMesh(h);
     Mesh.dof = dof;
     Mesh.updatePet();
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
@@ -65,14 +67,12 @@ for i = 1:length(H_meshsizes)
     % set values from handles
     c_vals = c_handle(nodes);
     f_vals = f_exact_handle(nodes);
-    u_exact_vals = u_exact_handle(nodes);
-    du_exact_vals = du_exact_handle(nodes);
     
     % solve system
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);
-    disp("calculated uh for h = " + Mesh.h_max + "   ...   i = " + i)
     numerical_solution = struct("mesh", copy(Mesh), "sol", uh, "type", "numerical_solution");
+    disp("calculated uh for h = " + Mesh.h_max + "   ...   i = " + i)
 
     % calculate errors 
     [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solution, exact_solution_struct);

@@ -27,7 +27,7 @@ We consider the following elliptic model problem:
     \label{eq:elliptic_pde_bc}
     u(0) = g_0, u(1) = g_1
 \end{equation}
-Where $\Omega = (0,1)$ is the domain, $g_0, g_1 \in \mathbb{R}$ are
+where $\Omega = (0,1)$ is the domain, $g_0, g_1 \in \mathbb{R}$ are
 Dirichlet boundary conditions, $f \in L^2(\Omega)$ and $c:\Omega \to \mathbb{R}$
 satisfies:
 \[
@@ -107,7 +107,7 @@ Due to the discontinuity of the test function in contrast to
 continuous FEM we multiply $u$ with $v$ on each element $I_n$
 and integrate by parts locally
 \begin{equation*}
-    \int_{x_n}^{x_{n+1}} fv\, \text{d}x = -\int_{x_n}^{x_{n+1}} (cu')'\, \text{d}x 
+    \int_{x_n}^{x_{n+1}} fv\, \text{d}x = -\int_{x_n}^{x_{n+1}} (cu')'v\, \text{d}x 
     = \int_{x_n}^{x_{n+1}} cu'v'\, \text{d}x 
     -  cu'v\Big|_{x_n}^{x_{n+1}} \qquad \forall n=0,\ldots,N
 \end{equation*}
@@ -135,13 +135,13 @@ to (\ref{eq:elliptic_sipg_var_form_incomplete}): \\
 \textbf{Step 1.} Firstly we need to symmetrize our currently non-symmetrical right hand side
 which will correspond to the SIPG bilinear form. To do so
 we subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[u(x_n)]$ on both sides of
-(\ref{eq:elliptic_sipg_var_form_incomplete}):
+(\ref{eq:elliptic_sipg_var_form_incomplete}) so we get
 \begin{align*}
     &(f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+) \\
     = &\sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x 
     -\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
 \end{align*}
-note that on the left hand side of the equation we have applied (\ref{eq:id_2_u_jump_zero})
+where on the left hand side of the equation we have applied (\ref{eq:id_2_u_jump_zero})
 for the interior node contributions of the sum (which therefore vanish), and the boundary condition (\ref{eq:elliptic_pde_bc}) 
 ensuring the left hand side to be soley dependent on $v$.\\
 \textbf{Step 2.} The bilinear form we seek to create will (for now) be defined on $V_h\times V_h$
@@ -290,7 +290,7 @@ Gauss-Lobatto nodes. \\
     \vdots  & \vdots \\
 \end{tabular} 
 \end{equation*}
-
+The inner nodes are given by the roots of $L_{r-1}^{\prime}$, the derivative of the $r-1$-th Legendre polynomial. 
 We define the basis on the reference element as the Lagrangian nodal basis
 
 \begin{equation}
@@ -315,7 +315,7 @@ as a last step we extend the basis functions to the whole domain $\Omega$ by zer
 for $n=0,\ldots,N$ and $i=0,\ldots,r$. Clearly we have $\text{span}( \widehat{\phi}_0, \ldots, \widehat{\phi}_r) = \mathcal{P}^r(\hat{I})$
 and by extension $\text{span}(\Phi_0^0,\ldots,\Phi_r^N) = V_h^r(\mathcal{T}_h)$. It is essential 
 that our basis has only local support, meaning the basis functions are zero on most of the domain. This is the key property which 
-allows the final matrices to be sparse. If we chose basis functions with global support, the computational cost would be unfeasible for 
+allows the final matrices to be sparse. Choosing basis functions with global support, the computational cost would be unfeasible for 
 small mesh sizes. \\
 By having chosen a Lagrangian nodal basis the mesh nodes exactly coincide with the Gauss-Lobatto nodes on each
 element. 
@@ -324,7 +324,7 @@ To simplify the notation we introduce a \textit{local-to-global} index map
     \label{def:local_to_global_map}
     T: \{0,\ldots,N\} \times \{0,\ldots,r\} \to \{1,\ldots,M\} 
 \end{equation}
-where $M = (r+1)(N+1) = \dim(V_h)$. $T$ takes an element and a local basis function index $i$ as inputs
+where $M = (r+1)(N+1) = \dim(V_h)$. $T$ takes an element index $n$ and a local basis function index $i$ as inputs
 and returns the globally assigned node index $T(n,i)$. $T$ corresponds to the 
 \textit{connectivity matrix}. In the simplest case we have the global index ordered from left to right and get
 $T(n,i) = nr + i$.
@@ -372,8 +372,8 @@ $[\textbf{A}^{(s)}]_{T(n,i),T(m,j)} = \int_{I_s} c \,(\Phi_j^m)' (\Phi_i^n)' \, 
 Now since we have $\text{supp}(\Phi_i^n)\subset I_n$ the only non-zero entries of $\textbf{A}^{(s)} $ are the ones where both $n=m=s$. Pulling back the integral 
 to the reference element using the chain rule and the substitution $F_s^{-1}(x) = \xi$ we find
 \begin{equation*}
-    \int_{I_s} c \,(\Phi_j^m)' (\Phi_i^n)' \, \text{d}x = 
-    \frac{2}{h_s} \int_{\hat{I}} c(F_s(\xi)) \, \phi_j'(\xi) \phi_i'(\xi) \, \text{d}\xi
+    \int_{I_s} c(x) \,(\Phi_j^s)'(x) (\Phi_i^s)'(x) \, \text{d}x = 
+    \frac{2}{h_s} \int_{\hat{I}} c(F_s(\xi)) \, \widehat{\phi}_j^{\, \prime}(\xi) \widehat{\phi}_i^{\, \prime}(\xi) \, \text{d}\xi
 \end{equation*}
 This integral now only depends on the reference shape functions, the element length $h_s$
 and the values of the coefficient $c$. Using the Gauss-Lobatto quadrature rule we can approximate the integral
@@ -418,7 +418,7 @@ We discuss the boundary case separately.
 Using again the local support of the basis functions we find
 \begin{align*}
     &[\textbf{C}_{\text{cons}}^{(s-1,s-1)}]_{i,j} = \frac{c(x_s^-)}{2} \Phi_j^{s-1\, \prime}(x_s^-) \Phi_i^{s-1}(x_s^-) + \frac{c(x_s^-)}{2} \Phi_i^{s-1\, \prime}(x_s^-) \Phi_j^{s-1}(x_s^-) \\
-    &[\textbf{C}_{\text{cons}}^{(s-1,s)}]_{i,j} = \frac{c(x_s^-)}{2} \Phi_j^{s-1\, \prime}(x_s^-) \Phi_i^{s}(x_s^+) - \frac{c(x_s^+)}{2} \Phi_i^{s\, \prime}(x_s^+) \Phi_j^{s-1}(x_s^-) \\
+    &[\textbf{C}_{\text{cons}}^{(s-1,s)}]_{i,j} = \frac{c(x_s^+)}{2} \Phi_j^{s\, \prime}(x_s^+) \Phi_i^{s-1}(x_s^-) - \frac{c(x_s^-)}{2} \Phi_i^{s-1\, \prime}(x_s^-) \Phi_j^{s}(x_s^+) \\
     &[\textbf{C}_{\text{cons}}^{(s,s)}]_{i,j} = -\frac{c(x_s^+)}{2} \Phi_j^{s\, \prime}(x_s^+) \Phi_i^{s}(x_s^+) - \frac{c(x_s^+)}{2} \Phi_i^{s\, \prime}(x_s^+) \Phi_j^{s}(x_s^+)
 \end{align*}
 where we have used the definitions of jump and average in (\ref{def:jump_average})

@@ -8,11 +8,11 @@ import fem1d.*
 
 % Settings
 c_handle_idx = 1;
-u_exact_handle_idx = 6;
-dof = 2;
-sigma = 100*dof;
+u_exact_handle_idx = 10;
+dof = 3;
+sigma = 10*dof^2;
 num_refinement_iterations = 10;
-overwrite_functions_bool = true;
+overwrite_functions_bool = false;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -86,9 +86,7 @@ for i = 1:num_refinement_iterations
     % set values from handles
     c_vals = c_handle(nodes);
     f_vals = f_exact_handle(nodes);
-    u_exact_vals = u_exact_handle(nodes);
-    du_exact_vals = du_exact_handle(nodes);
-    
+
     % solve system
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);
@@ -166,4 +164,3 @@ xlabel('Step Size (H)');
 ylabel('Error');
 legend("h^"+{dof-1}, "h^"+{dof}, "L2", "H1")
 title("Convergence of Errors for P^"+(dof-1)+ "elements");
-
