@@ -8,8 +8,8 @@ import fem1d.*
 % Settings
 c_handle_idx = 2;
 u_exact_handle_idx = 9;
-sigma = 10;
 dof = 6;
+sigma = 10*dof;
 overwrite_functions_bool = true;
 
 % define function handles (real solution)   

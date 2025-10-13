@@ -62,7 +62,7 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
     catch exception
         warning("ichol has failed shifted ichol is used")
         alpha = max(sum(abs(system_matrix),2)./diag(system_matrix));
-        ichol(system_matrix, struct('type','ict','droptol',1e-3,'diagcomp',alpha));
+        L = ichol(system_matrix, struct('type','ict','droptol',1e-3,'diagcomp',alpha));
     end
     [uh, failed_to_converge_flag] = pcg(system_matrix,system_vector,tol,maxit,L,L');
     if failed_to_converge_flag

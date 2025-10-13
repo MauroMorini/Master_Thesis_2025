@@ -89,11 +89,6 @@ for i = 1:num_refinement_iterations
     u_exact_vals = u_exact_handle(nodes);
     du_exact_vals = du_exact_handle(nodes);
     
-    % assemble matrices
-    num_nodes = length(nodes);
-    B = dg1d.sipdgMatrix1D(nodes, elements, c_vals, sigma);
-    rhs_vector = dg1d.sipdgDirichletLoadVector1D(nodes, elements, f_vals, c_vals, u_exact_vals, sigma);
-    
     % solve system
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);

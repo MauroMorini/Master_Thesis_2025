@@ -8,8 +8,9 @@ import fem1d.*
 % Settings
 c_handle_idx = 2;
 u_exact_handle_idx = 6;
-sigma = 10;
-dof = 7;
+dof = 4;
+sigma = 10*dof;
+
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -44,9 +45,14 @@ else
 end
 
 % initialize parameters and preallocate
+boundary_nodes = [0,1];
 H_meshsizes = 2.^-(2:11);
 errors = zeros(1, length(H_meshsizes));
 condition_B = zeros(1,length(H_meshsizes));
+exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact_handle, "type", "exact_solution");
+
+% set boundary conditions
+boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), u_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "dirichlet");
 
 for i = 1:length(H_meshsizes)
     % initialize mesh
@@ -62,18 +68,14 @@ for i = 1:length(H_meshsizes)
     u_exact_vals = u_exact_handle(nodes);
     du_exact_vals = du_exact_handle(nodes);
     
-    % assemble matrices
-    num_nodes = length(nodes);
-    B = dg1d.sipdgMatrix1D(nodes, elements, c_vals, sigma);
-    rhs_vector = dg1d.sipdgDirichletLoadVector1D(nodes, elements, f_vals, c_vals, u_exact_vals, sigma);
-    
     % solve system
-    uh = B\rhs_vector;
+    [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);
+    disp("calculated uh for h = " + Mesh.h_max + "   ...   i = " + i)
+    numerical_solution = struct("mesh", copy(Mesh), "sol", uh, "type", "numerical_solution");
 
     % calculate errors 
-    [errors(1,i),errors(2,i)] = fem1d.errors1DWithExactSol(nodes, elements, uh, u_exact_vals, du_exact_vals);
-    disp("calculated uh for h = " + h)
+    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solution, exact_solution_struct);
 end
 
 % plot solution
