@@ -1,5 +1,6 @@
-function quad_nodes = getLobattoQuadratureNodes(dof)
-    % depending on dof parameter yields quadrature points 
+function quad_nodes = getGaussLegendreQuadratureNodes(dof)
+    % depending on dof parameter yields quadrature points and weights, currently only yields 
+    % uniformly distributed nodal basis
     arguments (Input)
         dof             % scalar degrees of freedom
     end
