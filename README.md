@@ -1,5 +1,5 @@
 # Information
-Subject: SIPG implementation for linear Elliptic and Hyperbolic PDE's
+Subject: Discontinuous Galerkin Finite Element Method for Wave Equations with Time-dependent Coefficients 
 Author: Mauro Morini <br>
 Supervisor: Prof. Dr. Marcus J. Grote <br>
 Type: Master Thesis for Masters in Mathematics <br>
