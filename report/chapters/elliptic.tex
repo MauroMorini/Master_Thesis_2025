@@ -271,11 +271,19 @@ for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \P
 \label{sec:ell_basis}
 There are many ways of choosing basis functions for finite element spaces. We choose a Lagrangian
 nodal elementwise basis where the nodes per element correspond to the Gauss-Lobatto quadrature nodes.
-This is a commonly used basis in CFEM as well as in DGFEM, although alternatives might be more
-effective depending on the specific problem. The quadrature nodes
-corresponding to the basis nodes simplifies the matrix assemblies and yields a diagonal mass matrix (\textit{mass lumping}), which
-is crucial especially in the time-dependent hyperbolic case, where a mass matrix has to be inverted
-in each integration step. For more general information on choosing basis functions see for example
+This is a commonly used nodal basis in continuous 1d-FEM and we will also use it for our DG method. In Appendix A.2.3 of \cite{diPietro2012} the \textit{Fekete points} are recommended 
+with the argument that this nodal basis yields a mass matrix with optimal an condition number. In 1d the Fekete points coincide with the Gauss-Lobatto quadrature nodes. 
+One could fill an entire chapter with the discussion on the choice of basis functions, so 
+we will not go into any detail here but note the following, when assembling mass and stiffness matrices we have to approximate a integral, so the question of choosing a fitting quadrature 
+rule arises. If we choose the same nodes for the quadrature as for the basis, i.e. use the Gauss-Lobatto quadrature rule we have to take into account that this quadrature for $r+1$ points 
+is only exact for polynomials of degree $2r-1$. \\ 
+If we assume a piecewise constant coefficient $c$, we calculate the integral in the assembly of the stiffness matrix exactly since
+for $\mathcal{P}^r$-elements we have $r+1$ basis (and quadrature) nodes and the to be approximated integral is of the form
+$ c_I \int_I \Phi_j^{\prime} \Phi_i^{\prime} \text{d}x $ where $I \in \mathcal{T}_h$ is a element and $\Phi_i \vert_I, \Phi_j \vert_I \in \mathcal{P}^r(I)$ are basis functions, where
+$ \Phi_j^{\prime} \Phi_i^{\prime} \in \mathcal{P}^{2r-2}$.
+In contrast if we intend to approximate for the mass matrix, which is of the form $ \int_I \Phi_j \Phi_i \text{d}x $ we will introduce an error, since $ \Phi_j \Phi_i \in \mathcal{P}^{2r}$.
+ 
+For more detailed information on choosing basis functions and alternative approaches see for example
 Appendix A.2 in \cite{diPietro2012}. \\ \\
 Let $n\in \{1,\ldots,N\}$ and $I_n \in \mathcal{T}_h$ be an arbitrary element.
 We denote $\hat{I} = (-1,1)$ the \textit{reference element} and $\displaystyle F_n : \hat{I} \to I_n, \, \xi \mapsto \frac{x_n + x_{n+1}}{2} + \frac{h_n}{2} \xi $
@@ -992,3 +1000,4 @@ $\mathcal{O}(h^r), \mathcal{O}(h^{r+1})$, in the $H^1(\mathcal{T}_h)$- and $L^2$
 
 Finally we repeated the tests above using a non constant yet still smooth coefficient $c(x) = \sin(10x) + 2$ and observed no significant change in the results. 
 To guarantee coercivity of the bilinear form we have to choose a slightly bigger $\sigma$ here.
+
