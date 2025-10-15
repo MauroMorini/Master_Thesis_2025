@@ -32,7 +32,7 @@ cell_c_fun = {
 };
 c_handle = cell_c_fun{c_handle_idx};
 u_exact_handle = cell_exact_fun{u_exact_handle_idx};
-f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1);
+f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1) + u_exact_handle;
 du_exact_handle = diff(u_exact_handle, 1);
 u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
 du_exact_handle = matlabFunction(du_exact_handle, 'vars', {x});

@@ -2,17 +2,13 @@ function M = massMatrix1D(nodes, elements, c_vals)
     % calculates global mass matrix for linear or quadratic 
     % FE in 1D M(i,j) = int_Omega phi_i*phi_j*c
     arguments (Input)
-        nodes                       % (num_nodes,1) node vector
-        elements                    % (num_el, dof) connectivity matrix
-        c_vals double = []          % (num_nodes, 1) values of coefficient function at nodes
+        nodes                               % (num_nodes,1) node vector
+        elements                            % (num_el, dof) connectivity matrix
+        c_vals double                       % (num_el, num_quad) values of coefficient function at quadrature nodes    
     end
 
     arguments (Output)
         M               % (num_nodes, num_nodes) sparse mass matrix
-    end
-
-    if isempty(c_vals)
-        c_vals = ones(size(nodes));
     end
     
     % initializations
@@ -20,7 +16,8 @@ function M = massMatrix1D(nodes, elements, c_vals)
     num_nodes = length(nodes);
     dof = size(elements, 2);
     triplet_list_iterator = 1;
-    c_vals_el = c_vals(elements);
+
+    num_quad = size(c_vals, 2);
 
     % preallocation
     M_max_entries = nEl*dof^2;
@@ -29,7 +26,7 @@ function M = massMatrix1D(nodes, elements, c_vals)
     triplet_list_entries = zeros(M_max_entries, 1);
     
     % collect quadrature information
-    [phi_val, ~, quad_weights] = common.getShapeFunctionValueMatrix(dof);
+    [phi_val, ~, quad_weights] = common.getShapeFunctionValueMatrix(dof, num_quad);
 
     % iterate over all elements
     for k = 1:nEl
@@ -44,7 +41,7 @@ function M = massMatrix1D(nodes, elements, c_vals)
         M_loc = zeros(dof);
         for p = 1:dof
             for q = 1:p
-                M_loc(p,q) = (phi_val(p,:).*phi_val(q,:).*c_vals_el(k,:))*quad_weights.';
+                M_loc(p,q) = (phi_val(p,:).*phi_val(q,:).*c_vals(k,:))*quad_weights.';
                 M_loc(q,p) = M_loc(p,q);
             end
         end

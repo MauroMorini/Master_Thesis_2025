@@ -24,6 +24,7 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
 
     % collect system matrices
     A = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
+    M = fem1d.massMatrix1D(nodes, elements, ones(size(nodes,1),size(elements,2)));
     B_flux_int = dg1d.interiorFluxMatrix1D(nodes, elements, c_vals);
     B_flux_bound = dg1d.boundaryFluxMatrix1D(nodes, elements, c_vals);
     B_penalty_int = dg1d.interiorPenaltyMatrix1D(nodes, elements, c_vals, sigma);
@@ -48,7 +49,7 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
     neumann_vector(elements(lower_boundary_element_idx,:)) = neumann_vector(elements(lower_boundary_element_idx,:))*neumann_bc_switch(1);
     neumann_vector(elements(upper_boundary_element_idx,:)) = neumann_vector(elements(upper_boundary_element_idx,:))*neumann_bc_switch(2);
 
-    system_matrix = A - B_flux_bound - B_flux_int + B_penalty_int + B_penalty_bound;
+    system_matrix = A - B_flux_bound - B_flux_int + B_penalty_int + B_penalty_bound + M;
     system_vector = load_vector + dirichlet_vector + neumann_vector;
 
     % rescale system 
