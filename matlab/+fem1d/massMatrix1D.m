@@ -2,13 +2,17 @@ function M = massMatrix1D(nodes, elements, c_vals)
     % calculates global mass matrix for linear or quadratic 
     % FE in 1D M(i,j) = int_Omega phi_i*phi_j*c
     arguments (Input)
-        nodes           % (num_nodes,1) node vector
-        elements        % (num_el, dof) connectivity matrix
-        c_vals          % (num_nodes, 1) values of coefficient function at nodes
+        nodes                       % (num_nodes,1) node vector
+        elements                    % (num_el, dof) connectivity matrix
+        c_vals double = []          % (num_nodes, 1) values of coefficient function at nodes
     end
 
     arguments (Output)
         M               % (num_nodes, num_nodes) sparse mass matrix
+    end
+
+    if isempty(c_vals)
+        c_vals = ones(size(nodes));
     end
     
     % initializations
