@@ -281,20 +281,20 @@ When choosing basis nodes for a lagrangian basis we have a couple of choices to 
 Having the quadrature nodes coincide with the basis nodes simplifies the calculations, because by the property of a Lagrangian basis the values of the basis functions at the quadrature nodes,
 i.e the basis nodes coincide with the Kroneker delta. So a value matrix composed of each value at the quadrature nodes for each basis function (per element) is just
 the identity matrix. Specifically we have: \\
-Let $\xi_0,\ldots,\xi_r$ be the basis- and quadrature nodes and let $L_0,\ldots,L_r$ be the Lagrangian basis, then 
+Let $\xi_0,\ldots,\xi_r$ be the basis- and quadrature nodes and let $ \widehat{\phi}_0,\ldots,\widehat{\phi}_r$ be the Lagrangian basis, then 
 \begin{equation*}
-	L_i(\xi_j) = \delta_{i,j} := 
+	\widehat{\phi}_i(\xi_j) = \delta_{i,j} := 
 	\begin{cases}
 		1	&,\text{ for }i=j \\
 		0  &,\text{ for }i\neq j
 	\end{cases}
 \end{equation*}
-therefore $\textbf{I} = \textbf{L}$ where $\textbf{I}$ is the identity and $ [\textbf{L}]_{i,j} = [L_i(\xi_j)] $ the basis shape-function value-matrix.
+therefore $\textbf{I} = \textbf{L}$ where $\textbf{I}$ is the identity and $ [\textbf{L}]_{i,j} = [\widehat{\phi}_i(\xi_j)] $ the basis shape-function value-matrix.
 This reduces the computational cost, since there is no need to actually evaluate/interpolate the polynomials at the quadrature nodes. 
 The clear downside is that we couple the exactness of the quadrature to the polynomial degree of the basis function. If for example we fix a polynomial degree $r \in \mathbb{N}$.
 The Gauss-Lobatto quadrature with $r+1$ nodes is exact for polynomials of degree $2r-1$. When computing the mass matrix we have to calculate an 
 integral of the form $ \int_I \Phi_j \Phi_i \text{d}x $ where $I \in \mathcal{T}_h$ is a element and $\Phi_i \vert_I, \Phi_j \vert_I \in \mathcal{P}^r(I)$ are basis functions.
-This means $ \Phi_j \Phi_i \in  \mathcal{P}^{2r}$ and therefore we introduce an error. \\
+This means $ \Phi_j \cdot \Phi_i \in  \mathcal{P}^{2r}$ and therefore we introduce an error. \\
 % TODO: elaborate on error and remark that the convergence rate is not influenced after testing it
 
 \noindent 2. \textit{Should there be basis nodes on the element boundaries?} \\
@@ -403,7 +403,8 @@ we will assemble the three (symmetric) matrices separately.
 where $T$ is given by (\ref{def:local_to_global_map})
 
 \subsection{Assembly of A}
-$\textbf{A}$ is assembled exactly as the standard stiffness matrix in continuous finite element.
+$\textbf{A}$ is assembled similarly to the standard stiffness matrix in continuous finite element. The main difference is that there is no overlap in the elementwise contributions.
+Each set of local (element) basis functions only contributes to the integrals over said element.
 We can rewrite $\textbf{A} = \sum_{s=0}^{N} \textbf{A}^{(s)}$, where
 $[\textbf{A}^{(s)}]_{T(n,i),T(m,j)} = \int_{I_s} c \,(\Phi_j^m)' (\Phi_i^n)' \, \text{d}x$.
 Now since we have $\text{supp}(\Phi_i^n)\subset I_n$ the only non-zero entries of $\textbf{A}^{(s)} $ are the ones where both $n=m=s$. Pulling back the integral
