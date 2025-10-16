@@ -8,8 +8,8 @@ import fem1d.*
 % Settings
 c_handle_idx = 1;
 u_exact_handle_idx = 10;
-dof = 2;
-sigma = 1000*dof^2;
+dof = 3;
+sigma = 10*dof^2;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -51,7 +51,7 @@ exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact
 boundary_nodes = [0,1];
 
 % set boundary conditions
-boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), du_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "neumann");
+boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), u_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "dirichlet");
 
 
 for i = 1:length(H_meshsizes)

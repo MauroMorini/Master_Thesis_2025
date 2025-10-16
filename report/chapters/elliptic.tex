@@ -20,6 +20,7 @@ for cross reference.
 
 %---Problem---------------------------------------------------------------
 \section{Problem}
+\label{sec:elliptic_problem}
 We consider the following elliptic model problem:
 \begin{equation}
 	\label{eq:elliptic_pde}
@@ -40,6 +41,7 @@ Multiplying the solution by a test function and integrating by parts over $\Omeg
 standard weak formulation: \\
 Find $u \in H^1(\Omega)$ such that:
 \begin{equation}
+	\label{eq:elliptic_weak_form}
 	a(u,v) = (f,v)_{L^2(\Omega)} \qquad \forall v \in C_c^{\infty}(\Omega)
 \end{equation}
 Where
@@ -51,7 +53,10 @@ defines the standard elliptic bilinear form on $H^1(\Omega)$ and
 	(u,v)_{L^2(\Omega)} = \int_{\Omega} uv \,\text{d}x
 \]
 
-denotes the $L^2$-inner product.
+denotes the $L^2$-inner product. \\
+If we assume $f \in L^2(\Omega)$ and $c \in C^1(\Omega)$ we know by \textit{Lax-Milgram} 
+that there exists a unique (weak) solution of (\ref{eq:elliptic_weak_form}) and from the \textit{elliptic regularity theory} we 
+can conclude higher regularity of the weak solution, namely $u \in H^2(\Omega)$. For reference see chapter 6.2, 6.3 in \cite{EvansPDE}.
 
 %---Discretization---------------------------------------------------------
 \section{Discretization}
@@ -103,7 +108,7 @@ To proceed we will require the following trace operators:
 %---Variational Formulation--------------------------------------------------------
 \section{Variational Formulation}
 To derive the SIPG variational formulation, let $v \in V_h$ be a test
-function. For simplicity suppose for now that the coefficient $c \in C^1(\Omega)$ and
+function. As mentioned in section \ref{sec:elliptic_problem} we can assume that the coefficient $c \in C^1(\Omega)$ and
 the exact solution $u \in H^2(\Omega) \subset C^1(\Omega)$.
 Due to the discontinuity of the test function in contrast to
 continuous FEM we multiply $u$ with $v$ on each element $I_n$
@@ -269,20 +274,41 @@ for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \P
 %---Basis-of-FE-Space------------------------------------------------------------
 \section{Basis of Finite Element Space}
 \label{sec:ell_basis}
-There are many ways of choosing basis functions for finite element spaces. We choose a Lagrangian
-nodal elementwise basis where the nodes per element correspond to the Gauss-Lobatto quadrature nodes.
-This is a commonly used nodal basis in continuous 1d-FEM and we will also use it for our DG method. In Appendix A.2.3 of \cite{diPietro2012} the \textit{Fekete points} are recommended 
-with the argument that this nodal basis yields a mass matrix with optimal an condition number. In 1d the Fekete points coincide with the Gauss-Lobatto quadrature nodes. 
-One could fill an entire chapter with the discussion on the choice of basis functions, so 
-we will not go into any detail here but note the following, when assembling mass and stiffness matrices we have to approximate a integral, so the question of choosing a fitting quadrature 
-rule arises. If we choose the same nodes for the quadrature as for the basis, i.e. use the Gauss-Lobatto quadrature rule we have to take into account that this quadrature for $r+1$ points 
-is only exact for polynomials of degree $2r-1$. \\ 
-If we assume a piecewise constant coefficient $c$, we calculate the integral in the assembly of the stiffness matrix exactly since
-for $\mathcal{P}^r$-elements we have $r+1$ basis (and quadrature) nodes and the to be approximated integral is of the form
-$ c_I \int_I \Phi_j^{\prime} \Phi_i^{\prime} \text{d}x $ where $I \in \mathcal{T}_h$ is a element and $\Phi_i \vert_I, \Phi_j \vert_I \in \mathcal{P}^r(I)$ are basis functions, where
-$ \Phi_j^{\prime} \Phi_i^{\prime} \in \mathcal{P}^{2r-2}$.
-In contrast if we intend to approximate for the mass matrix, which is of the form $ \int_I \Phi_j \Phi_i \text{d}x $ we will introduce an error, since $ \Phi_j \Phi_i \in \mathcal{P}^{2r}$.
- 
+There are many ways of choosing basis functions for finite element spaces. In this thesis we soley focus on elementwise nodal Lagrangian basis functions, although there are alternatives
+which are just as valid, like the modal Legendre basis.
+When choosing basis nodes for a lagrangian basis we have a couple of choices to make. \\ \\
+1. \textit{Should the quadrature nodes coincide with the basis nodes?} \\
+Having the quadrature nodes coincide with the basis nodes simplifies the calculations, because by the property of a Lagrangian basis the values of the basis functions at the quadrature nodes,
+i.e the basis nodes coincide with the Kroneker delta. So a value matrix composed of each value at the quadrature nodes for each basis function (per element) is just
+the identity matrix. Specifically we have: \\
+Let $\xi_0,\ldots,\xi_r$ be the basis- and quadrature nodes and let $L_0,\ldots,L_r$ be the Lagrangian basis, then 
+\begin{equation*}
+	L_i(\xi_j) = \delta_{i,j} := 
+	\begin{cases}
+		1	&,\text{ for }i=j \\
+		0  &,\text{ for }i\neq j
+	\end{cases}
+\end{equation*}
+therefore $\textbf{I} = \textbf{L}$ where $\textbf{I}$ is the identity and $ [\textbf{L}]_{i,j} = [L_i(\xi_j)] $ the basis shape-function value-matrix.
+This reduces the computational cost, since there is no need to actually evaluate/interpolate the polynomials at the quadrature nodes. 
+The clear downside is that we couple the exactness of the quadrature to the polynomial degree of the basis function. If for example we fix a polynomial degree $r \in \mathbb{N}$.
+The Gauss-Lobatto quadrature with $r+1$ nodes is exact for polynomials of degree $2r-1$. When computing the mass matrix we have to calculate an 
+integral of the form $ \int_I \Phi_j \Phi_i \text{d}x $ where $I \in \mathcal{T}_h$ is a element and $\Phi_i \vert_I, \Phi_j \vert_I \in \mathcal{P}^r(I)$ are basis functions.
+This means $ \Phi_j \Phi_i \in  \mathcal{P}^{2r}$ and therefore we introduce an error. \\
+% TODO: elaborate on error and remark that the convergence rate is not influenced after testing it
+
+\noindent 2. \textit{Should there be basis nodes on the element boundaries?} \\
+In contrast to continuous FEM we do not need to impose continuity over the element boundaries, so we have the option of allowing 
+the nodes to be exclusively in the interior of the elements. This allows us to use Gauss-Legendre quadrature nodes in 1d for example, 
+which is exact for polynomials of degree $2r+1$ for $r+1$ quadrature nodes. This would remedy the issue of approximating the mass matrix inexactly as described before when 
+choosing the same quadrature nodes as basis nodes. The downside here is that we sill require boundary values to incorporate boundary conditions and calculating 
+the penalty, consistency and symmetry terms (see matrices $\textbf{B}_{\text{cons}}, \textbf{B}_{\text{penal}} $ in section \ref{sec:stiff_assembly}), 
+so the boundary values have to be interpolated. \\ 
+
+In this thesis we will not try to justify the choice of basis function too much and use Gauss-Lobatto quadrature nodes as basis nodes.
+This is a commonly used nodal basis in continuous 1d-FEM and we will also use it for our DG method. In Appendix A.2.3 of \cite{diPietro2012} the \textit{Fekete points}, which 
+in 1d coincide with the Gauss-Lobatto points, are recommended 
+with the argument that this nodal basis yields a mass matrix with an optimal condition number. 
 For more detailed information on choosing basis functions and alternative approaches see for example
 Appendix A.2 in \cite{diPietro2012}. \\ \\
 Let $n\in \{1,\ldots,N\}$ and $I_n \in \mathcal{T}_h$ be an arbitrary element.
@@ -341,7 +367,8 @@ $T(n,i) = nr + i$.
 
 
 %---Matrix Assembly-------------------------------------------------------------------
-\section{System Matrix Assembly}
+\section{Stiffness Matrix Assembly}
+\label{sec:stiff_assembly}
 With the basis functions in (\ref{def:lagrange_basis_of_Vh}) defined we can now in detail investigate how
 to assemble the matrix $\textbf{B}$ in (\ref{eq:fully_discrete_dg_system_elliptic}). To do so we firstly separate
 the bilinear form $b_h$ into different components
