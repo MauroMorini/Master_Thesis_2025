@@ -6,7 +6,7 @@ import mesh.*
 import fem1d.*
 
 % Settings
-c_handle_idx = 1;
+c_handle_idx = 3;
 u_exact_handle_idx = 10;
 dof = 3;
 sigma = 10*dof^2;
@@ -28,7 +28,8 @@ cell_exact_fun = {
 };
 cell_c_fun = {
     1;
-    sin(10*x) + 2
+    sin(10*x) + 2;
+    x.^(dof-1) + 1
 };
 c_handle = cell_c_fun{c_handle_idx};
 u_exact_handle = cell_exact_fun{u_exact_handle_idx};
@@ -49,6 +50,7 @@ errors = zeros(3, length(H_meshsizes));
 condition_B = zeros(1,length(H_meshsizes));
 exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact_handle, "type", "exact_solution");
 boundary_nodes = [0,1];
+numerical_solution = cell(1, length(H_meshsizes));
 
 % set boundary conditions
 boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), u_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "dirichlet");
@@ -72,20 +74,17 @@ for i = 1:length(H_meshsizes)
     % solve system
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     condition_B(i) = condest(B);
-    numerical_solution = struct("mesh", copy(Mesh), "sol", uh, "type", "numerical_solution");
+    numerical_solution{i} = struct("mesh", copy(Mesh), "sol", uh, "type", "numerical_solution");
     disp("calculated uh for h = " + Mesh.h_max + "   ...   i = " + i)
 
     % calculate errors 
-    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solution, exact_solution_struct);
+    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solution{i}, exact_solution_struct);
     errors(3,i) = dg1d.energyNormError1D(nodes, elements, uh, c_vals, sigma, u_exact_vals, du_exact_vals);
 end
 
 % plot solution
-figure;
-plot(nodes, uh, nodes, u_exact_handle(nodes))
-xlabel("x")
-ylabel("y")
-legend("uh", "u\_exact")
+solution_idx = 2;
+f = numerical_solution{solution_idx}.mesh.plotDGsol(numerical_solution{solution_idx}.sol);
 
 % plot condition
 figure;
@@ -95,9 +94,9 @@ ylabel('Condition of B');
 legend("h^{-2}", "cond(B)")
 
 % plot errors
-line_width = 1;
+line_width = 2;
 figure;
-loglog(H_meshsizes, H_meshsizes.^(dof-1), '--', 'LineWidth', line_width);
+loglog(H_meshsizes, H_meshsizes.^(dof-1), '--','LineWidth', line_width);
 hold on
 loglog(H_meshsizes, H_meshsizes.^(dof), '--', 'LineWidth', line_width);
 loglog(H_meshsizes, errors(1,:), 'LineWidth', line_width);

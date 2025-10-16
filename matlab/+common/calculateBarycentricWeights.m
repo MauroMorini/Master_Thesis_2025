@@ -5,7 +5,7 @@ function barycentric_weights = calculateBarycentricWeights(nodes, elements)
         elements                % (num_el, dof) connectivity matrix
     end
     arguments (Output)
-        barycentric_weights
+        barycentric_weights     % (num_nodes, 1)
     end
     dof = size(elements,2);
     nodes_loc = nodes(elements);

@@ -292,7 +292,7 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             obj.element_interface_nodes = [local_faces';obj.upper_interval_bound];
         end
 
-% VISUALIZE MESH ------------------------------------------------------------------------------------------------------
+% VISUALIZE ------------------------------------------------------------------------------------------------------
         function f = plotMesh(obj, f)
             if nargin == 1
                 f = figure;
@@ -301,6 +301,33 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             plot(obj.element_interface_nodes,0,'b.','MarkerSize',10)
             hold on
             plot(obj.nodes(obj.boundary_node_idx), [0,0], 'rx','MarkerSize',10)
+            hold off
+        end
+
+        function f = plotDGsol(obj, uh, f)
+        % plots dg solution visualizing the discontinuity
+            if nargin == 2
+                f = figure;
+            end
+            % initialization
+            figure(f); 
+            element_faces = obj.element_interface_nodes;
+            num_element_plot_points = obj.dof*10;
+            bary_weights = common.calculateBarycentricWeights(obj.nodes, obj.elements);
+            num_el = size(obj.elements, 1);
+
+            hold on
+            for k = 1:num_el
+                element_nodes = obj.nodes(obj.elements(k,:));
+                plot_nodes_loc = linspace(element_nodes(1), element_nodes(end), num_element_plot_points).';
+                bary_weights_loc = bary_weights(obj.elements(k,:));
+                Phi_loc = common.evaluateLagrangeBarycentric(plot_nodes_loc, bary_weights_loc, element_nodes);
+                uh_vals_loc = sum(Phi_loc .* uh(obj.elements(k,:)), 1);
+                plot(plot_nodes_loc, uh_vals_loc, 'Color', 'k', 'LineWidth', 2)
+                plot([plot_nodes_loc(1), plot_nodes_loc(end)], [uh_vals_loc(1), uh_vals_loc(end)], 'o', 'Color', 'k', 'LineWidth', 2)
+                xlabel("x")
+                ylabel("uh")
+            end
             hold off
         end
     end
