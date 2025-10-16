@@ -107,6 +107,7 @@ To proceed we will require the following trace operators:
 
 %---Variational Formulation--------------------------------------------------------
 \section{Variational Formulation}
+\label{sec:elliptic_var_form}
 To derive the SIPG variational formulation, let $v \in V_h$ be a test
 function. As mentioned in section \ref{sec:elliptic_problem} we can assume that the coefficient $c \in C^1(\Omega)$ and
 the exact solution $u \in H^2(\Omega) \subset C^1(\Omega)$.
@@ -252,6 +253,7 @@ applying the boundary conditions we finally derive the variational form
 
 %---Matrix-Vector System---------------------------------------------------------
 \section{Matrix-Vector System}
+\label{sec:matrix_vect_syst}
 We will now in derive the fully discrete Matrix-Vector system given by
 the variational form (\ref{eq:discrete_var_form_elliptic}). To do so let
 $r \in \mathbb{N}$ denote the polynomial degree and consequently the element degree of freedom.
@@ -364,7 +366,6 @@ where $M = (r+1)(N+1) = \dim(V_h)$. $T$ takes an element index $n$ and a local b
 and returns the globally assigned node index $T(n,i)$. $T$ corresponds to the
 \textit{connectivity matrix}. In the simplest case we have the global index ordered from left to right and get
 $T(n,i) = nr + i$.
-
 
 %---Matrix Assembly-------------------------------------------------------------------
 \section{Stiffness Matrix Assembly}
@@ -1080,5 +1081,38 @@ errors overall. This was to be expected since for a non-constant $c$ we introduc
 To guarantee coercivity of the bilinear form we had to choose a slightly bigger $\sigma$ here.
 
 \subsection{Influence of Quadrature Rule on the Convergence Rate}
+As noted in section \ref{sec:ell_basis} by using $r+1$ Gauss-Lobatto nodes (in the context of $\mathcal{P}^r$-elements) as quadrature nodes and basis nodes at the same time
+introduces an error when assembling the mass matrix of the system. In this subsection we experimentally compare the results of using $r+1$ Gauss-Lobatto quadrature nodes
+to approximate the integral versus using the exact integration values. To be precise we fix a polynomial degree $r$ and our Lagrangian basis with $r+1$ Gauss-Lobatto nodes
+as specified in section \ref{sec:ell_basis} and approximate all integrals first using the Gauss-Lobatto quadrature with $r+1$ nodes and then with $r+2$ nodes, and compare the two.
+\\
+First we have to consider a slightly different elliptical problem, which requires a mass matrix. 
+\begin{equation}
+	\label{eq:elliptic_pde}
+	-(c(x)u'(x))' + u(x) = f(x) \qquad \forall x\in \Omega \nonumber
+\end{equation}
+\begin{equation}
+	\label{eq:elliptic_pde_bc}
+	u(0) = g_0, u(1) = g_1 \nonumber
+\end{equation}
+We can apply the exact same tools as in the derivation of the variational formulation in section \ref{sec:elliptic_var_form} and get the discrete SIPG variational formulation. \\
+Find $u_h \in V_h$ such that:
+\begin{equation}
+	\label{eq:discrete_var_form_elliptic_with_mass}
+	b_h(u_h, v) + (u_h, v)_{L^2(\Omega)} = \ell(v), \qquad \forall v\in V_h 
+\end{equation}
+Now analogously to section \ref{sec:matrix_vect_syst} we write $u_h = \sum_{m=0}^{N} \sum_{j=0}^r \alpha_j^m \Phi_j^m \in V_h$ and find that (\ref{eq:discrete_var_form_elliptic_with_mass})
+is equivalent to \\
+\begin{equation*}
+	\sum_{m=0}^{N} \sum_{j=0}^r \alpha_j^m \Big(b_h(\Phi_j^m, \Phi_i^n) + (\Phi_j^m, \Phi_i^n)_{L^2(\Omega)}\Big) = \ell(\Phi_i^n) \qquad \forall i \in \{0,\ldots,r\}, \{n = 0,\ldots,N\}
+\end{equation*}
+which in turn is equivalent to the Matrix-Vector system
 
-
+\begin{equation*}
+	\Big( \textbf{B} + \textbf{M} \Big) \textbf{u} = \textbf{l}
+\end{equation*}
+where as before 
+$ [\textbf{B}]_{T(n,i), T(m,j)} = b_h(\Phi_j^m, \Phi_i^n),
+	[\textbf{u}]_{T(m,j)} = \alpha_j^m,
+	[\textbf{l}]_{T(n,i)} = \ell(\Phi_i^n)$ and furthermore
+$ [\textbf{M}]_{T(n,i), T(m,j)} = (\Phi_j^m, \Phi_i^n)_{L^2(\Omega)}$.
