@@ -4,9 +4,9 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
     %
     arguments (Input)
         Mesh                            % MeshIntervalDG1d object containing mesh information
-        boundary_cond struct              % a struct with the following members: values (1,2) double, lower_boundary_type string, upper_boundary_type string
-        f_vals                          % (num_nodes, 1) vector with values of load at nodes
-        c_vals                          % (num_nodes, 1) vector with values of c at nodes (c(nodes))  
+        boundary_cond struct            % a struct with the following members: values (1,2) double, lower_boundary_type string, upper_boundary_type string
+        f_vals                          % (num_el, num_quad) vector with values of load at quadrature nodes
+        c_vals                          % (num_el, num_quad) vector with values of c at quadrature nodes (can coincide with nodes, but doesn't have to)
         sigma double                    % scalar penalty constant 
     end
     arguments (Output)

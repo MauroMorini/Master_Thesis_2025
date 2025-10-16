@@ -3,7 +3,7 @@ function A = stiffnessMatrix1D(nodes, elements, c_vals)
     arguments (Input)
         nodes           % (num_nodes,1) node vector
         elements        % (num_el, dof) connectivity matrix
-        c_vals          % (num_nodes, 1) values of coefficient function at nodes
+        c_vals          % (num_el, num_quad) values of coefficient function at nodes
     end
 
     arguments (Output)
@@ -15,7 +15,7 @@ function A = stiffnessMatrix1D(nodes, elements, c_vals)
     num_nodes = length(nodes);
     dof = size(elements, 2);
     triplet_list_iterator = 1;
-    c_vals_el = c_vals(elements);
+    num_quad = size(c_vals, 2);
 
     % preallocation
     A_max_entries = num_el*dof^2;
@@ -24,7 +24,7 @@ function A = stiffnessMatrix1D(nodes, elements, c_vals)
     triplet_list_entries = zeros(A_max_entries, 1);
     
     % collect quadrature information
-    [~, dphi_val, quad_weights] = common.getShapeFunctionValueMatrix(dof);
+    [~, dphi_val, quad_weights] = common.getShapeFunctionValueMatrix(dof, num_quad);
 
     % iterate over all elements
     for k = 1:num_el
@@ -39,7 +39,7 @@ function A = stiffnessMatrix1D(nodes, elements, c_vals)
             for j = 1:dof
                 triplet_list_rows(triplet_list_iterator) = elements(k,i);
                 triplet_list_cols(triplet_list_iterator) = elements(k,j);
-                triplet_list_entries(triplet_list_iterator) = (dphi_val(i,:).*dphi_val(j,:).*c_vals_el(k,:))*quad_weights.'*(2/h);
+                triplet_list_entries(triplet_list_iterator) = (dphi_val(i,:).*dphi_val(j,:).*c_vals(k,:))*quad_weights.'*(2/h);
                 triplet_list_iterator = triplet_list_iterator + 1;
             end
         end

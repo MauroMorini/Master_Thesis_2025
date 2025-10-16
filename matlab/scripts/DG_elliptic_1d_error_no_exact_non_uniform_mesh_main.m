@@ -84,8 +84,8 @@ for i = 1:num_refinement_iterations
     [nodes, ~, elements] = Mesh.getPet();
 
     % set values from handles
-    c_vals = c_handle(nodes);
-    f_vals = f_exact_handle(nodes);
+    c_vals = c_handle(nodes(elements));
+    f_vals = f_exact_handle(nodes(elements));
 
     % solve system
     [uh, B] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);

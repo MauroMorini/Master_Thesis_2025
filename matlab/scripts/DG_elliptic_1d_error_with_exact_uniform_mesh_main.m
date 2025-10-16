@@ -66,8 +66,8 @@ for i = 1:length(H_meshsizes)
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 
     % set values from handles
-    c_vals = c_handle(nodes);
-    f_vals = f_exact_handle(nodes);
+    c_vals = c_handle(nodes(elements));
+    f_vals = f_exact_handle(nodes(elements));
     u_exact_vals = u_exact_handle(nodes);
     du_exact_vals = du_exact_handle(nodes);
     
@@ -79,7 +79,7 @@ for i = 1:length(H_meshsizes)
 
     % calculate errors 
     [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solution{i}, exact_solution_struct);
-    errors(3,i) = dg1d.energyNormError1D(nodes, elements, uh, c_vals, sigma, u_exact_vals, du_exact_vals);
+    % errors(3,i) = dg1d.energyNormError1D(nodes, elements, uh, c_vals, sigma, u_exact_vals, du_exact_vals);
 end
 
 % plot solution

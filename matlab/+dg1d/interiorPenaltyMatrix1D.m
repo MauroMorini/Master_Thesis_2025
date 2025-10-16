@@ -4,7 +4,7 @@ function B_penalty = interiorPenaltyMatrix1D(nodes, elements, c_vals, sigma)
     arguments (Input)
         nodes               % (num_nodes, 1) node value matrix
         elements            % (num_el, dof) connectivity (element index) matrix 
-        c_vals              % (num_nodes, 1) vector with values of c at nodes (c(nodes))  
+        c_vals              % (num_el, num_quad) vector with values of c at nodes (c(nodes))  
         sigma               % scalar penalty constant 
     end
     arguments (Output)
