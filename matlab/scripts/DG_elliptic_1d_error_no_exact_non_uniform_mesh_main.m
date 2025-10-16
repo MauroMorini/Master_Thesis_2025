@@ -9,7 +9,7 @@ import fem1d.*
 % Settings
 c_handle_idx = 1;
 u_exact_handle_idx = 10;
-dof = 3;
+dof = 2;
 sigma = 10*dof^2;
 num_refinement_iterations = 10;
 overwrite_functions_bool = false;
@@ -35,7 +35,7 @@ cell_c_fun = {
 };
 c_handle = cell_c_fun{c_handle_idx};
 u_exact_handle = cell_exact_fun{u_exact_handle_idx};
-f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1);
+f_exact_handle = diff(c_handle*diff(-u_exact_handle, 1), 1) + u_exact_handle;
 du_exact_handle = diff(u_exact_handle, 1);
 u_exact_handle = matlabFunction(u_exact_handle, 'vars', {x});
 du_exact_handle = matlabFunction(du_exact_handle, 'vars', {x});
@@ -133,13 +133,8 @@ for i = 1:num_refinement_iterations-1
 end
 
 % plot solution
-plot_idx = num_refinement_iterations;
-figure;
-% plot(numerical_solutions{plot_idx}.mesh.nodes,numerical_solutions{plot_idx}.sol , numerical_solutions{plot_idx}.mesh.nodes, u_exact_handle(numerical_solutions{plot_idx}.mesh.nodes))
-plot(numerical_solutions{plot_idx}.mesh.nodes,numerical_solutions{plot_idx}.sol)
-xlabel("x")
-ylabel("y")
-legend("uh", "u\_exact")
+solution_idx = 1;
+f = numerical_solutions{solution_idx}.mesh.plotDGsol(numerical_solutions{solution_idx}.sol);
 
 % plot condition
 figure;
@@ -150,12 +145,6 @@ legend("h^{-2}", "cond(B)")
 
 % scale errors for better plot
 errors_plot = errors;
-if errors(1,1) > 1e-10
-    errors_plot(1,:) = errors(1,:)/(errors(1,1))*H_meshsizes(1)^(dof);
-end
-if errors(2,1) > 1e-10
-    errors_plot(2,:) = errors(2,:)/(errors(2,1))*H_meshsizes(1)^(dof-1);
-end
 
 % plot errors
 figure;

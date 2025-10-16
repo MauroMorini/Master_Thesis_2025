@@ -8,7 +8,7 @@ import fem1d.*
 % Settings
 c_handle_idx = 3;
 u_exact_handle_idx = 10;
-dof = 3;
+dof = 5;
 sigma = 10*dof^2;
 
 % define function handles (real solution)   
@@ -53,8 +53,7 @@ boundary_nodes = [0,1];
 numerical_solution = cell(1, length(H_meshsizes));
 
 % set boundary conditions
-boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), u_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "dirichlet");
-
+boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), du_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "neumann");
 
 for i = 1:length(H_meshsizes)
     % initialize mesh
@@ -66,8 +65,12 @@ for i = 1:length(H_meshsizes)
     [nodes, boundary_nodes_idx, elements] = Mesh.getPet();
 
     % set values from handles
-    c_vals = c_handle(nodes(elements));
-    f_vals = f_exact_handle(nodes(elements));
+    Mesh_quad = copy(Mesh);
+    Mesh_quad.dof = dof + 1;
+    Mesh_quad.updatePet();
+    [nodes_quad, ~, elements_quad] = Mesh_quad.getPet();
+    c_vals = c_handle(nodes_quad(elements_quad));
+    f_vals = f_exact_handle(nodes_quad(elements_quad));
     u_exact_vals = u_exact_handle(nodes);
     du_exact_vals = du_exact_handle(nodes);
     
