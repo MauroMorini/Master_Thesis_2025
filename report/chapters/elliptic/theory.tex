@@ -327,9 +327,10 @@ To simplify the theory we will continue to assume the exact solution to be in $H
 When we intend to extend the bilinear form from $V_h$ to a bigger space which contains the exact solution we run into the problem, that $V_h \not \subset H^1(\Omega)$, 
 by extension we also have $V_h \not \subset H^2(\Omega)$. So in contrast to continuous FEM we have to use a bigger space allowing for discontinuities and including both 
 $V_h$ and $H^2(\Omega)$. \\
-A very common approach (see for example \cite{georgoulis2011Springer}) is to choose a vector space product 
+A very common approach (see for example \cite{georgoulis2011Springer}) is to choose a vector space sum 
 
 \begin{equation}
+    \label{def:V_sum}
     V:= V_h + H^2(\Omega) = \{ v \in L^2(\Omega) \, |\, v = v_h + \tilde{v}, \text{ for } v_h \in V_h, \tilde{v} \in H^2(\Omega)\}
 \end{equation}
 Alternatively Rivière proposes the usage of \textit{broken Sobolev spaces} in \cite{riviere2008}. That is, for a given partition $\mathcal{T}_h$ of $\Omega$ 
@@ -337,4 +338,38 @@ we can define
 \begin{equation*}
     H^k(\mathcal{T}_h) := \{ v \in L^2(\Omega) \,| \, v \vert_I \in H^k(I), \forall I \in \mathcal{T}_h \}
 \end{equation*} 
-for some $k \in \mathbb{N}_0$.
+for some $k \in \mathbb{N}_0$, this allows for discontinuities and we have $V_h \in H^2(\mathcal{T}_h)$. We will use $V$ as defined in (\ref{def:V_sum}).
+Now we extend the bilinear form $b_h$ and the linear functional $\ell_h$ from $V_h$ to $V$ and formally get
+
+\begin{tcolorbox}[mythmstyle]
+    \begin{equation}
+        \label{def:sipg_bilin_form_extended}
+        b: V \times V \to \mathbb{R}, \qquad \ell: V  \to \mathbb{R}
+    \end{equation}
+	where
+	\begin{align*}
+		b(u,v) & = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
+		-\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
+		+\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]                                     \\
+		\ell(v)  & = (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
+		+ \texttt{a}_{N+1}g_1v(x_{N+1}^-) + \texttt{a}_0 g_0v(x_{0}^+)
+	\end{align*}
+	for $u,v\in V$.
+\end{tcolorbox}
+\noindent This yields the SIPG variational formulation \\ 
+Find $u \in V$ such that: 
+\begin{equation}
+    \label{eq:elliptic_sipg_var_form_extended}
+    b(u, v) = \ell(v), \qquad \forall v\in V
+\end{equation}
+
+\subsection{Lower Regularity Solutions}
+The $H^2$-regularity assumption on the solution is a common one in the context of convergence theory, but still a rather strict one in general. 
+If we assume only $H^1$-regularity, which is a reasonable assumption to make, we encounter the problem of undefined trace values. Recall that 
+from the trace theorem it is known that $L^2$ regularity is not enough to yield uniquely defined trace values. In 1d this becomes apparent, since 
+point values of $L^2$-functions are not well defined. In particular for a solution $u \in H^1(\Omega)$, we have that $u'(x_n^+), u'(x_n^-)$ 
+are not well defined. Extending the bilinear form $b_h$ to $V$ requires some additional work, which is often done in one of two ways:
+\begin{enumerate}
+    \item Lifting operators
+    \item $L^2$-projection
+\end{enumerate}

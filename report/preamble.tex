@@ -1,13 +1,13 @@
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath, amssymb, amsthm, mathtools}  % math
-\usepackage{geometry}       % page layout
+\usepackage{amsmath, amssymb, amsthm, mathtools}  
+\usepackage{geometry}       
 \geometry{margin=1in}   
-\usepackage{graphicx}       % figures
-\usepackage{tikz}           % diagrams
-\usepackage{enumitem}       % enumerate (i)
+\usepackage{graphicx}       
+\usepackage{tikz}           
+\usepackage{enumitem}       
 \usepackage[most]{tcolorbox}
 \tcbuselibrary{theorems}
-\usepackage[colorlinks=true, allcolors=black]{hyperref}       % clickable links
+\usepackage[colorlinks=true, allcolors=black]{hyperref}       
 
 % --------------------------------------------------------
 % Theorem declarations (must come BEFORE tcolorbox styling!)
@@ -18,14 +18,13 @@
 \newtheorem{example}[theorem]{Example}
 
 % --------------------------------------------------------
-% Shared tcolorbox style for all theorem-like environments
 \tcbset{
   mythmstyle/.style={
     enhanced,
     breakable,                  % allow page breaks inside long environments
     boxrule=0.6pt,              % thickness of frame
     arc=2pt,                    % rounded corners
-    colback=blue!5!white,       % default background color
+    colback=green!10!white,     % default background color
     colframe=white,             % default frame color
     fonttitle=\bfseries,        % title font
     coltitle=black,

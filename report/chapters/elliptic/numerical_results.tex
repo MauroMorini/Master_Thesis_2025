@@ -121,12 +121,12 @@ We can apply the exact same tools as in the derivation of the variational formul
 Find $u_h \in V_h$ such that:
 \begin{equation}
 	\label{eq:discrete_var_form_elliptic_with_mass}
-	b_h(u_h, v) + (u_h, v)_{L^2(\Omega)} = \ell(v), \qquad \forall v\in V_h 
+	b_h(u_h, v) + (u_h, v)_{L^2(\Omega)} = \ell_h(v), \qquad \forall v\in V_h 
 \end{equation}
 Now analogously to section \ref{sec:matrix_vect_syst} we write $u_h = \sum_{m=0}^{N} \sum_{j=0}^r \alpha_j^m \Phi_j^m \in V_h$ and find that (\ref{eq:discrete_var_form_elliptic_with_mass})
 is equivalent to \\
 \begin{equation*}
-	\sum_{m=0}^{N} \sum_{j=0}^r \alpha_j^m \Big(b_h(\Phi_j^m, \Phi_i^n) + (\Phi_j^m, \Phi_i^n)_{L^2(\Omega)}\Big) = \ell(\Phi_i^n) \qquad \forall i \in \{0,\ldots,r\}, \{n = 0,\ldots,N\}
+	\sum_{m=0}^{N} \sum_{j=0}^r \alpha_j^m \Big(b_h(\Phi_j^m, \Phi_i^n) + (\Phi_j^m, \Phi_i^n)_{L^2(\Omega)}\Big) = \ell_h(\Phi_i^n) \qquad \forall i \in \{0,\ldots,r\}, \{n = 0,\ldots,N\}
 \end{equation*}
 which in turn is equivalent to the Matrix-Vector system
 
@@ -137,7 +137,7 @@ which in turn is equivalent to the Matrix-Vector system
 where as before 
 $ [\textbf{B}]_{T(n,i), T(m,j)} = b_h(\Phi_j^m, \Phi_i^n),
 	[\textbf{u}]_{T(m,j)} = \alpha_j^m,
-	[\textbf{l}]_{T(n,i)} = \ell(\Phi_i^n)$ and furthermore
+	[\textbf{l}]_{T(n,i)} = \ell_h(\Phi_i^n)$ and furthermore
 $ [\textbf{M}]_{T(n,i), T(m,j)} = (\Phi_j^m, \Phi_i^n)_{L^2(\Omega)}$.
 \\ \\
 Next we considered the same setting as described in subsection \ref{subsec:conv_rate_ell} and tested the convergence rates for $\mathcal{P}^1,\mathcal{P}^2$-elements,

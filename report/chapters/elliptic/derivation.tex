@@ -186,14 +186,14 @@ on both sides of (\ref{eq:elliptic_sipg_var_form_incomplete}) and get the final
 	Find $u_h \in V_h$ such that:
 	\begin{equation}
 		\label{eq:discrete_var_form_elliptic}
-		b_h(u_h, v) = \ell(v), \qquad \forall v\in V_h
+		b_h(u_h, v) = \ell_h(v), \qquad \forall v\in V_h
 	\end{equation}
 	where
 	\begin{align*}
 		b_h(u,v) & = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
 		-\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
 		+\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]                                     \\
-		\ell(v)  & = (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
+		\ell_h(v)  & = (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
 		+ \texttt{a}_{N+1}g_1v(x_{N+1}^-) + \texttt{a}_0 g_0v(x_{0}^+)
 	\end{align*}
 	for $u,v\in V_h$.

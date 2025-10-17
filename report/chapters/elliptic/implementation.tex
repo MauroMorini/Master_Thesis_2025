@@ -9,7 +9,7 @@ Next let $\{\Phi_0,\ldots,\Phi_M\}$ be a basis of $V_h$, where $M = \dim(V_h)$.
 We can represent the sought Galerkin approximation as $u_h = \sum_{j=0}^{M} \alpha_j \Phi_j\in V_h$ for coefficients
 $\alpha_j \in \mathbb{R}$. Then (\ref{eq:discrete_var_form_elliptic}) is equivalent to:
 \begin{equation*}
-	\sum_{j=0}^{M} \alpha_j b_h(\Phi_j, \Phi_i) = \ell(\Phi_i) \qquad \forall i=0,\ldots,M
+	\sum_{j=0}^{M} \alpha_j b_h(\Phi_j, \Phi_i) = \ell_h(\Phi_i) \qquad \forall i=0,\ldots,M
 \end{equation*}
 which corresponds to the system:
 \begin{equation}
@@ -18,7 +18,7 @@ which corresponds to the system:
 \end{equation}
 for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \Phi_i),
 	\textbf{u} \in \mathbb{R}^M, [\textbf{u}]_j = \alpha_j,
-	\textbf{l}\in\mathbb{R}^M, [\textbf{l}]_j = \ell(\Phi_j)$.
+	\textbf{l}\in\mathbb{R}^M, [\textbf{l}]_j = \ell_h(\Phi_j)$.
 
 %---Basis-of-FE-Space------------------------------------------------------------
 \section{Basis of Finite Element Space}
@@ -134,7 +134,7 @@ to
 	\sum_{m=0}^{N} \sum_{j=0}^{r} \alpha_j^m \Big(
 	a_h(\Phi_j^m,\Phi_i^n) - b_h^{\text{cons}}(\Phi_j^m,\Phi_i^n) + b_h^{\text{penal}}(\Phi_j^m,\Phi_i^n)
 	\Big)
-	= \ell(\Phi_i^n), \qquad \forall n=0,\ldots,N, i=0,\ldots,r
+	= \ell_h(\Phi_i^n), \qquad \forall n=0,\ldots,N, i=0,\ldots,r
 \end{equation}
 which corresponds to the matrix vector system (\ref{eq:fully_discrete_dg_system_elliptic})
 where we can write
