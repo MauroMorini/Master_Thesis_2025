@@ -1,0 +1,340 @@
+%---Existence-------------------------------------------------------------------------
+\section{Existence of Discrete Solution}
+\label{sec:existence_uniqueness_elliptic_discrete_problem}
+Firstly we will recall some basic definitions:
+\begin{definition} Let $V$ be a normed vector space and $b:V\times V \to \mathbb{R}$
+	be a bilinear form.
+	\begin{enumerate}[label=\textnormal{(\roman*)}]
+		\item We say $b$ is \textbf{continuous} if $\exists C_{\text{cont}}>0$, such that
+		      \[
+			      |b(u,v)|\leq C_{\text{cont}}\, \|u\|\, \|v\| \qquad \forall u,v \in V
+		      \]
+		\item We say $b$ is \textbf{symmetric} if
+		      \[
+			      b(u,v) = b(v,u) \qquad \forall u,v \in V
+		      \]
+		\item We say $b$ is \textbf{coercive} if $\exists C_{\text{coer}}>0$, such that
+		      \[
+			      b(u,u)\geq C_{\text{coer}}\, \|u\|^2 \qquad \forall u \in V
+		      \]
+	\end{enumerate}
+\end{definition}
+
+
+Since (\ref{eq:discrete_var_form_elliptic}) corresponds to the finite dimensional
+system (\ref{eq:fully_discrete_dg_system_elliptic}) uniqueness and existence of a solution
+are equivalent.
+The bilinear form $b_h$ is \textit{symmetric} by construction
+the goal of this section is to show that $b_h$ is also \textit{coercive}.
+From the coercivity of $b_h$ it will follow that the matrix $\textbf{B}$ in (\ref{eq:fully_discrete_dg_system_elliptic})
+is positive definite and hence invertible, which means there exists a (unique) solution
+of (\ref{eq:discrete_var_form_elliptic}).
+\begin{lemma}
+	Let $V = \text{span}(\varphi_1,\ldots,\varphi_M)$ be a finite dimensional
+	normed vector space with $\dim(V) = M\in \mathbb{N}$ and let
+	$b:V \times V \to \mathbb{R}$ be a symmetric, coercive bilinear form,
+	then the matrix ${[\textbf{B}]}_{i,j} = {[b(\varphi_j, \varphi_i)]}_{i,j}\in \mathbb{R}^{N\times N}$
+	is symmetric positive definite.
+\end{lemma}
+\begin{proof}
+	Clearly $\textbf{B}$ is symmetric. \\
+	Let $\textbf{v}=(v_1,\ldots,v_M)\in \mathbb{R}^M$ then $v = \sum_{i=1}^{M}
+		v_i \varphi_i\in V$ and we have:
+	\[
+		\textbf{v}^{T}\textbf{B}\textbf{v} = \sum_{i,j=1}^{M}v_i v_j b(\varphi_j,\varphi_i) = b(v,v) \geq
+		C_{\text{coer}} \|w\|^2
+	\]
+	where we have used the biliniearity and the coercivity of $b$.
+\end{proof}
+Next we will require a usefull tool often used in FEM proofs to bound
+a boundary integral with the integral over the interior domain. These kind
+of inequalities are in the literature often called \textit{inverse (trace) inequalities}
+and are in essence trace inequalities on finite dimensional subspaces.
+We will here rely on a result and proof as presented in \cite{warburtonHesthaven2003ineq}.
+
+\begin{lemma}[Inverse inequality]
+	\label{lemma:inv_ineq}
+	Let $r\in \mathbb{N}$ be the polynomial degree,
+	$a,b\in \mathbb{R}$ with $a<b$ and let $\mathcal{P}^r([a,b])$ denote the
+	space of polynomials of degree $r$ defined on $[a,b]$. \\
+	For any $v\in \mathcal{P}^r([a,b])$ we have:
+	\begin{enumerate}
+		\item $\displaystyle |v(a)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$
+		\item $\displaystyle |v(b)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$
+	\end{enumerate}
+\end{lemma}
+\begin{proof}
+	We will prove the statements first for the reference element $\hat{I} = [-1,1]$ and then
+	use a scaling argument to show the general case by applying a simple substitution. \\
+	\begin{proofstep}[Setup]
+		We will make
+		use of the Legendre orthonormal basis of $\mathcal{P}^r(\hat{I})$:
+		Let $P_0,\ldots,P_r$ denote the Legegndre polynomials on  $\mathcal{P}^r(\hat{I})$.
+		Recall the following well known facts (see for example \cite{quarteroniNumericalMathematicSpringer2007}):
+		\begin{enumerate}
+			\item $\{P_0,\ldots,P_r\}$ form an orthogonal basis of $\mathcal{P}^r(\hat{I})$ under the
+			      $L^2(\hat{I})$ inner product. Meaning:
+			      \[
+				      \text{span}(P_0,\ldots,P_r) = \mathcal{P}^r(\hat{I}),\quad \int_{-1}^{1} P_i P_j \,\text{d}\xi =
+				      \begin{cases}
+					      \frac{2}{2i + 1}, & \text{for } i=j     \\
+					      0,                & \text{for } i\neq j
+				      \end{cases}
+			      \]
+			\item $P_i(1) = 1, P_i(-1) = {(-1)}^i, \qquad \forall i = 0,\ldots,r$
+		\end{enumerate}
+		Let $\psi_i = \sqrt{\frac{(2i + 1)}{2}}P_i$ for $i=0,\ldots,r$ denote the normed
+		basis function. Clearly we now have
+		\[
+			\psi_i(-1) = {(-1)}^i\sqrt{\frac{2i+1}{2}}, \qquad \psi_i(1) = \sqrt{\frac{2i+1}{2}},
+			\qquad \int_{-1}^{1}\psi_i \psi_j \text{d}\xi = \delta_{i,j}, \qquad \forall i = 0,\ldots,r
+		\]
+		where $\delta_{i,j} =
+			\begin{cases}
+				1, & \text{for } i = j   \\
+				0, & \text{for } i\neq j
+			\end{cases}$, and hence $\{\psi_0,\ldots,\psi_r\}$ form an orthonomal basis.
+	\end{proofstep}
+	\begin{proofstep}[Proof on reference element]
+		For any $v\in \mathcal{P}^r(\hat{I})$
+		there exist coefficients $v_0,\ldots,v_r \in \mathbb{R}$, such that
+		$v = \sum_{i=0}^{r}v_i \psi_i$. By applying Cauchy-Schwarz we find
+		\[
+			|v(-1)|^2 = \Big|\sum_{i=0}^{r}v_i \psi_i(-1)\Big|^2 \leq \Big(\sum_{i=0}^{r} v_i^2 \Big)\Big(\sum_{i=0}^{r} \psi_i(-1)^2 \Big)
+			= \Big(\sum_{i=0}^{r} v_i^2 \Big)\Big(\sum_{i=0}^{r} \frac{2i+1}{2} \Big)
+			= \Big(\sum_{i=0}^{r} v_i^2 \Big)\frac{(r+1)^2}{2}
+		\]
+		and finally the orthonormality of the $\psi_i$ yields
+		\[
+			\frac{(r+1)^2}{2}\sum_{i=0}^{r} v_i^2  = \frac{(r+1)^2}{2}\sum_{i,j=0}^{r} v_i v_j \delta_{i,j}
+			= \frac{(r+1)^2}{2} \|v\|_{L^2(\hat{I})}^2
+		\]
+		This yields the first inequality for the reference element. The second inequality
+		can be proven analogously.
+	\end{proofstep}
+	\begin{proofstep}[Scaling argument]
+		Now we assume that $v \in \mathcal{P}^r([a,b])$.
+		Using the affine (element) map
+		\[
+			F:[-1,1] \to [a,b], \xi \mapsto \frac{a + b}{2} + \frac{|b-a|}{2}\xi
+		\]
+		we can pull $v$ back to the reference element by defining
+		$\widehat{v}(\xi):=v(F(\xi))$ for all $\xi \in \hat{I}$.
+		Clearly $\widehat{v} \in \mathcal{P}^r(\hat{I})$ hence, by Step 2 we obtain
+		\[
+			|v(a)|^2 = |\widehat{v}(F^{-1}(a))|^2 = |\widehat{v}(-1)|^2
+			\leq \frac{(r+1)^2}{2}\int_{-1}^{1}\widehat{v}(\xi)^2 \text{d}\xi =
+			\frac{(r+1)^2}{2}\frac{2}{|b-a|}\|v\|_{L^2([a,b])}^2
+		\]
+		where in the last equality we have applied a change of variable $x=F(\xi)$ to the integral.
+		Applying the same line of reasoning to $|v(b)|^2$ proves both inequalities
+		and so we are done.
+	\end{proofstep}
+	\\
+\end{proof}
+\medskip
+Recall the in previous sections established notations, let $r\in \mathbb{N}$ denote the polynomial
+degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
+\begin{definition}
+	We define the \textbf{energy norm} on $V_h$ by
+	\begin{equation}
+		\label{def:energy_norm}
+		\|v\|_h^2 := \sum_{n=0}^{N} \int_{I_n} c(x)v'(x)^2\text{d}x + \sum_{n=0}^{N+1}{\normalfont\texttt{a}_n}[v(x_n)]^2
+	\end{equation}
+	where {\normalfont\texttt{a}} denotes the penalization term in (\ref{def:penalization_function}).
+\end{definition}
+\begin{lemma}
+	$\|\cdot\|_h$ defines a norm on $V_h$.
+\end{lemma}
+\begin{proof}
+	Clearly we have $\|\lambda v\|_h =|\lambda|\, \|v\|_h$ for all $\lambda \in \mathbb{R}, v\in V_h$. \\ \\
+	By definition we have $\texttt{a}, c>0$ and by extension $\|v\|_h \geq 0$ for all
+	$v\in V_h$. Suppose now that $\|v\|_h = 0$ for some $v\in V_h$, then we must have $v|_{I_n} \equiv \text{const}$
+	and $[v(x_n)] = 0$ for all $n$. So $v$ must be constant on all elements and have a jump of zero at the element boundaries.
+	These two facts combined imply that $v$ is constant on all of $\Omega$. By the definition of the jump
+	at the boundary nodes of $\Omega$ it immediately follows that $v=0$. Clearly
+	$\|0\|_h=0$, therefore $\|\cdot\|_h$ is positive definite. \\ \\
+	Using $[v(x_n) + w(x_n)] = [v(x_n)] + [w(x_n)] \quad \forall v,w \in V_h, n = 0,\ldots,N+1$ we find
+	\begin{align*}
+		\|v+w\|_h & \leq \Big(\sum_{n=0}^{N} (\|\sqrt{c}v'\|_{L^2(I_n)}+\|\sqrt{c}w'\|_{L^2(I_n)})^2 +
+		\sum_{n=0}^{N+1} (\sqrt{\texttt{a}_n}([v(x_n)] + [w(x_n)]))^2\Big)^{1/2}                       \\
+		          & \leq \|v\|_h + \|w\|_h
+	\end{align*}
+	where in the last inequality we have used the triangle inequality of the euclidian vector norm on $\mathbb{R}^{2N+3}$, with the vector given
+	as
+
+	\[
+		\textbf{v} = \big[\|\sqrt{c}v'\|_{L^2(I_0)},\ldots,\|\sqrt{c}v'\|_{L^2(I_N)}, \sqrt{\texttt{a}_0}[v(x_0)],\ldots,\sqrt{\texttt{a}_{N+1}}[v(x_{N+1})]\big]^T
+	\]
+	this shows the triangle inequality for $\|\cdot\|_h$ and hence it is a norm.
+\end{proof}
+
+\begin{theorem}
+	Let $r\in \mathbb{N}$, the bilinear form $b_h$ in (\ref{eq:discrete_var_form_elliptic}) is continuous
+	on $V_h^r(\mathcal{T}_h)$ and if furthermore $\sigma \geq \frac{6 (r+1)^2 c_{\max} }{c_{\min}}$, $b_h$ is also
+	coercive on $V_h^r(\mathcal{T}_h)$. 
+	The coercivity and continuity constants are given by 
+	\begin{equation*}
+		C_{\text{coer}} = \frac{1}{2}, \qquad C_{\text{cont}} = (3 + \frac{5}{4} C_{\sigma}) 
+	\end{equation*}
+	where $C_{\sigma} = \frac{(r+1)^2 c_{\max} }{\sigma c_{\min}}$
+\end{theorem}
+\begin{proof}
+	\begin{proofstep}[Coercivity]
+		Let $w\in V_h$. Note that
+		\begin{equation}
+			\label{eq:coerc_thr_relation_bilin_form_with_norm}
+			b_h(w,w) = \|w\|_h^2 - 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]
+		\end{equation}
+		To derive the coercivity of $b_h$ we will estimate the term $2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]$
+		from above applying Lemma \ref{lemma:inv_ineq} and additional smaller tools:\\
+		Using the general fact $2ab \leq a^2 + b^2, \forall a,b\in\mathbb{R}$ we estimate
+		\begin{align}
+			 & 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)] = 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}
+			\Big(\frac{\texttt{a}_n}{2}\Big)^{-1/2} \Big(\frac{\texttt{a}_n}{2}\Big)^{1/2} [w(x_n)]\nonumber \\
+			 & \leq 2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n}
+			+ \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \label{eq:2_coerc_thr_first_estimate}
+		\end{align}
+		Recalling $\texttt{a}_n = \sigma \texttt{c}_n\texttt{h}_n^{-1}$ from (\ref{def:penalization_function}) and noting the relations
+		$\texttt{h}_n \leq h_n, \texttt{c}_n^{-1} \leq c(x_n^-)^{-1}, c(x_n^+)^{-1}$ we find
+		\begin{align*}
+			 & \texttt{a}_n^{-1} c(x_n^+) \leq \frac{h_n}{\sigma}, \quad \texttt{a}_n^{-1} c(x_n^-) \leq \frac{h_{n-1}}{\sigma}, \quad \forall n=1,\ldots,N \\
+			 & \texttt{a}_0^{-1} c(x_0^+) = \frac{h_0}{\sigma} , \quad \texttt{a}_{N+1}^{-1} c(x_{N+1}^-) = \frac{h_{N}}{\sigma}
+		\end{align*}
+		applying this and the usefull inequality $(a+b)^2 \leq 2a^2 + 2b^2$ yields
+		\begin{align}
+			\label{eq:coerc_thr_second_estimate}
+			 & 2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n} \nonumber        \\
+			 & = 2\sum_{n=1}^{N} \frac{1}{4\texttt{a}_n}
+			\Big( c(x_n^-)w'(x_n^-) + c(x_n^+)w'(x_n^+) \Big)^2 + \frac{2}{\texttt{a}_0} \Big( c(x_0^+)w'(x_0^+) \Big)^2
+			+ \frac{2}{\texttt{a}_{N+1}} \Big( c(x_{N+1}^-)w'(x_{N+1}^-) \Big)^2 \nonumber \\
+			 & \leq 2\sum_{n=1}^{N} \frac{1}{2\sigma}
+			\Big( h_{n-1}c(x_n^-)w'(x_n^-)^2 + h_{n}c(x_n^+)w'(x_n^+)^2 \Big) + \frac{2h_0}{\sigma} c(x_0^+)w'(x_0^+)^2
+			+ \frac{2h_{N}}{\sigma} c(x_{N+1}^-)w'(x_{N+1}^-)^2 \nonumber                  \\
+			 & \leq \frac{c_{\max}}{\sigma}\sum_{n=1}^{N}
+			\Big(h_{n-1}w'(x_n^-)^2 + h_{n}w'(x_n^+)^2 \Big) + \frac{2c_{\max}h_0}{\sigma} w'(x_0^+)^2
+			+ \frac{2c_{\max}h_{N}}{\sigma} w'(x_{N+1}^-)^2
+		\end{align}
+		Since $w\in V_h$ is a (broken) polynomial, we can apply Lemma \ref{lemma:inv_ineq} elementwise and find
+		\begin{equation}
+			\label{eq:coerc_thr_application_inverse_estimate}
+			w'(x_n^+)^2,w'(x_{n+1}^-)^2  \leq \frac{(r+1)^2}{h_n} \|w'\|_{L^2(I_n)}^2 \quad \forall n = 0,\ldots,N
+		\end{equation}
+		By combining (\ref{eq:coerc_thr_second_estimate}), (\ref{eq:coerc_thr_application_inverse_estimate}) and
+		inserting $1 = c_{\min}c_{\min}^{-1} \leq c(x)c_{\min}^{-1} \quad \forall x\in\Omega$ we find
+		\begin{equation}
+			\label{eq:coerc_thr_last_estimate}
+			2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n} \leq
+			3C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
+		\end{equation}
+		for $\displaystyle C_{\sigma} := \frac{ (r+1)^2 c_{\max} }{\sigma c_{\min}} > 0$. \\ \\
+		Finally putting together (\ref{eq:coerc_thr_relation_bilin_form_with_norm}), (\ref{eq:2_coerc_thr_first_estimate}) and
+		(\ref{eq:coerc_thr_last_estimate}) yields
+		\begin{align*}
+			b_h(w,w) & \geq \|w\|_h^2 - 3C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
+			- \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber                                                                           \\
+			         & = (1 - 3C_{\sigma}) \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2 + \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber \\
+			         & \geq \frac{1}{2} \|w\|_h^2
+		\end{align*}
+		for $\sigma \geq \frac{6 (r+1)^2 c_{\max} }{c_{\min}}$, which proves the coercivity
+		of $b_h$ on $V_h$.
+	\end{proofstep}
+	\\
+	\begin{proofstep}[Continuity]
+		The proof the continuity of $b_h$ uses similar ideas as the coercivity proof. Let
+		$u,v \in V_h$, by using Cauchy-Schwarz we
+		immediately get
+		\begin{align}
+			|b_h(u,v)| & \leq \sum_{n=0}^{N} \|\sqrt{c}u'\|_{L^2(I_n)} \|\sqrt{c}v'\|_{L^2(I_n)}
+			+  \sum_{n=0}^{N+1} \big| \{c(x_n)u'(x_n)\}[v(x_n)] \big| \nonumber                               \\
+			           & +\sum_{n=0}^{N+1} \big|\{c(x_n)v'(x_n)\}[u(x_n)]\big|
+			+\sum_{n=0}^{N+1} \texttt{a}_n \big|[u(x_n)][v(x_n)]\big| \nonumber                               \\
+			           & =: T_{\text{ell}} + T_{\text{cons}}^{(u)} + T_{\text{cons}}^{(v)} + T_{\text{penal}}
+			\label{eq:cont_thr_estimate_elliptic_part}
+		\end{align}
+		The goal is now to estimate the consistency terms $T_{\text{cons}}$ from above by something of the form
+		$ \sum_{n=0}^{N+1} t_n(u) s_n(v) + \sum_{n=0}^{N+1} t_n(v) s_n(u)$, such that together with the terms
+		$T_{\text{ell}}, T_{\text{penal}}$ we can use discrete Cauchy-Schwarz on the sums and hence separate them into
+		a product of the two energy norms $C_{\text{cont}} \|u\|_{h}\|v\|_{h} $ scaled by a positive constant. \\ \\
+		We will show the estimate of $T_{\text{cons}}^{(u)}$, the procedure to estimate $T_{\text{cons}}^{(v)}$ is analogous. \\
+		First rewrite
+		\begin{equation}
+			\label{eq:continuity_thr_consistency_term}
+			T_{\text{cons}}^{(u)} = \sum_{n=0}^{N+1} \big| \{c(x_n)u'(x_n)\} \texttt{a}_n^{-1/2}\texttt{a}_n^{1/2} [v(x_n)] \big|
+		\end{equation}
+		Next again using the definition of $\texttt{a}$ and estimates as in Step 1 we find for interior faces $n = 1,\ldots,N$
+		\begin{equation}
+			\big|\{c(x_n)u'(x_n)\}\big|\texttt{a}_n^{-1/2}
+			\leq \frac{1}{2} \sqrt{\frac{\texttt{h}_n}{\sigma}} \sqrt{c_{\max}}
+			\left( |u'(x_n^-)| + |u'(x_n^+)| \right) \nonumber
+		\end{equation}
+		and for the boundary faces
+		\begin{equation}
+			\big|\{c(x_0)u'(x_0)\}\big|\texttt{a}_0^{-1/2}
+			\leq \sqrt{\frac{\texttt{h}_0}{\sigma}} \sqrt{c_{\max}}
+			|u'(x_0^+)|,
+			\quad \big|\{c(x_{N+1})u'(x_{N+1})\}\big|\texttt{a}_{N+1}^{-1/2}
+			\leq \sqrt{\frac{\texttt{h}_{N}}{\sigma}} \sqrt{c_{\max}}
+			|u'(x_{N+1}^-)| \nonumber
+		\end{equation}
+		Applying Lemma (\ref{lemma:inv_ineq}) yields for
+		$\displaystyle \beta_n(u) := \sqrt{C_{\sigma}} \|\sqrt{c}u'\|_{L^2(I_{n})}, n=0,\ldots,N$
+		\begin{align*}
+			 & \big|\{c(x_n)u'(x_n)\}\big|\texttt{a}_n^{-1/2} \leq \frac{\beta_{n-1}(u)}{2}
+			+ \frac{\beta_n(u)}{2}  \quad \text{for } n=1,\ldots,N                          \\
+			 & \big|\{c(x_0)u'(x_0)\}\big|\texttt{a}_0^{-1/2} \leq \beta_0(u)               \\
+			 & \big|\{c(x_{N+1})u'(x_{N+1})\}\big|\texttt{a}_{N+1}^{-1/2} \leq \beta_{N}(u) \\
+		\end{align*}
+		which we can now plug back into (\ref{eq:continuity_thr_consistency_term}) to get
+		\begin{align}
+			T_{\text{cons}}^{(u)}
+			\leq \beta_0(u)\gamma_0(v) + \beta_{N}(u)\gamma_{N+1}(v)
+			 & + \sum_{n=1}^{N} \frac{\beta_{n-1}(u)}{2} \gamma_{n} (v)+ \sum_{n=1}^{N} \frac{\beta_{n}(u)}{2} \gamma_n(v)
+		\end{align}
+		for $\displaystyle \gamma_n(v) := \sqrt{\texttt{a}_n}\big|[v(x_n)]\big| \, \forall n=0,\ldots,N+1$.
+		By furthermore denoting $ \alpha_n(u):= \|\sqrt{c}u'\|_{L^2(I_n)}$
+		we can represent
+
+		\begin{equation*}
+			T_{\text{ell}} = \sum_{n=0}^{N}\alpha_n(u)\alpha_n(v),\qquad
+			T_{\text{penal}} = \sum_{n=0}^{N+1}\gamma_n(u)\gamma_n(v)
+		\end{equation*}
+		and in total for
+		\begin{align*}
+			 & \textbf{u}:= [ \alpha_0(u),\ldots,\alpha_{N}(u),\beta_0(u), \beta_{N}(u),\frac{\beta_{0}(u)}{2},\ldots, \frac{ \beta_{N-1}(u)}{2}, \frac{\beta_{1}(u)}{2},\ldots,\frac{\beta_{N}(u)}{2},                            \\
+			 & \qquad \quad \gamma_{0}(u), \gamma_{N+1}(u), \gamma_{1}(u),\ldots,\gamma_{N}(u), \gamma_{1}(u),\ldots,\gamma_{N}(u),
+			\gamma_0(u),\ldots,\gamma_{N+1}(u)]^T \in \mathbb{R}^{6N + 7}                                                                                                                                                          \\
+			 & \textbf{v}:= [ \alpha_0(v),\ldots,\alpha_{N}(v), \gamma_{0}(v), \gamma_{N+1}(v), \gamma_{1}(v),\ldots,\gamma_{N}(v),
+			\gamma_{1}(v),\ldots,\gamma_{N}(v),                                                                                                                                                                                    \\
+			 & \qquad \quad \beta_0(v), \beta_{N}(v),\frac{\beta_{0}(v)}{2},\ldots,\frac{\beta_{N-1}(v)}{2}, \frac{\beta_{1}(v)}{2},\ldots,\frac{\beta_{N}(v)}{2}, \gamma_{0}(v),\ldots,\gamma_{N+1}(v)]^T \in \mathbb{R}^{6N + 7}
+		\end{align*}
+		we get
+		\begin{align*}
+			 & T_{\text{ell}} + T_{\text{cons}}^{(u)} + T_{\text{cons}}^{(v)} + T_{\text{penal}} \leq \textbf{u}^T \textbf{v}
+			\leq |\textbf{u}|\, |\textbf{v}|                                                                                                          \\
+			 & \leq \Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}u'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n [u(x_n)]^2\Big)^{1/2}
+			\Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}v'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n [v(x_n)]^2\Big)^{1/2}         \\
+			 & \leq C_{\text{cont}}\|u\|_h \|v\|_h
+		\end{align*}
+		where $\displaystyle C_{\text{cont}} := (3+\frac{5}{4}C_{\sigma})$. This last estimate together with
+		\ref{eq:cont_thr_estimate_elliptic_part} proves the continuity of $b_h$.
+	\end{proofstep}
+\end{proof}
+
+% Extension of the Bilinear form
+\section{Extension of the Bilinear Form}
+To simplify the theory we will continue to assume the exact solution to be in $H^2(\Omega)$. 
+When we intend to extend the bilinear form from $V_h$ to a bigger space which contains the exact solution we run into the problem, that $V_h \not \subset H^1(\Omega)$, 
+by extension we also have $V_h \not \subset H^2(\Omega)$. So in contrast to continuous FEM we have to use a bigger space allowing for discontinuities and including both 
+$V_h$ and $H^2(\Omega)$. \\
+A very common approach (see for example \cite{georgoulis2011Springer}) is to choose a vector space product 
+
+\begin{equation}
+    V:= V_h + H^2(\Omega) = \{ v \in L^2(\Omega) \, |\, v = v_h + \tilde{v}, \text{ for } v_h \in V_h, \tilde{v} \in H^2(\Omega)\}
+\end{equation}
+Alternatively Rivière proposes the usage of \textit{broken Sobolev spaces} in \cite{riviere2008}. That is, for a given partition $\mathcal{T}_h$ of $\Omega$ 
+we can define 
+\begin{equation*}
+    H^k(\mathcal{T}_h) := \{ v \in L^2(\Omega) \,| \, v \vert_I \in H^k(I), \forall I \in \mathcal{T}_h \}
+\end{equation*} 
+for some $k \in \mathbb{N}_0$.

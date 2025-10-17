@@ -1,0 +1,402 @@
+%---Matrix-Vector System---------------------------------------------------------
+\section{Matrix-Vector System}
+\label{sec:matrix_vect_syst}
+We will now in derive the fully discrete Matrix-Vector system given by
+the variational form (\ref{eq:discrete_var_form_elliptic}). To do so let
+$r \in \mathbb{N}$ denote the polynomial degree and consequently the element degree of freedom.
+Note that in this thesis we will only consider global polynomial degrees, meaning one set polynomial degree for all elements.
+Next let $\{\Phi_0,\ldots,\Phi_M\}$ be a basis of $V_h$, where $M = \dim(V_h)$.
+We can represent the sought Galerkin approximation as $u_h = \sum_{j=0}^{M} \alpha_j \Phi_j\in V_h$ for coefficients
+$\alpha_j \in \mathbb{R}$. Then (\ref{eq:discrete_var_form_elliptic}) is equivalent to:
+\begin{equation*}
+	\sum_{j=0}^{M} \alpha_j b_h(\Phi_j, \Phi_i) = \ell(\Phi_i) \qquad \forall i=0,\ldots,M
+\end{equation*}
+which corresponds to the system:
+\begin{equation}
+	\label{eq:fully_discrete_dg_system_elliptic}
+	\textbf{Bu} = \textbf{l}
+\end{equation}
+for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \Phi_i),
+	\textbf{u} \in \mathbb{R}^M, [\textbf{u}]_j = \alpha_j,
+	\textbf{l}\in\mathbb{R}^M, [\textbf{l}]_j = \ell(\Phi_j)$.
+
+%---Basis-of-FE-Space------------------------------------------------------------
+\section{Basis of Finite Element Space}
+\label{sec:ell_basis}
+There are many ways of choosing basis functions for finite element spaces. In this thesis we soley focus on elementwise nodal Lagrangian basis functions, although there are alternatives
+which are just as valid, like the modal Legendre basis.
+When choosing basis nodes for a lagrangian basis we have a couple of choices to make. \\ \\
+1. \textit{Should the quadrature nodes coincide with the basis nodes?} \\
+Having the quadrature nodes coincide with the basis nodes simplifies the calculations, because by the property of a Lagrangian basis the values of the basis functions at the quadrature nodes,
+i.e the basis nodes coincide with the Kroneker delta. So a value matrix composed of each value at the quadrature nodes for each basis function (per element) is just
+the identity matrix. Specifically we have: \\
+Let $\xi_0,\ldots,\xi_r$ be the basis- and quadrature nodes and let $ \widehat{\phi}_0,\ldots,\widehat{\phi}_r$ be the Lagrangian basis, then 
+\begin{equation*}
+	\widehat{\phi}_i(\xi_j) = \delta_{i,j} := 
+	\begin{cases}
+		1	&,\text{ for }i=j \\
+		0  &,\text{ for }i\neq j
+	\end{cases}
+\end{equation*}
+therefore $\textbf{I} = \textbf{L}$ where $\textbf{I}$ is the identity and $ [\textbf{L}]_{i,j} = [\widehat{\phi}_i(\xi_j)] $ the basis shape-function value-matrix.
+This reduces the computational cost, since there is no need to actually evaluate/interpolate the polynomials at the quadrature nodes. 
+The clear downside is that we couple the exactness of the quadrature to the polynomial degree of the basis function. If for example we fix a polynomial degree $r \in \mathbb{N}$.
+The Gauss-Lobatto quadrature with $r+1$ nodes is exact for polynomials of degree $2r-1$. When computing the mass matrix we have to calculate an 
+integral of the form $ \int_I \Phi_j \Phi_i \text{d}x $ where $I \in \mathcal{T}_h$ is a element and $\Phi_i \vert_I, \Phi_j \vert_I \in \mathcal{P}^r(I)$ are basis functions.
+This means $ \Phi_j \cdot \Phi_i \in  \mathcal{P}^{2r}$ and therefore we introduce an error. \\
+% TODO: elaborate on error and remark that the convergence rate is not influenced after testing it
+
+\noindent 2. \textit{Should there be basis nodes on the element boundaries?} \\
+In contrast to continuous FEM we do not need to impose continuity over the element boundaries, so we have the option of allowing 
+the nodes to be exclusively in the interior of the elements. This allows us to use Gauss-Legendre quadrature nodes in 1d for example, 
+which is exact for polynomials of degree $2r+1$ for $r+1$ quadrature nodes. This would remedy the issue of approximating the mass matrix inexactly as described before when 
+choosing the same quadrature nodes as basis nodes. The downside here is that we sill require boundary values to incorporate boundary conditions and calculating 
+the penalty, consistency and symmetry terms (see matrices $\textbf{B}_{\text{cons}}, \textbf{B}_{\text{penal}} $ in section \ref{sec:stiff_assembly}), 
+so the boundary values have to be interpolated. \\ 
+
+In this thesis we will not try to justify the choice of basis function too much and use Gauss-Lobatto quadrature nodes as basis nodes.
+This is a commonly used nodal basis in continuous 1d-FEM and we will also use it for our DG method. In Appendix A.2.3 of \cite{diPietro2012} the \textit{Fekete points}, which 
+in 1d coincide with the Gauss-Lobatto points, are recommended 
+with the argument that this nodal basis yields a mass matrix with an optimal condition number. 
+For more detailed information on choosing basis functions and alternative approaches see for example
+Appendix A.2 in \cite{diPietro2012}. \\ \\
+Let $n\in \{1,\ldots,N\}$ and $I_n \in \mathcal{T}_h$ be an arbitrary element.
+We denote $\hat{I} = (-1,1)$ the \textit{reference element} and $\displaystyle F_n : \hat{I} \to I_n, \, \xi \mapsto \frac{x_n + x_{n+1}}{2} + \frac{h_n}{2} \xi $
+the \textit{element map}. This now allows us to define a basis on the reference element and
+extend it to all elements using the element map. \\
+For a fixed polynomial degree $r \geq 2$ let $\xi_0,\ldots,\xi_{r} \in [-1,1]$ be the
+Gauss-Lobatto nodes. \\
+\begin{equation*}
+	\begin{tabular}{c|c}
+		\centering
+		$r = 2$ & $\{-1, 1\}$                                         \\
+		$r = 3$ & $\{-1,0, 1\}$                                       \\
+		$r = 4$ & $\{-1,-\frac{1}{\sqrt{5}}, \frac{1}{\sqrt{5}}, 1\}$ \\
+		\vdots  & \vdots                                              \\
+	\end{tabular}
+\end{equation*}
+The inner nodes are given by the roots of $L_{r-1}^{\prime}$, the derivative of the $r-1$-th Legendre polynomial.
+We define the basis on the reference element as the Lagrangian nodal basis
+
+\begin{equation}
+	\label{def:lagrange_ref_basis}
+	\widehat{\phi}_i(\xi) := \prod_{\substack{j = 0 \\ j\neq i}}^{r}\frac{\xi - \xi_j}{\xi_i - \xi_j},
+	\qquad \text{for } i=0,\ldots,r
+\end{equation}
+and define the basis functions on the element $I_n$ as
+\begin{equation}
+	\phi^n_i : I_n \to \mathbb{R}, \quad \phi^n_i(x) := \widehat{\phi}_i(F_n^{-1}(x))
+	\nonumber
+\end{equation}
+as a last step we extend the basis functions to the whole domain $\Omega$ by zero
+\begin{equation}
+	\Phi_i^n: \Omega \to \mathbb{R}, \quad \Phi_i^n(x) :=
+	\begin{cases}
+		\phi_i^n(x), & \text{for } x\in I_n \\
+		0,           & \text{else}
+	\end{cases}
+	\label{def:lagrange_basis_of_Vh}
+\end{equation}
+for $n=0,\ldots,N$ and $i=0,\ldots,r$. Clearly we have $\text{span}( \widehat{\phi}_0, \ldots, \widehat{\phi}_r) = \mathcal{P}^r(\hat{I})$
+and by extension $\text{span}(\Phi_0^0,\ldots,\Phi_r^N) = V_h^r(\mathcal{T}_h)$. It is essential
+that our basis has only local support, meaning the basis functions are zero on most of the domain. This is the key property which
+allows the final matrices to be sparse. Choosing basis functions with global support, the computational cost would be unfeasible for
+small mesh sizes. \\
+By having chosen a Lagrangian nodal basis the mesh nodes exactly coincide with the Gauss-Lobatto nodes on each
+element.
+To simplify the notation we introduce a \textit{local-to-global} index map
+\begin{equation}
+	\label{def:local_to_global_map}
+	T: \{0,\ldots,N\} \times \{0,\ldots,r\} \to \{1,\ldots,M\}
+\end{equation}
+where $M = (r+1)(N+1) = \dim(V_h)$. $T$ takes an element index $n$ and a local basis function index $i$ as inputs
+and returns the globally assigned node index $T(n,i)$. $T$ corresponds to the
+\textit{connectivity matrix}. In the simplest case we have the global index ordered from left to right and get
+$T(n,i) = nr + i$.
+
+%---Matrix Assembly-------------------------------------------------------------------
+\section{Stiffness Matrix Assembly}
+\label{sec:stiff_assembly}
+With the basis functions in (\ref{def:lagrange_basis_of_Vh}) defined we can now in detail investigate how
+to assemble the matrix $\textbf{B}$ in (\ref{eq:fully_discrete_dg_system_elliptic}). To do so we firstly separate
+the bilinear form $b_h$ into different components
+
+\begin{align*}
+	a_h(u,v)                & := \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x                              \\
+	b_h^{\text{cons}}(u,v)  & := \sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)] \\
+	b_h^{\text{penal}}(u,v) & := \sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]                          \\
+\end{align*}
+
+Let $\displaystyle u_h = \sum_{m=0}^{N} \sum_{j=0}^{r} \alpha_j^m \Phi_j^m \in V_h$ denote
+the Galerkin approximation, then as discussed in section \ref{sec:ell_basis} the discrete variational formulation (\ref{eq:discrete_var_form_elliptic}) is equivalent
+to
+\begin{equation}
+	\sum_{m=0}^{N} \sum_{j=0}^{r} \alpha_j^m \Big(
+	a_h(\Phi_j^m,\Phi_i^n) - b_h^{\text{cons}}(\Phi_j^m,\Phi_i^n) + b_h^{\text{penal}}(\Phi_j^m,\Phi_i^n)
+	\Big)
+	= \ell(\Phi_i^n), \qquad \forall n=0,\ldots,N, i=0,\ldots,r
+\end{equation}
+which corresponds to the matrix vector system (\ref{eq:fully_discrete_dg_system_elliptic})
+where we can write
+\begin{equation*}
+	\textbf{B} = \textbf{A} - \textbf{B}_{\text{cons}} + \textbf{B}_{\text{penal}}
+\end{equation*}
+we will assemble the three (symmetric) matrices separately.
+\begin{align*}
+	 & [\textbf{B}]_{T(n,i),T(m,j)} = b_h(\Phi_j^m, \Phi_i^n),
+	 & [\textbf{A}]_{T(n,i),T(m,j)} = a_h(\Phi_j^m, \Phi_i^n)                                \\
+	 & [\textbf{B}_{\text{cons}}]_{T(n,i),T(m,j)} = b_h^{\text{cons}} (\Phi_j^m, \Phi_i^n)
+	 & [\textbf{B}_{\text{penal}}]_{T(n,i),T(m,j)} = b_h^{\text{penal}} (\Phi_j^m, \Phi_i^n)
+\end{align*}
+where $T$ is given by (\ref{def:local_to_global_map})
+
+\subsection{Assembly of A}
+$\textbf{A}$ is assembled similarly to the standard stiffness matrix in continuous finite element. The main difference is that there is no overlap in the elementwise contributions.
+Each set of local (element) basis functions only contributes to the integrals over said element.
+We can rewrite $\textbf{A} = \sum_{s=0}^{N} \textbf{A}^{(s)}$, where
+$[\textbf{A}^{(s)}]_{T(n,i),T(m,j)} = \int_{I_s} c \,(\Phi_j^m)' (\Phi_i^n)' \, \text{d}x$.
+Now since we have $\text{supp}(\Phi_i^n)\subset I_n$ the only non-zero entries of $\textbf{A}^{(s)} $ are the ones where both $n=m=s$. Pulling back the integral
+to the reference element using the chain rule and the substitution $F_s^{-1}(x) = \xi$ we find
+\begin{equation*}
+	\int_{I_s} c(x) \,(\Phi_j^s)'(x) (\Phi_i^s)'(x) \, \text{d}x =
+	\frac{2}{h_s} \int_{\hat{I}} c(F_s(\xi)) \, \widehat{\phi}_j^{\, \prime}(\xi) \widehat{\phi}_i^{\, \prime}(\xi) \, \text{d}\xi
+\end{equation*}
+This integral now only depends on the reference shape functions, the element length $h_s$
+and the values of the coefficient $c$. Using the Gauss-Lobatto quadrature rule we can approximate the integral
+only requiring the values of $c$ at the nodes, whilst having the values of $\phi, \phi'$ preloaded.
+The total assembly of $\textbf{A}$ can therefore be achieved by calculating a local contribution matrix
+$\widehat{\textbf{A}}^{(s)} \in \mathbb{R}^{(r+1)\times (r+1)}$ for each element $I_s$ and adding it into $\textbf{A}$.
+\begin{example}
+	For $c\equiv 1$ with $\mathcal{P}^1$-elements $(r=1)$ we have
+	\begin{equation*}
+		\widehat{\textbf{A}}^{(s)} = \frac{1}{h_s}
+		\begin{bmatrix}
+			1  & -1 \\
+			-1 & 1
+		\end{bmatrix}
+	\end{equation*}
+\end{example}
+
+\subsection{Assembly of B consistency part}
+\label{subsec:assembly_cons}
+As before we rewrite $\textbf{B}_{\text{cons}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{cons}}^{(s)} $, where
+
+\begin{equation*}
+	[\textbf{B}_{\text{cons}}^{(s)}]_{T(n,i),T(m,j)} = \{c(x_s) \Phi_j^{m \, \prime} (x_s)\}[\Phi_i^n(x_s)] + \{c(x_s)\Phi_i^{n\, \prime} (x_s)\}[\Phi_j^m(x_s)]
+\end{equation*}
+
+\subsubsection{Interior Faces}
+First let $s \in \{1,\ldots,N\}$ denote an interior face, we observe again, that the entries of
+$\textbf{B}_{\text{cons}}^{(s)}$ can only be non-zero for an index tuple $(T(n,i),T(m,j))$ if
+$n,m \in \{s, s-1\}$ by the local support of the basis functions.
+Therefore assembling $ \textbf{B}_{\text{cons}}$ again comes down to calculating a local contribution matrix
+
+\begin{equation*}
+	\widehat{\textbf{B}}_{\text{cons}}^{(s)} =
+	\begin{bmatrix}
+		\textbf{C}_{\text{cons}}^{(s-1,s-1)} & \textbf{C}_{\text{cons}}^{(s-1,s)} \\
+		\textbf{C}_{\text{cons}}^{(s,s-1)}   & \textbf{C}_{\text{cons}}^{(s,s)}
+	\end{bmatrix}
+	\in \mathbb{R}^{2(r+1) \times 2(r+1)}
+\end{equation*}
+for each interior face $x_s$ consisting of four blocks we will now lay out in more detail.
+We discuss the boundary case separately.
+Using again the local support of the basis functions we find
+\begin{align*}
+	 & [\textbf{C}_{\text{cons}}^{(s-1,s-1)}]_{i,j} = \frac{c(x_s^-)}{2} \Phi_j^{s-1\, \prime}(x_s^-) \Phi_i^{s-1}(x_s^-) + \frac{c(x_s^-)}{2} \Phi_i^{s-1\, \prime}(x_s^-) \Phi_j^{s-1}(x_s^-) \\
+	 & [\textbf{C}_{\text{cons}}^{(s-1,s)}]_{i,j} = \frac{c(x_s^+)}{2} \Phi_j^{s\, \prime}(x_s^+) \Phi_i^{s-1}(x_s^-) - \frac{c(x_s^-)}{2} \Phi_i^{s-1\, \prime}(x_s^-) \Phi_j^{s}(x_s^+)       \\
+	 & [\textbf{C}_{\text{cons}}^{(s,s)}]_{i,j} = -\frac{c(x_s^+)}{2} \Phi_j^{s\, \prime}(x_s^+) \Phi_i^{s}(x_s^+) - \frac{c(x_s^+)}{2} \Phi_i^{s\, \prime}(x_s^+) \Phi_j^{s}(x_s^+)
+\end{align*}
+where we have used the definitions of jump and average in (\ref{def:jump_average}).
+Note that $ \textbf{C}_{\text{cons}}^{(s-1,s)} = (\textbf{C}_{\text{cons}}^{(s,s-1)})^T$ by the symmetry of the bilinear form $b_h^{\text{cons}}$.
+Next we represent the values of the basis functions $ \Phi $ at the element boundary by the values of the reference
+shape functions $\widehat{\phi}$
+\begin{align}
+	 & \Phi_i^s(x_s^+) = \widehat{\phi}_i(-1) ,                                                   & \Phi^{s-1}_i(x_s^-) = \widehat{\phi}_i(1) \label{eq:shape_fun_and_basis_fun_values_equality} \\
+	 & \Phi_i^{s\, \prime }(x_s^+) = \frac{2}{h_{s}} \widehat{\phi}_i^{\,\prime}(-1),
+	 & \Phi_i^{s-1\, \prime }(x_s^-) = \frac{2}{h_{s-1}} \widehat{\phi}_i^{\,\prime}(1) \nonumber
+\end{align}
+which finally yields
+\begin{align*}
+	 & [\textbf{C}_{\text{cons}}^{(s-1,s-1)}]_{i,j} = \frac{c(x_s^-)}{h_{s-1}} \widehat{\phi}_j^{\,\prime}(1) \widehat{\phi}_i(1) + \frac{c(x_s^-)}{h_{s-1}} \widehat{\phi}_i^{\,\prime} (1) \widehat{\phi}_j(1)  \\
+	 & [\textbf{C}_{\text{cons}}^{(s-1,s)}]_{i,j} = \frac{c(x_s^+)}{h_{s}} \widehat{\phi}_j^{\,\prime} (-1) \widehat{\phi}_i (1) - \frac{c(x_s^-)}{h_{s-1}} \widehat{\phi}_i^{\,\prime} (1) \widehat{\phi}_j (-1) \\
+	 & [\textbf{C}_{\text{cons}}^{(s,s)}]_{i,j} = -\frac{c(x_s^+)}{h_s} \widehat{\phi}_j^{\,\prime} (-1) \widehat{\phi}_i (-1) - \frac{c(x_s^+)}{h_s} \widehat{\phi}_i^{\,\prime} (-1) \widehat{\phi}_j (-1)
+\end{align*}
+\begin{example}
+	Consider $c\equiv 1$ for $\mathcal{P}^1$-elements $(r=1)$
+	with an equidistant mesh with meshsize $h$ we have
+	\begin{equation*}
+		\widehat{\textbf{B}}_{\text{cons}}^{(s)} = \frac{1}{h}
+		\begin{bmatrix}
+			0    & -1/2 & 1/2  & 0    \\
+			-1/2 & 1    & -1   & 1/2  \\
+			1/2  & -1   & 1    & -1/2 \\
+			0    & 1/2  & -1/2 & 0
+		\end{bmatrix}
+	\end{equation*}
+\end{example}
+
+\subsubsection{Boundary Faces}
+For $s\in \{0, N+1 \}$ and $x_s$ a boundary face we now have a smaller local contribution matrix
+since the contribution can only come from the one element to which $x_s$ belongs. Meaning we have
+$\widehat{\textbf{B}}_{\text{cons}}^{(0)}, \widehat{\textbf{B}}_{\text{cons}}^{(N+1)} \in \mathbb{R}^{(r+1)\times (r+1)}$
+with
+\begin{align*}
+	 & [\widehat{\textbf{B}}_{\text{cons}}^{(0)}]_{i,j} =
+	-\frac{2 c(x_0^+)}{h_{0}} \widehat{\phi}_j^{\,\prime}(-1) \widehat{\phi}_i(-1) - \frac{2 c(x_0^+)}{h_{0}} \widehat{\phi}_i^{\,\prime} (-1) \widehat{\phi}_j(-1)         \\
+	 & [\widehat{\textbf{B}}_{\text{cons}}^{(N+1)}]_{i,j} =
+	\frac{2 c(x_{N+1}^-)}{h_{N+1}} \widehat{\phi}_j^{\,\prime}(1) \widehat{\phi}_i(1) + \frac{ 2 c(x_{N+1}^-)}{h_{N+1}} \widehat{\phi}_i^{\,\prime} (1) \widehat{\phi}_j(1) \\
+\end{align*}
+
+\begin{example}
+	For $c\equiv 1$ with $\mathcal{P}^1$-elements $(r=1)$ we have
+	\begin{equation*}
+		\widehat{\textbf{B}}_{\text{cons}}^{(0)} = \frac{1}{h_0}
+		\begin{bmatrix}
+			2  & -1 \\
+			-1 & 0
+		\end{bmatrix}
+		,\qquad
+		\widehat{\textbf{B}}_{\text{cons}}^{(N+1)} = \frac{1}{h_{N+1}}
+		\begin{bmatrix}
+			0  & -1 \\
+			-1 & 2
+		\end{bmatrix}
+	\end{equation*}
+\end{example}
+
+\subsection{Assembly of B penalty part}
+Again we rewrite $\textbf{B}_{\text{penal}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{penal}}^{(s)}$, where
+\begin{equation*}
+	[\textbf{B}_{\text{penal}}^{(s)}]_{T(n,i), T(m,j)} = { \texttt{a}_s} [\Phi_j^m(x_s)] [\Phi_i^n(x_s)]
+\end{equation*}
+We proceed analogously to \ref{subsec:assembly_cons}.
+\subsubsection{Interior Faces}
+Let $s\in \{1,\ldots,N\} $ and $x_s$ denote an interior face. As before we have that
+the entries of $ \textbf{B}_{\text{penal}}^{(s)} $ can only be nonzero for an index tuple
+$ (T(n,i), T(m,j)) $ if $ n,m \in \{s, s-1\} $, similar to \ref{subsec:assembly_cons} we find
+that the assembly boils down to adding up local contributions represented in a local contribution
+matrix
+
+\begin{equation*}
+	\widehat{\textbf{B}}_{\text{penal}}^{(s)} =
+	\begin{bmatrix}
+		\textbf{C}_{\text{penal}}^{(s-1,s-1)} & \textbf{C}_{\text{penal}}^{(s-1,s)} \\
+		\textbf{C}_{\text{penal}}^{(s,s-1)}   & \textbf{C}_{\text{penal}}^{(s,s)}
+	\end{bmatrix}
+	\in \mathbb{R}^{2(r+1) \times 2(r+1)}
+\end{equation*}
+
+and using (\ref{eq:shape_fun_and_basis_fun_values_equality}), and the definition of the penalization
+parameter (\ref{def:penalization_function}) we specifically find
+
+\begin{align*}
+	 & [\textbf{C}_{\text{penal}}^{(s-1,s-1)}]_{i,j} = \texttt{a}_s \widehat{\phi}_j(1) \widehat{\phi}_i(1) \\
+	 & [\textbf{C}_{\text{penal}}^{(s-1,s)}]_{i,j} = -\texttt{a}_s \widehat{\phi}_j(-1) \widehat{\phi}_i(1) \\
+	 & [\textbf{C}_{\text{penal}}^{(s,s)}]_{i,j} = \texttt{a}_s \widehat{\phi}_j(-1) \widehat{\phi}_i(-1)
+\end{align*}
+
+where again by symmetry of the penalty term we have
+$ \textbf{C}_{\text{penal}}^{(s-1,s)} = (\textbf{C}_{\text{penal}}^{(s,s-1)})^T$
+and $\texttt{a}_s$ only depends on the two adjacent elements $I_{s-1}, I_s$.
+
+\begin{example}
+	Consider $c\equiv 1$ for $\mathcal{P}^1$-elements $(r=1)$
+	with an equidistant mesh with meshsize $h$ we have
+	\begin{equation*}
+		\widehat{\textbf{B}}_{\text{penal}}^{(s)} = \frac{\sigma}{h}
+		\begin{bmatrix}
+			0 & 0  & 0  & 0 \\
+			0 & 1  & -1 & 0 \\
+			0 & -1 & 1  & 0 \\
+			0 & 0  & 0  & 0
+		\end{bmatrix}
+	\end{equation*}
+\end{example}
+
+\subsubsection{Boundary Faces}
+For $s \in  \{0, N+1\} $ we again have only the respective boundary element contributing.
+So the local contribution matrices $ \widehat{\textbf{B}}_{\text{penal}}^{(s)} \in \mathbb{R}^{(r+1) \times (r+1)} $ satisfy
+
+\begin{align*}
+	[\widehat{\textbf{B}}_{\text{penal}}^{(0)}]_{i,j} =
+	\texttt{a}_0 \widehat{\phi}_j(-1) \widehat{\phi}_i(-1), \qquad
+	[\widehat{\textbf{B}}_{\text{penal}}^{(N+1)}]_{i,j} =
+	\texttt{a}_{N+1} \widehat{\phi}_j(1) \widehat{\phi}_i(1) \\
+\end{align*}
+
+\begin{example}
+	For $c\equiv 1$ with $\mathcal{P}^1$-elements $(r=1)$ we have
+	\begin{equation*}
+		\widehat{\textbf{B}}_{\text{penal}}^{(0)} = \frac{\sigma}{h_0}
+		\begin{bmatrix}
+			1 & 0 \\
+			0 & 0
+		\end{bmatrix}
+		,\qquad
+		\widehat{\textbf{B}}_{\text{penal}}^{(N+1)} = \frac{\sigma}{h_{N+1}}
+		\begin{bmatrix}
+			0 & 0 \\
+			0 & 1
+		\end{bmatrix}
+	\end{equation*}
+\end{example}
+
+\subsection{System Vector Assembly}
+We divide assembling the vector \textbf{l} in (\ref{eq:fully_discrete_dg_system_elliptic}) into two parts.
+\begin{equation*}
+	\textbf{l} = \textbf{l}_{\text{load}} + \textbf{l}_{\text{bc}}
+\end{equation*}
+First we recall the assembly of the load vector $\textbf{l}_{\text{load}}$, i.e. the vector containing the contributions of the forcing term $f$
+and secondly we will describe how to add the Dirichlet boundary condition contributions ($\textbf{l}_{\text{bc}}$).
+\subsubsection{Load Vector}
+The assembly of the load vector is completely analogous to the continuous finite element case.
+Using the local support of $\Phi_i^n$ we can rewrite
+
+\begin{equation*}
+	\int_{\Omega} f \Phi_i^n \text{d}x = \sum_{s=0}^{N} \int_{I_s} f \Phi_i^n \text{d} x = \int_{I_n} f(x) \Phi_i^n(x) \text{d} x
+	= \frac{h_n}{2} \int_{-1}^{1} f(F_n(\xi))\widehat{\phi}_i(\xi)\text{d}\xi
+\end{equation*}
+
+meaning as before we can assemble $\textbf{l}_{\text{load}} = \sum_{s=0}^{N} \textbf{l}_{\text{load}}^{(s)}$ where
+\begin{equation*}
+    [\textbf{l}_{\text{load}}^{(s)}]_{T(n,i)} = \int_{I_s} f \Phi_i^n \text{d} x = \delta_{n,s} \frac{h_n}{2} \int_{-1}^{1} f(F_n(\xi))\widehat{\phi}_i(\xi)\text{d}\xi
+\end{equation*}
+which can be characterized by the local contribution vector $\widehat{\textbf{l}}_{\text{load}}^{\,(s)} \in \mathbb{R}^{r+1}$ defined as
+
+\begin{equation*}
+	[\widehat{\textbf{l}}_{\text{load}}^{\,(s)}]_{i}
+	= \frac{h_s}{2} \int_{-1}^{1} f(F_s(\xi))\widehat{\phi}_i(\xi)\text{d}\xi
+\end{equation*}
+In practice we approximate the integral using the Gauss-Lobatto quadrature rule.
+
+\begin{example}
+	For $f$ piecewise constant (i.e. $f|_{I_s} \equiv f_s \in \mathbb{R} \quad \forall s=0,\ldots,N$) with $\mathcal{P}^1$-elements $(r=1)$ we have
+	\begin{equation*}
+		\normalfont \widehat{\textbf{l}}_{\text{load}}^{\,(s)} = \frac{f_s h_s}{2}
+		\begin{bmatrix}
+			1 \\
+			1
+		\end{bmatrix}
+	\end{equation*}
+\end{example}
+
+\subsubsection{Dirichlet Boundary Condition Vector}
+We have
+
+\begin{equation*}
+	[\textbf{l}_{\text{bc}}]_{T(n,i)} =
+	-g_1c(x_{N+1}^-)\Phi_i^n(x_{N+1}^-) + g_0c(x_0^+)\Phi_i^n(x_0^+)
+	+ \texttt{a}_{N+1}g_1\Phi_i^n(x_{N+1}^-) + \texttt{a}_0 g_0\Phi_i^n(x_{0}^+)
+\end{equation*}
+
+where the entries can clearly only be non-zero at indices corresponding to
+boundary elements.
+We characterize the assembly using the local contribution vectors
+$\widehat{\textbf{l}}_{\text{bc}}^{\,(N+1)}, \widehat{\textbf{l}}_{\text{bc}}^{\,(0)} \in \mathbb{R}^{r+1}$
+where
+
+\begin{equation*}
+	[\widehat{\textbf{l}}_{\text{bc}}^{\,(0)}]_{i} = g_0c(x_{0}^-) \widehat{\phi}_i(-1) + \texttt{a}_{0}g_0\widehat{\phi}_i(-1), \qquad
+	[\widehat{\textbf{l}}_{\text{bc}}^{\,(N+1)}]_{i} = -g_1c(x_{N+1}^-) \widehat{\phi}_i(1) + \texttt{a}_{N+1}g_1\widehat{\phi}_i(1)
+\end{equation*}
