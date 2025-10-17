@@ -5,7 +5,7 @@ function B_flux = interiorFluxMatrix1D(nodes, elements, c_vals)
     arguments (Input)
         nodes               % (num_nodes, 1) node value matrix
         elements            % (num_el, dof) connectivity (element index) matrix 
-        c_vals              % (num_nodes, 1) vector with values of c at nodes (c(nodes))  
+        c_vals              % (num_el, num_quad) vector with values of c at nodes (c(nodes))  
     end
     arguments (Output)
         B_flux              % (num_nodes, num_nodes) sparse matrix 
@@ -35,8 +35,8 @@ function B_flux = interiorFluxMatrix1D(nodes, elements, c_vals)
         % local matrix
         h_loc_1 = abs(nodes(elements(k-1, 1))-nodes(elements(k-1, end)));
         h_loc_2 = abs(nodes(elements(k, 1))-nodes(elements(k, end)));
-        B_loc = [c_vals(elements(k-1, end))*B_loc_1/h_loc_1, (c_vals(elements(k, 1))*B_loc_21/h_loc_2 + c_vals(elements(k-1, end))*B_loc_22/h_loc_1);
-                 (c_vals(elements(k, 1))*B_loc_21/h_loc_2 + c_vals(elements(k-1, end))*B_loc_22/h_loc_1).', c_vals(elements(k, 1))*B_loc_3/h_loc_2];
+        B_loc = [c_vals(k-1, end)*B_loc_1/h_loc_1, (c_vals(k, 1)*B_loc_21/h_loc_2 + c_vals(k-1, end)*B_loc_22/h_loc_1);
+                 (c_vals(k, 1)*B_loc_21/h_loc_2 + c_vals(k-1, end)*B_loc_22/h_loc_1).', c_vals(k, 1)*B_loc_3/h_loc_2];
         bordering_elements = [elements(k-1,:), elements(k,:)];
         B_loc_row_idx = repmat(bordering_elements.', 1, 2*dof);
         B_loc_col_idx = repmat(bordering_elements, 2*dof, 1);

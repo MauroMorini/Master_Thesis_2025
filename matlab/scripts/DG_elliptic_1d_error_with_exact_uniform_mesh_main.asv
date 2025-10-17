@@ -112,16 +112,17 @@ legend("h^"+(dof-1), "h^"+(dof), "L2", "H1", "energy")
 title("Convergence of Errors for P^"+(dof-1)+ "elements");
 
 
-dof = 3;
+dof = 2;
 H_meshsizes = 2.^-(2:10);
 line_width = 2;
 figure;
-loglog(H_meshsizes, errors_quad_p2(1,:), '-x', 'LineWidth', line_width);
+loglog(H_meshsizes, errors_exact_quad_p1(1,:), '-x', 'Color', 'b', 'LineWidth', line_width);
+loglog(H_meshsizes, errors_exact_quad_p1(2,:), '-o', 'Color', 'r','LineWidth', line_width);
 hold on
-loglog(H_meshsizes, errors_quad_p2(2,:), '-o','LineWidth', line_width);
-loglog(H_meshsizes, errors_exact_quad_p2(1,:), '-x', 'LineWidth', line_width);
-loglog(H_meshsizes, errors_exact_quad_p2(2,:), '-o', 'LineWidth', line_width);
+loglog(H_meshsizes, errors_exact_quad_p1(1,:), '-x', 'Color', 'b', 'LineWidth', line_width);
+loglog(H_meshsizes, errors_exact_quad_p1(2,:), '-o', 'Color', 'r','LineWidth', line_width);
 hold off
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("L2 quad", "H1 quad", "L2 exact", "H1 exact")
+legend("h^"+(dof-1), "h^"+(dof), "L2", "H1", "energy")
+title("Convergence of Errors for P^"+(dof-1)+ "elements");
