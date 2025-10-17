@@ -24,7 +24,7 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
 
     % collect system matrices
     A = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
-    M = fem1d.massMatrix1D(nodes, elements, ones(size(nodes,1),size(elements,2)));
+    M = fem1d.massMatrix1D(nodes, elements, ones(size(c_vals)));
     B_flux_int = dg1d.interiorFluxMatrix1D(nodes, elements, c_vals);
     B_flux_bound = dg1d.boundaryFluxMatrix1D(nodes, elements, c_vals);
     B_penalty_int = dg1d.interiorPenaltyMatrix1D(nodes, elements, c_vals, sigma);
