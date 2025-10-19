@@ -450,3 +450,56 @@ formulation of the problem.
 \end{proof}
 
 \section{Error Analysis}
+In this section we analyze the error between the Galerkin approximation resulting from the discrete SIPG formulation and an exact solution. 
+We will focus on the error in the energy norm $\| \cdot \|_{h}$ but also mention the resulting error measured in the $L^2$-norm.
+\\ \\
+We start by recalling an important polynomial approximation result for finite elements. \\
+Fix a polynomial degree $r \in \mathbb{N}$ and let $I = (a, b) \subset \mathbb{R}$ be an element of length $h = b-a$. We denote the linear interpolation operator by
+\begin{equation}
+	\mathcal{I}_h^r : L^2(I) \to \mathcal{P}^r(I)
+\end{equation}
+Where the distinct interpolation nodes are $\xi_0,\ldots,\xi_r \in I$. For our purpose the exact positioning of these nodes can be arbitrary. 
+For readability if the context allows it we will denote the $i$-th derivative of a function $v$ by $\frac{\text{d}^i}{\text{d} x^i} v = v^{(i)}$.
+\begin{lemma}
+	Let $s = r+1$ and $v \in H^s(I)$, it holds that 
+	\begin{equation*}
+		\| v - \mathcal{I}_h^r v \|_{H^m(I)} \leq h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s-1\}
+	\end{equation*} 
+	where $|v|_{H^s(I)} = \| v^{(s)} \|_{L^2(I)}$ denotes the $H^s$-seminorm. \\ 
+\end{lemma}
+\begin{proof}
+	\begin{proofstep}
+		Fix $m \in \{0,\ldots,s-1\}$, we start by first estimating the $H^m$-seminorm
+		\begin{equation}
+			\label{eq:proof_polynomial_interpolation_approx_estimate_seminorm}
+			| v - \mathcal{I}_h^r v |_{H^m(I)} \leq h^{s-m} |v|_{H^s(I)}
+		\end{equation} 
+		Define $e := v - \mathcal{I}_h^r v \in H^s(I) \subset C^{s-1}(I)$, by construction of the interpolation operator we have $e(\xi_i) = 0$ for 
+		all $i \in \{0,\ldots,r\}$, where the $\xi_i$ are the interpolation nodes. \\
+		By applying Rolle's theorem in succession we can find $r$ zeroes of $e'$, $r-1$ zeroes of $e''$$,\ldots,$ and one zero of $e^{(s-1)}$.
+		Clearly in total there exist some points $y_0,\ldots,y_{s-1} \in I$ such that 
+		\begin{equation*}
+			e^{(i)}(y_i) = 0 \qquad \forall i \in \{0,\ldots,s-1\}.
+		\end{equation*} 
+		Next we use the fundamental theorem of calculus inductively, let $x_m \in I$ arbitrary and write
+		\begin{align*}
+			e^{(m)}(x_m) &= \underbrace{e^{(m)}(y_m)}_{=0} + \int_{y_m}^{x_m} e^{(m+1)}(x_{m+1}) \text{ d}x_{m+1} \\
+			&= \underbrace{\int_{y_m}^{x_m} e^{(m+1)}(y_{m+1}) \text{ d}x_{m+1}}_{=0} 
+			+\int_{y_m}^{x_m} \int_{y_{m+1}}^{x_{m+1}} e^{(m+2)}(x_{m+2}) \text{ d}x_{m+1} \text{ d}x_{m+2} \\
+			= \cdots &= \underbrace{\int_{y_m}^{x_m}\cdots \int_{y_{s-2}}^{x_{s-2}} e^{(s-1)}(y_{s-1}) \text{ d}x_{s-1} \cdots \text{ d}x_{m+1}}_{=0}
+			+ \int_{y_m}^{x_m}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) \text{ d}x_{s} \cdots \text{ d}x_{m+1}.
+		\end{align*}
+		Squaring both sides of this equation and integrating over $I$ yields
+		\being  
+	\end{proofstep}
+\end{proof}
+
+
+Suppose $u \in V$ satisfies the SIPG variational formulation (\ref{eq:elliptic_sipg_var_form_extended}) and 
+$u_h \in V_h$ satisfies the discrete SIPG variational formulation (\ref{eq:discrete_var_form_elliptic}) (here the polynomial degree does not matter),  
+and since $V_h \subset V$ it holds that 
+\begin{equation}
+	\label{eq:galerkin_orthogonality}
+	b(u - u_h, v) = 0 \qquad \forall v \in V_h
+\end{equation}
+This is commonly known as \textit{Galerkin orthogonality}. \\
