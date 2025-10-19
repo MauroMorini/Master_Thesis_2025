@@ -39,7 +39,7 @@ satisfies:
 for $0 < c_{\min} \leq c_{\max}$.
 Multiplying the solution by a test function and integrating by parts over $\Omega$ we get the
 standard weak formulation: \\
-Find $u \in H^1(\Omega)$ such that:
+Find $u \in \{v \in H^1(\Omega)\, | \,  v(0) = g_0, v(1) = g_1\} $ such that:
 \begin{equation}
 	\label{eq:elliptic_weak_form}
 	a(u,v) = (f,v)_{L^2(\Omega)} \qquad \forall v \in C_c^{\infty}(\Omega)
@@ -142,10 +142,10 @@ To derive the final variational form we will now have to add two additional term
 to (\ref{eq:elliptic_sipg_var_form_incomplete}): \\
 \textbf{Step 1.} Firstly we need to symmetrize our currently non-symmetrical right hand side
 which will correspond to the SIPG bilinear form. To do so
-we subtract $\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[u(x_n)]$ on both sides of
+we add the symmetry term $-\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[u(x_n)]$ on both sides of
 (\ref{eq:elliptic_sipg_var_form_incomplete}) so we get
 \begin{align*}
-	  & (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+) \\
+	  & (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v'(x_{N+1}^-) + g_0c(x_0^+)v'(x_0^+) \\
 	= & \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
 	-\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
 \end{align*}
@@ -179,7 +179,7 @@ with this we define our penalization parameter
 		\texttt{a}_n := \frac{\sigma \texttt{c}_n}{\texttt{h}_n} > 0 \qquad \forall n=0\ldots,N+1
 	\end{equation}
 \end{tcolorbox}
-Similarly to Step 1 we can now add the term $\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]$
+Similarly to Step 1 we can now add the penalty term $\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]$
 on both sides of (\ref{eq:elliptic_sipg_var_form_incomplete}) and get the final
 \textit{discrete} SIPG variational formulation.\\
 \begin{tcolorbox}[mythmstyle, colback=green!10!white]
@@ -193,7 +193,7 @@ on both sides of (\ref{eq:elliptic_sipg_var_form_incomplete}) and get the final
 		b_h(u,v) & = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
 		-\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
 		+\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]                                     \\
-		\ell_h(v)  & = (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
+		\ell_h(v)  & = (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v'(x_{N+1}^-) + g_0c(x_0^+)v'(x_0^+)
 		+ \texttt{a}_{N+1}g_1v(x_{N+1}^-) + \texttt{a}_0 g_0v(x_{0}^+)
 	\end{align*}
 	for $u,v\in V_h$.
@@ -227,14 +227,14 @@ Neumann boundary contribution $\{c(x_{N+1})u'(x_{N+1})\}[v(x_{N+1})]$ to the oth
 \[
 	\sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
 	-\sum_{n=0}^{N} \{c(x_n)u'(x_n)\}[v(x_n)] = (f,v)_{L^2(\Omega)}
-	+ g_1c(x_{N+1}^-)v(x_{N+1}^-)
+	+ g_1c(x_{N+1}^-)v'(x_{N+1}^-)
 \]
 We have used $\{c(x_{N+1})u'(x_{N+1})\}[v(x_{N+1})] = c(x_{N+1}^-)u'(x_{N+1}^-)v(x_{N+1}^-)\cdot n_1 = g_1 c(x_{N+1}^-)v(x_{N+1}^-)$
 
 From here on
 we proceed similarly as in the Dirichlet case. The main difference is that we always ommit the boundary face with the Neumann
 boundary condition. \\
-We add the terms
+We add the symmetry and penalty terms
 \[
 	-\sum_{n=0}^{N} \{c(x_n)v'(x_n)\}[u(x_n)]
 	+\sum_{n=0}^{N} \texttt{a}_n[u(x_n)][v(x_n)]
@@ -246,6 +246,6 @@ applying the boundary conditions we finally derive the variational form
 	 & \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
 	-\sum_{n=0}^{N} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
 	+\sum_{n=0}^{N} \texttt{a}_n[u(x_n)][v(x_n)]                                \\
-	 & = (f,v)_{L^2(\Omega)} + g_0c(x_0^+)v(x_0^+) + \texttt{a}_0 g_0v(x_{0}^+)
+	 & = (f,v)_{L^2(\Omega)} + g_0c(x_0^+)v'(x_0^+) + \texttt{a}_0 g_0v(x_{0}^+)
 	+ g_1c(x_{N+1}^-)v(x_{N+1}^-)
 \end{align*}

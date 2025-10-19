@@ -170,6 +170,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 \end{proof}
 
 \begin{theorem}
+	\label{thr:cont_coerc_bilin_form}
 	Let $r\in \mathbb{N}$, the bilinear form $b_h$ in (\ref{eq:discrete_var_form_elliptic}) is continuous
 	on $V_h^r(\mathcal{T}_h)$ and if furthermore $\sigma \geq \frac{6 (r+1)^2 c_{\max} }{c_{\min}}$, $b_h$ is also
 	coercive on $V_h^r(\mathcal{T}_h)$. 
@@ -351,7 +352,7 @@ Now we extend the bilinear form $b_h$ and the linear functional $\ell_h$ from $V
 		b(u,v) & = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
 		-\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
 		+\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]                                     \\
-		\ell(v)  & = (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v(x_{N+1}^-) + g_0c(x_0^+)v(x_0^+)
+		\ell(v)  & = (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v'(x_{N+1}^-) + g_0c(x_0^+)v'(x_0^+)
 		+ \texttt{a}_{N+1}g_1v(x_{N+1}^-) + \texttt{a}_0 g_0v(x_{0}^+)
 	\end{align*}
 	for $u,v\in V$.
@@ -363,13 +364,89 @@ Find $u \in V$ such that:
     b(u, v) = \ell(v), \qquad \forall v\in V
 \end{equation}
 
-\subsection{Lower Regularity Solutions}
+\subsubsection*{Lower Regularity Solutions}
 The $H^2$-regularity assumption on the solution is a common one in the context of convergence theory, but still a rather strict one in general. 
 If we assume only $H^1$-regularity, which is a reasonable assumption to make, we encounter the problem of undefined trace values. Recall that 
-from the trace theorem it is known that $L^2$ regularity is not enough to yield uniquely defined trace values. In 1d this becomes apparent, since 
+from the trace theorem it is known that $L^2$-regularity is not enough to yield uniquely defined trace values. In 1d this becomes apparent, since 
 point values of $L^2$-functions are not well defined. In particular for a solution $u \in H^1(\Omega)$, we have that $u'(x_n^+), u'(x_n^-)$ 
 are not well defined. Extending the bilinear form $b_h$ to $V$ requires some additional work, which is often done in one of two ways:
 \begin{enumerate}
-    \item Lifting operators
-    \item $L^2$-projection
+    \item Lifting operators	(see \cite{grote2006})
+    \item $L^2$-projection	(see \cite{georgoulis2011Springer})
 \end{enumerate}
+We will completely circumvent this issue by assuming $H^2$-regularity. \\ \\
+Recall that in the proof of Theorem \ref{thr:cont_coerc_bilin_form} for coercivity and continuity of the bilinear form we have used the finite 
+dimensionality of the polynomial spaces over each element in $\mathcal{T}_h$. This means that the coercivity and continuity properties cannot be simply 
+applied to our extended form $b$. For this we would have to introduce either lifting or the $L^2$-projection as mentioned before.
+
+\subsection{Consistency of the SIPG Variational Formulation}
+The final matrix-vector system we solve (yielding our numerical solution) is equivalent to the fully 
+discrete variational formulation (\ref{eq:discrete_var_form_elliptic}), which in turn is a discretization of not the original weak problem 
+(\ref{eq:elliptic_weak_form}), but rather the SIPG variational formulation (\ref{eq:elliptic_sipg_var_form_extended}).
+We now have to show, that any solution of the SIPG variational formulation is also a solution of the original weak problem and vice versa to ensure 
+our Galerkin approximation approximates the wanted exact solution, i.e.\@ that the SIPG variational formulation is consistent with the weak 
+formulation of the problem.
+
+\begin{theorem}
+	The SIPG variational formulation is consistent. That is, for $u \in H^2(\Omega)$ we have: \\
+	$u$ is a solution of (\ref{eq:elliptic_weak_form}) if and only if $u$ solves (\ref{eq:elliptic_sipg_var_form_extended})
+\end{theorem}
+\begin{proof}
+	\begin{proofstep}["$\Leftarrow$"]
+		\noindent First suppose $u\in H^2(\Omega)$ is a solution of the SIPG variational formulation (\ref{eq:elliptic_sipg_var_form_extended}), then clearly 
+		\begin{equation}
+			\label{eq:proof_consistency_ell_var_form_1}
+			b(u,v) = \ell(v) \qquad \forall v \in C_c^{\infty}(\Omega) \subset H^2(\Omega)
+		\end{equation}
+		since $u,v$ are continuous we have 
+		\begin{equation*}
+		[u(x_n)] = [v(x_n)] = 0 \qquad  \forall n \in \{1,\ldots,N\}	
+		\end{equation*}
+		and $v \in C_c^{\infty}(\Omega)$ implies 
+		\begin{equation*}
+		[v(x_0)] = [v(x_{N+1})] = \{c(x_0)v^{\prime}(x_0)\} = \{c(x_{N+1})v^{\prime}(x_{N+1})\} = 0	
+		\end{equation*}
+		therefore (\ref{eq:proof_consistency_ell_var_form_1}) becomes
+		\begin{equation}
+			\label{eq:proof_consistency_ell_var_form_weak_form}
+			a(u,v) = (f,v)_{L^2(\Omega)} \qquad \forall v \in C_c^{\infty}(\Omega)
+		\end{equation}
+		where $a$ is the elliptic bilinear form of the weak formulation in (\ref{eq:elliptic_weak_form}). \\
+		Now to recover the boundary conditions first note that since $u \in H^2(\Omega)$ and  $u$ satisfies (\ref{eq:proof_consistency_ell_var_form_weak_form}) 
+		we have 
+		\begin{equation}
+			\label{eq:proof_consistency_ell_var_form_a_e_form}
+			-(c\, u')' = f \qquad \text{a.e.\@ in } \Omega  
+		\end{equation}
+		From here we follow exactly the derivation of the discrete SIPG variational formulation in section \ref{sec:elliptic_var_form}.
+		We multiply (\ref{eq:proof_consistency_ell_var_form_a_e_form}) by a test function $v \in V$, integrate over the elements $I \in \mathcal{T}_h$ by parts, 
+		sum up over all elements and add the symmetry and penalty terms corresponding to the SIPG bilinear form, hence we find
+		\begin{equation}
+			\label{eq:proof_consistency_ell_var_form_b_c}
+			b(u,v) = (f,v)_{L^2(\Omega)} - c(x_{N+1}^-)u(x_{N+1}^-)v'(x_{N+1}^-) + c(x_{0}^+)u(x_{0}^+)v'(x_{0}^+) 
+			+ \texttt{a}_{N+1}u(x_{N+1}^-)v(x_{N+1}^-) + \texttt{a}_0 u(x_{0}^+)v(x_{0}^+)
+		\end{equation}
+		Subtracting (\ref{eq:proof_consistency_ell_var_form_b_c}) from (\ref{eq:elliptic_sipg_var_form_extended}) yields
+		\begin{equation*}
+			\Big(-c(x_{N+1}^-)v'(x_{N+1}^-) + \texttt{a}_{N+1}v(x_{N+1}^-)\Big)\Big(u(x_{N+1}^-) - g_1\Big) 
+			+ \Big(c(x_{0}^+)v'(x_{0}^+) + \texttt{a}_{0}v(x_{0}^+)\Big)\Big(u(x_{0}^+) - g_0\Big) = 0
+		\end{equation*}
+		Since the above equality holds for any $v \in V$ we can choose fitting test functions $v$ to show that $u$ satisfies the boundary conditions.
+	\end{proofstep}
+	\begin{proofstep}
+		\noindent Now suppose $u \in H^2(\Omega) $ is a solution of the weak problem (\ref{eq:elliptic_weak_form}), as already argued in Step 1 we have 
+		\begin{equation}
+			-(c\, u')' = f \qquad \text{a.e.\@ in } \Omega  \nonumber
+		\end{equation}
+		this yields 
+		\begin{equation}
+			b(u,v) = (f,v)_{L^2(\Omega)} - c(x_{N+1}^-)u(x_{N+1}^-)v'(x_{N+1}^-) + c(x_{0}^+)u(x_{0}^+)v'(x_{0}^+) 
+			+ \texttt{a}_{N+1}u(x_{N+1}^-)v(x_{N+1}^-) + \texttt{a}_0 u(x_{0}^+)v(x_{0}^+) \nonumber
+		\end{equation}
+		by the derivation steps recalled in Step 1. Applying the boundary conditions, which are fixed by the weak formulation (\ref{eq:elliptic_weak_form}), shows
+		that $u$ indeed satisfies the SIPG variational formulation
+		(\ref{eq:elliptic_sipg_var_form_extended}) and we are done. \\ \\
+	\end{proofstep}
+\end{proof}
+
+\section{Error Analysis}
