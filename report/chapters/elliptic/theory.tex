@@ -456,14 +456,14 @@ We will focus on the error in the energy norm $\| \cdot \|_{h}$ but also mention
 We start by recalling an important polynomial approximation result for finite elements. \\
 Fix a polynomial degree $r \in \mathbb{N}$ and let $I = (a, b) \subset \mathbb{R}$ be an element of length $h = b-a$. We denote the linear interpolation operator by
 \begin{equation}
-	\mathcal{I}_h^r : L^2(I) \to \mathcal{P}^r(I)
+	\mathcal{I}_h^r : L^2(I) \to \mathcal{P}^r(I),
 \end{equation}
-Where the distinct interpolation nodes are $\xi_0,\ldots,\xi_r \in I$. For our purpose the exact positioning of these nodes can be arbitrary. 
+where the distinct interpolation nodes are $\xi_0,\ldots,\xi_r \in I$. For our purpose the exact positioning of these nodes can be arbitrary. 
 For readability if the context allows it we will denote the $i$-th derivative of a function $v$ by $\frac{\text{d}^i}{\text{d} x^i} v = v^{(i)}$.
-\begin{lemma}
+\begin{lemma}[interpolant estimate]
 	Let $s = r+1$ and $v \in H^s(I)$, it holds that 
 	\begin{equation*}
-		\| v - \mathcal{I}_h^r v \|_{H^m(I)} \leq h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s-1\}
+		\| v - \mathcal{I}_h^r v \|_{H^m(I)} \leq \sqrt{m+1}\, h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s-1\}
 	\end{equation*} 
 	where $|v|_{H^s(I)} = \| v^{(s)} \|_{L^2(I)}$ denotes the $H^s$-seminorm. \\ 
 \end{lemma}
@@ -490,10 +490,34 @@ For readability if the context allows it we will denote the $i$-th derivative of
 			+ \int_{y_m}^{x_m}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) \text{ d}x_{s} \cdots \text{ d}x_{m+1}.
 		\end{align*}
 		Squaring both sides of this equation and integrating over $I$ yields
-		\being  
+		\begin{align*}
+			\| e^{(m)} \|_{L^2(I)}^2 &= 
+			\int_{I} \Big(\int_{y_m}^{x_m}1 \cdot \int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) 
+			\text{ d}x_{s} \cdots \text{ d}x_{m+2} \text{ d}x_{m+1}\Big)^2 \text{ d}x_{m} \\
+			& \leq \int_{I} \underbrace{|x_{m} - y_{m} |}_{\leq h} \int_{y_m}^{x_m} \Big(\int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) 
+			\text{ d}x_{s} \cdots \text{ d}x_{m+2} \Big)^2 \text{ d}x_{m+1} \text{ d}x_{m} \\
+			& \leq h \int_{I}  \int_{I} \Big(\int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) 
+			\text{ d}x_{s} \cdots \text{ d}x_{m+2} \Big)^2 \text{ d}x_{m+1} \text{ d}x_{m} \\
+			& \leq h^2 \int_{I} \Big(\int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) 
+			\text{ d}x_{s} \cdots \text{ d}x_{m+2} \Big)^2 \text{ d}x_{m+1} \\
+			\leq \cdots & \leq h^{2(s-m)} \int_{I} |e^{(s)}(x_s)|^2 \text{ d}x_{s} = h^{2(s-m)} |e|_{H^s(I)}^2,
+		\end{align*}
+		where we have applied Cauchy-Schwarz inductively. 
+		But now since $s = r+1$ and $\mathcal{I}_h^r v \in \mathcal{P}^r(I) $ it holds that $ (\mathcal{I}_h^r v)^{(s)} \equiv 0$ in $I$, which implies that $e^{(s)} = v^{(s)}$ 
+		and therefore $ |e|_{H^{s}}^2 = |v|_{H^{s}}^2 $.
+		This proves (\ref{eq:proof_polynomial_interpolation_approx_estimate_seminorm}). \\
+		Since we have proven (\ref{eq:proof_polynomial_interpolation_approx_estimate_seminorm}) for an arbitrary $m \in \{0,\ldots,s-1\}$ we can conclude that 
+		\begin{equation*}
+			| v - \mathcal{I}_h^r v |_{H^m(I)} \leq h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s-1\}.
+		\end{equation*}
+	\end{proofstep}
+	\begin{proofstep}
+		Now extending the result from the seminorm to the full norm is a quick matter. By applying step 1 and the definition of the $H^m$-norm we immediately get  
+		\begin{equation*}
+			\| v - \mathcal{I}_h^r v \|_{H^m(I)}^2 = \sum_{j = 0}^{m} | v - \mathcal{I}_h^r v |_{H^j(I)}^2 \leq (m+1) h^{2(s-m)} |v|_{H^s(I)}^2.
+		\end{equation*}
 	\end{proofstep}
 \end{proof}
-
 
 Suppose $u \in V$ satisfies the SIPG variational formulation (\ref{eq:elliptic_sipg_var_form_extended}) and 
 $u_h \in V_h$ satisfies the discrete SIPG variational formulation (\ref{eq:discrete_var_form_elliptic}) (here the polynomial degree does not matter),  
