@@ -46,19 +46,22 @@ of (\ref{eq:discrete_var_form_elliptic}).
 	\]
 	where we have used the biliniearity and the coercivity of $b$.
 \end{proof}
-Next we will require a usefull tool often used in FEM proofs to bound
-a boundary integral with the integral over the interior domain. These kind
-of inequalities are in the literature often called \textit{inverse (trace) inequalities}
-and are in essence trace inequalities on finite dimensional subspaces.
-We will here rely on a result and proof as presented in \cite{warburtonHesthaven2003ineq}.
 
-\begin{lemma}[Inverse inequality]
+\subsection{Trace Inequalities}
+Here we recall what is in the theory called \textit{trace inequalities}, which are inequalities bounding a boundary norm with a norm over the whole domain.
+In 1d this means estimating the absolute value of a function at a boundary node, by a norm over the whole interval, which simplifies the proofs a lot. 
+Still let it be said here, that these kind of inequalities hold in higher dimensions as well. General results can for example be found in Ern \cite{diPietro2012}. \\
+This subsection will contain two results, one for general $H^1$-functions and one for polynomials.
+\\ \\
+We start by considering the finite dimensional case, inspired by \cite{warburtonHesthaven2003ineq}.
+
+\begin{lemma}[Discrete trace inequality]
 	\label{lemma:inv_ineq}
 	Let $r\in \mathbb{N}$ be the polynomial degree,
 	$a,b\in \mathbb{R}$ with $a<b$ and let $\mathcal{P}^r([a,b])$ denote the
 	space of polynomials of degree $r$ defined on $[a,b]$. \\
 	For any $v\in \mathcal{P}^r([a,b])$ we have:
-	\begin{enumerate}
+	\begin{enumerate}[label=\textnormal{(\roman*)}]
 		\item $\displaystyle |v(a)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$
 		\item $\displaystyle |v(b)|^2 \leq \frac{{(r+1)}^2}{|b-a|}\|v\|_{L^2([a,b])}^2$
 	\end{enumerate}
@@ -132,6 +135,33 @@ We will here rely on a result and proof as presented in \cite{warburtonHesthaven
 	\end{proofstep}
 	\\
 \end{proof}
+
+Next we consider the continuous case.
+\begin{lemma}[Continuous trace inequality]
+	\label{lemma:cont_trace_ineq}
+	Let $I = (a,b) \subset \mathbb{R}$ be an element of length $h:= b-a$, then for any $v \in H^1(\Omega)$ 
+	\begin{enumerate}[label=\textnormal{(\roman*)}]
+		\item $\displaystyle |v(a)| \leq h^{-1/2} \|v\|_{L^2(I)} + h^{1/2} \|v'\|_{L^2(I)}; $
+		\item $\displaystyle |v(b)| \leq h^{-1/2} \|v\|_{L^2(I)} + h^{1/2} \|v'\|_{L^2(I)}. $
+	\end{enumerate} 
+\end{lemma}
+\begin{proof}
+	We show (\romannumeral 1), the proof of (\romannumeral 2) is analogous. \\
+	Define $\varphi (x) := 1- \frac{(x-a)}{h}$, where $\varphi (a) = 1, \varphi (b) = 0$ and let $v \in H^1(I)$. By applying the fundamental theorem of calculus we can estimate 
+	\begin{align*}
+		|v(a)| &= | v(a)\varphi(a) - v(b)\varphi(b) | = | \int_{I} (v \, \varphi )' \text{ d} x| 
+		= | \int_{I} v'(x) \varphi(x) \text{ d} x + \int_{I} v(x) \varphi'(x) \text{ d} x | \\
+		& \leq \int_{I} |v'(x)| \,\underbrace{|\varphi(x) |}_{\leq 1} \text{ d}x + \frac{1}{h} \int_{I} |v(x)| \text{ d} x,
+	\end{align*}
+	where in the last step we have used that $\displaystyle | \varphi ' (x)| =h^{-1}$. Using Cauchy-Schwarz we finally estimate
+	\begin{align*}
+		|v(a)| &\leq \Big( \int_{I} 1 \text{ d} x \Big)^{1/2} \Big( \int_{I} |v'(x)|^2 \text{ d} x \Big)^{1/2}
+		+ \frac{1}{h} \Big( \int_{I} 1 \text{ d} x \Big)^{1/2} \Big( \int_{I} |v(x)|^2 \text{ d} x \Big)^{1/2} \\
+		& \leq h^{1/2} \| v'\|_{L^2(I)} + h^{-1/2} \| v\|_{L^2(I)},
+	\end{align*}
+	which proves (\romannumeral 1). \\
+\end{proof}
+
 \medskip
 Recall the in previous sections established notations, let $r\in \mathbb{N}$ denote the polynomial
 degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
@@ -144,6 +174,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 	where {\normalfont\texttt{a}} denotes the penalization term in (\ref{def:penalization_function}).
 \end{definition}
 \begin{lemma}
+	\label{lemma:energy_norm_is_norm}
 	$\|\cdot\|_h$ defines a norm on $V_h$.
 \end{lemma}
 \begin{proof}
@@ -322,7 +353,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 	\end{proofstep}
 \end{proof}
 
-% Extension of the Bilinear form
+% Extension of the Bilinear form -----------------------------------------------------------------------------------------------------------------------------------------
 \section{Extension of the Bilinear Form}
 To simplify the theory we will continue to assume the exact solution to be in $H^2(\Omega)$. 
 When we intend to extend the bilinear form from $V_h$ to a bigger space which contains the exact solution we run into the problem, that $V_h \not \subset H^1(\Omega)$, 
@@ -363,6 +394,8 @@ Find $u \in V$ such that:
     \label{eq:elliptic_sipg_var_form_extended}
     b(u, v) = \ell(v), \qquad \forall v\in V
 \end{equation}
+Furthermore we extend the energy norm $\| \cdot \|_h$ as presented in (\ref{def:energy_norm}) to $V$. Note that this still defines a norm, since in 
+lemma \ref{lemma:energy_norm_is_norm} we never explicitly need the finite dimensionality of $V_h$. \\
 
 \subsubsection*{Lower Regularity Solutions}
 The $H^2$-regularity assumption on the solution is a common one in the context of convergence theory, but still a rather strict one in general. 
@@ -463,12 +496,12 @@ For readability if the context allows it we will denote the $i$-th derivative of
 \begin{lemma}[interpolant estimate]
 	Let $s = r+1$ and $v \in H^s(I)$, it holds that 
 	\begin{equation*}
-		\| v - \mathcal{I}_h^r v \|_{H^m(I)} \leq \sqrt{m+1}\, h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s-1\}
+		| v - \mathcal{I}_h^r v |_{H^m(I)} \leq  h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s\}
 	\end{equation*} 
 	where $|v|_{H^s(I)} = \| v^{(s)} \|_{L^2(I)}$ denotes the $H^s$-seminorm. \\ 
 \end{lemma}
 \begin{proof}
-	\begin{proofstep}
+
 		Fix $m \in \{0,\ldots,s-1\}$, we start by first estimating the $H^m$-seminorm
 		\begin{equation}
 			\label{eq:proof_polynomial_interpolation_approx_estimate_seminorm}
@@ -510,13 +543,8 @@ For readability if the context allows it we will denote the $i$-th derivative of
 		\begin{equation*}
 			| v - \mathcal{I}_h^r v |_{H^m(I)} \leq h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s-1\}.
 		\end{equation*}
-	\end{proofstep}
-	\begin{proofstep}
-		Now extending the result from the seminorm to the full norm is a quick matter. By applying step 1 and the definition of the $H^m$-norm we immediately get  
-		\begin{equation*}
-			\| v - \mathcal{I}_h^r v \|_{H^m(I)}^2 = \sum_{j = 0}^{m} | v - \mathcal{I}_h^r v |_{H^j(I)}^2 \leq (m+1) h^{2(s-m)} |v|_{H^s(I)}^2.
-		\end{equation*}
-	\end{proofstep}
+		If $m = s$ then we immediately have $ | v - \mathcal{I}_h^r v |_{H^m(I)} = | v  |_{H^s(I)} $.
+
 \end{proof}
 
 Suppose $u \in V$ satisfies the SIPG variational formulation (\ref{eq:elliptic_sipg_var_form_extended}) and 
