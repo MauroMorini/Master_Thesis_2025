@@ -493,7 +493,7 @@ Fix a polynomial degree $r \in \mathbb{N}$ and let $I = (a, b) \subset \mathbb{R
 \end{equation}
 where the distinct interpolation nodes are $\xi_0,\ldots,\xi_r \in I$. For our purpose the exact positioning of these nodes can be arbitrary. 
 For readability if the context allows it we will denote the $i$-th derivative of a function $v$ by $\frac{\text{d}^i}{\text{d} x^i} v = v^{(i)}$.
-\begin{lemma}[interpolant estimate]
+\begin{lemma}[Interpolant estimate]
 	Let $s = r+1$ and $v \in H^s(I)$, it holds that 
 	\begin{equation*}
 		| v - \mathcal{I}_h^r v |_{H^m(I)} \leq  h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s\}
@@ -502,7 +502,7 @@ For readability if the context allows it we will denote the $i$-th derivative of
 \end{lemma}
 \begin{proof}
 
-		Fix $m \in \{0,\ldots,s-1\}$, we start by first estimating the $H^m$-seminorm
+		Fix $m \in \{0,\ldots,s-1\}$, we start by first proving the $H^m$-seminorm
 		\begin{equation}
 			\label{eq:proof_polynomial_interpolation_approx_estimate_seminorm}
 			| v - \mathcal{I}_h^r v |_{H^m(I)} \leq h^{s-m} |v|_{H^s(I)}
