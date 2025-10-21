@@ -585,7 +585,7 @@ $n=0,\ldots,N_h$.
 \begin{remark} 
 	\begin{enumerate}
 		\item The regularity assumption on the solution $u$ is essential, if $u$ is of lower regularity than the polynomial degree, then the optimal convergence rate is not achieved. 
-		\item Recall $c_{\max}$ is the maximum of the coefficient $c$ in the pde (\ref{eq:elliptic_pde}) and $C_{\text{coerc}}$ is the coercivity constant from theorem \ref{thr:cont_coerc_bilin_form}.
+		\item Recall $c_{\max}$ is the maximum of the coefficient $c$ in the pde (\ref{eq:elliptic_pde}) and $C_{\text{coer}}$ is the coercivity constant from theorem \ref{thr:cont_coerc_bilin_form}.
 	\end{enumerate}
 \end{remark}
 \begin{proof}
@@ -610,7 +610,7 @@ $n=0,\ldots,N_h$.
 		\end{equation*}
 		by Galerkin orthogonality (\ref{eq:galerkin_orthogonality}). Using the coercivity of the bilinear form $b$ on $V_h$ we can estimate 
 		\begin{align*}
-			C_{\text{coerc}} \|e_h\|_{h}^2 &\leq b(e_h, e_h) = b(u - \mathcal{I}_h u, e_h) \\
+			C_{\text{coer}} \|e_h\|_{h}^2 &\leq b(e_h, e_h) = b(u - \mathcal{I}_h u, e_h) \\
 			&= \Big| \underbrace{\sum_{n=0}^{N_h} \int_{I_n} c \,(u - \mathcal{I}_h u)' \, e_h' \text{ d} x }_{=: T_1}
 			- \underbrace{\sum_{n=0}^{N_h + 1} \{c(x_n) (u - \mathcal{I}_h u)'(x_n) \} [e_h(x_n)]}_{=: T_2}  \\
 			&- \sum_{n=0}^{N_h + 1} \{c(x_n) e_h^{\prime}(x_n)\}\underbrace{[(u - \mathcal{I}_h u)(x_n)]}_{=0} 
@@ -623,12 +623,18 @@ $n=0,\ldots,N_h$.
 			|T_1| &\leq \sqrt{c_{\max}} \, \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)} \| \sqrt{c}\, e_h' \|_{L^2(I_n)} 
 			& \leq  \sqrt{c_{\max}} \, \Big( \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)}^2 \Big)^{1/2} 
 			\underbrace{\Big( \sum_{n=0}^{N_h} \| \sqrt{c}\, e_h' \|_{L^2(I_n)}^2 \Big)^{1/2}}_{\leq \|e_h\|_h} \\
-			& \leq \frac{c_{\max}}{C_{\text{coerc}}} \sum_{n=0}^{N_h} | u- \mathcal{I}_h u |^2_{H^1(I_n)} + \frac{C_{\text{coerc}}}{4} \|e_h \|_{h}^2,
+			& \leq \frac{c_{\max}}{C_{\text{coer}}} \sum_{n=0}^{N_h} | u- \mathcal{I}_h u |^2_{H^1(I_n)} + \frac{C_{\text{coer}}}{4} \|e_h \|_{h}^2,
 		\end{align*}
-		having used $\varepsilon = \frac{C_{\text{coerc}}}{2}$. Finally applying lemma \ref{lemma:interp_estimate} again yields 
+		having used $\varepsilon = \frac{C_{\text{coer}}}{2}$. Finally applying lemma \ref{lemma:interp_estimate} again yields 
 		\begin{equation}
 			\label{eq:proof_elliptic_energy_error_T1}
-			|T_1| \leq \frac{c_{\max}}{C_{\text{coerc}}} h^{2r} \,|u|_{H^2(\Omega)}^2 + \frac{C_{\text{coerc}}}{4} \|e_h\|_{h}^2.
+			|T_1| \leq \frac{c_{\max}}{C_{\text{coer}}} h^{2r} \,|u|_{H^2(\Omega)}^2 + \frac{C_{\text{coer}}}{4} \|e_h\|_{h}^2.
 		\end{equation}
+		To estimate $T_2$ we make again use of Young's inequality with $\displaystyle \varepsilon = \frac{\texttt{a}_n}{2}C_{\text{coer}}$ and find
+		\begin{equation*}
+			|T_2| = \Big|\sum_{n=0}^{N_h+1} \{c(x_n)(u-\mathcal{I}_n u)'(x_n)\}[e_h(x_n)] \Big| 
+			\leq \Big|\sum_{n=0}^{N_h+1} \frac{\{c(x_n)(u-\mathcal{I}_n u)'(x_n)\}^2}{\texttt{a}_n \, C_{\text{coer}} } \Big|
+		\end{equation*}
+		
 	\end{proofstep}
 \end{proof}
