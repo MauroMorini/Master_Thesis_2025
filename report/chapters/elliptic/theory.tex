@@ -220,7 +220,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		\end{equation}
 		To derive the coercivity of $b_h$ we will estimate the term $2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]$
 		from above applying Lemma \ref{lemma:inv_ineq} and additional smaller tools:\\
-		Using the general fact $2ab \leq a^2 + b^2, \forall a,b\in\mathbb{R}$ we estimate
+		Using Young's inequality: $2ab \leq a^2 + b^2, \forall a,b\in\mathbb{R}$, we estimate
 		\begin{align}
 			 & 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)] = 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}
 			\Big(\frac{\texttt{a}_n}{2}\Big)^{-1/2} \Big(\frac{\texttt{a}_n}{2}\Big)^{1/2} [w(x_n)]\nonumber \\
@@ -494,64 +494,141 @@ Fix a polynomial degree $r \in \mathbb{N}$ and let $I = (a, b) \subset \mathbb{R
 where the distinct interpolation nodes are $\xi_0,\ldots,\xi_r \in I$. For our purpose the exact positioning of these nodes can be arbitrary. 
 For readability if the context allows it we will denote the $i$-th derivative of a function $v$ by $\frac{\text{d}^i}{\text{d} x^i} v = v^{(i)}$.
 \begin{lemma}[Interpolant estimate]
-	Let $s = r+1$ and $v \in H^s(I)$, it holds that 
+	\label{lemma:interp_estimate}
+	Let $v \in H^{r+1}(I)$, it holds that 
 	\begin{equation*}
-		| v - \mathcal{I}_h^r v |_{H^m(I)} \leq  h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s\}
+		| v - \mathcal{I}_h^r v |_{H^m(I)} \leq  h^{r+1-m} |v|_{H^{r+1}(I)} \qquad \forall m \in \{0,\ldots,r+1\}
 	\end{equation*} 
-	where $|v|_{H^s(I)} = \| v^{(s)} \|_{L^2(I)}$ denotes the $H^s$-seminorm. \\ 
+	where $|v|_{H^{r+1}(I)} = \| v^{({r+1})} \|_{L^2(I)}$ denotes the $H^{r+1}$-seminorm. \\ 
 \end{lemma}
 \begin{proof}
 
-		Fix $m \in \{0,\ldots,s-1\}$, we start by first proving the $H^m$-seminorm
+		Fix $m \in \{0,\ldots,r\}$, we start by first proving the $H^m$-seminorm
 		\begin{equation}
 			\label{eq:proof_polynomial_interpolation_approx_estimate_seminorm}
-			| v - \mathcal{I}_h^r v |_{H^m(I)} \leq h^{s-m} |v|_{H^s(I)}
+			| v - \mathcal{I}_h^r v |_{H^m(I)} \leq h^{r+1-m} |v|_{H^{r+1}(I)}
 		\end{equation} 
-		Define $e := v - \mathcal{I}_h^r v \in H^s(I) \subset C^{s-1}(I)$, by construction of the interpolation operator we have $e(\xi_i) = 0$ for 
+		Define $e := v - \mathcal{I}_h^r v \in H^{r+1}(I) \subset C^{r}(I)$, by construction of the interpolation operator we have $e(\xi_i) = 0$ for 
 		all $i \in \{0,\ldots,r\}$, where the $\xi_i$ are the interpolation nodes. \\
-		By applying Rolle's theorem in succession we can find $r$ zeroes of $e'$, $r-1$ zeroes of $e''$$,\ldots,$ and one zero of $e^{(s-1)}$.
-		Clearly in total there exist some points $y_0,\ldots,y_{s-1} \in I$ such that 
+		By applying Rolle's theorem in succession we can find $r$ zeroes of $e'$, $r-1$ zeroes of $e''$$,\ldots,$ and one zero of $e^{(r)}$.
+		Clearly in total there exist some points $y_0,\ldots,y_{r} \in I$ such that 
 		\begin{equation*}
-			e^{(i)}(y_i) = 0 \qquad \forall i \in \{0,\ldots,s-1\}.
+			e^{(i)}(y_i) = 0 \qquad \forall i \in \{0,\ldots,r\}.
 		\end{equation*} 
 		Next we use the fundamental theorem of calculus inductively, let $x_m \in I$ arbitrary and write
 		\begin{align*}
 			e^{(m)}(x_m) &= \underbrace{e^{(m)}(y_m)}_{=0} + \int_{y_m}^{x_m} e^{(m+1)}(x_{m+1}) \text{ d}x_{m+1} \\
 			&= \underbrace{\int_{y_m}^{x_m} e^{(m+1)}(y_{m+1}) \text{ d}x_{m+1}}_{=0} 
 			+\int_{y_m}^{x_m} \int_{y_{m+1}}^{x_{m+1}} e^{(m+2)}(x_{m+2}) \text{ d}x_{m+1} \text{ d}x_{m+2} \\
-			= \cdots &= \underbrace{\int_{y_m}^{x_m}\cdots \int_{y_{s-2}}^{x_{s-2}} e^{(s-1)}(y_{s-1}) \text{ d}x_{s-1} \cdots \text{ d}x_{m+1}}_{=0}
-			+ \int_{y_m}^{x_m}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) \text{ d}x_{s} \cdots \text{ d}x_{m+1}.
+			= \cdots &= \underbrace{\int_{y_m}^{x_m}\cdots \int_{y_{r-1}}^{x_{r-1}} e^{(r)}(y_{r}) \text{ d}x_{r} \cdots \text{ d}x_{m+1}}_{=0}
+			+ \int_{y_m}^{x_m}\cdots \int_{y_{r}}^{x_{r}} e^{(r+1)}(x_{r+1}) \text{ d}x_{r+1} \cdots \text{ d}x_{m+1}.
 		\end{align*}
 		Squaring both sides of this equation and integrating over $I$ yields
 		\begin{align*}
 			\| e^{(m)} \|_{L^2(I)}^2 &= 
-			\int_{I} \Big(\int_{y_m}^{x_m}1 \cdot \int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) 
-			\text{ d}x_{s} \cdots \text{ d}x_{m+2} \text{ d}x_{m+1}\Big)^2 \text{ d}x_{m} \\
-			& \leq \int_{I} \underbrace{|x_{m} - y_{m} |}_{\leq h} \int_{y_m}^{x_m} \Big(\int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) 
-			\text{ d}x_{s} \cdots \text{ d}x_{m+2} \Big)^2 \text{ d}x_{m+1} \text{ d}x_{m} \\
-			& \leq h \int_{I}  \int_{I} \Big(\int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) 
-			\text{ d}x_{s} \cdots \text{ d}x_{m+2} \Big)^2 \text{ d}x_{m+1} \text{ d}x_{m} \\
-			& \leq h^2 \int_{I} \Big(\int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{s-1}}^{x_{s-1}} e^{(s)}(x_{s}) 
-			\text{ d}x_{s} \cdots \text{ d}x_{m+2} \Big)^2 \text{ d}x_{m+1} \\
-			\leq \cdots & \leq h^{2(s-m)} \int_{I} |e^{(s)}(x_s)|^2 \text{ d}x_{s} = h^{2(s-m)} |e|_{H^s(I)}^2,
+			\int_{I} \Big(\int_{y_m}^{x_m}1 \cdot \int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{r}}^{x_{r}} e^{({r+1})}(x_{{r+1}}) 
+			\text{ d}x_{{r+1}} \cdots \text{ d}x_{m+2} \text{ d}x_{m+1}\Big)^2 \text{ d}x_{m} \\
+			& \leq \int_{I} \underbrace{|x_{m} - y_{m} |}_{\leq h} \int_{y_m}^{x_m} \Big(\int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{r}}^{x_{r}} e^{({r+1})}(x_{{r+1}}) 
+			\text{ d}x_{r+1} \cdots \text{ d}x_{m+2} \Big)^2 \text{ d}x_{m+1} \text{ d}x_{m} \\
+			& \leq h \int_{I}  \int_{I} \Big(\int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{r}}^{x_{r}} e^{(r+1)}(x_{r+1}) 
+			\text{ d}x_{r+} \cdots \text{ d}x_{m+2} \Big)^2 \text{ d}x_{m+1} \text{ d}x_{m} \\
+			& \leq h^2 \int_{I} \Big(\int_{y_{m+1}}^{x_{m+1}}\cdots \int_{y_{r}}^{x_{r}} e^{(r+1)}(x_{r+1}) 
+			\text{ d}x_{r+1} \cdots \text{ d}x_{m+2} \Big)^2 \text{ d}x_{m+1} \\
+			\leq \cdots & \leq h^{2(r+1-m)} \int_{I} |e^{(r+1)}(x_{r+1})|^2 \text{ d}x_{r+1} = h^{2(r+1-m)} |e|_{H^{r+1}(I)}^2,
 		\end{align*}
 		where we have applied Cauchy-Schwarz inductively. 
-		But now since $s = r+1$ and $\mathcal{I}_h^r v \in \mathcal{P}^r(I) $ it holds that $ (\mathcal{I}_h^r v)^{(s)} \equiv 0$ in $I$, which implies that $e^{(s)} = v^{(s)}$ 
-		and therefore $ |e|_{H^{s}}^2 = |v|_{H^{s}}^2 $.
+		But now since $\mathcal{I}_h^r v \in \mathcal{P}^r(I) $ it holds that $ (\mathcal{I}_h^r v)^{(r+1)} \equiv 0$ in $I$, which implies that $e^{(r+1)} = v^{(r+1)}$ 
+		and therefore $ |e|_{H^{r+1}}^2 = |v|_{H^{r+1}}^2 $.
 		This proves (\ref{eq:proof_polynomial_interpolation_approx_estimate_seminorm}). \\
-		Since we have proven (\ref{eq:proof_polynomial_interpolation_approx_estimate_seminorm}) for an arbitrary $m \in \{0,\ldots,s-1\}$ we can conclude that 
+		Since we have proven (\ref{eq:proof_polynomial_interpolation_approx_estimate_seminorm}) for an arbitrary $m \in \{0,\ldots,r\}$ we can conclude that 
 		\begin{equation*}
-			| v - \mathcal{I}_h^r v |_{H^m(I)} \leq h^{s-m} |v|_{H^s(I)} \qquad \forall m \in \{0,\ldots,s-1\}.
+			| v - \mathcal{I}_h^r v |_{H^m(I)} \leq h^{r+1-m} |v|_{H^{r+1}(I)} \qquad \forall m \in \{0,\ldots,r\}.
 		\end{equation*}
-		If $m = s$ then we immediately have $ | v - \mathcal{I}_h^r v |_{H^m(I)} = | v  |_{H^s(I)} $.
-
+		If $m = r+1$ then we immediately have $ | v - \mathcal{I}_h^r v |_{H^m(I)} = | v  |_{H^{r+1}(I)} $. \\
 \end{proof}
 
 Suppose $u \in V$ satisfies the SIPG variational formulation (\ref{eq:elliptic_sipg_var_form_extended}) and 
 $u_h \in V_h$ satisfies the discrete SIPG variational formulation (\ref{eq:discrete_var_form_elliptic}) (here the polynomial degree does not matter),  
-and since $V_h \subset V$ it holds that 
+then since $V_h \subset V$ it holds that 
 \begin{equation}
 	\label{eq:galerkin_orthogonality}
-	b(u - u_h, v) = 0 \qquad \forall v \in V_h
+	b(u - u_h, v) = 0 \qquad \forall v \in V_h.
 \end{equation}
 This is commonly known as \textit{Galerkin orthogonality}. \\
+We will now estimate the error of the Galerkin approximation in reference to the continuous solution. To do so recall the following setup. \\ \\
+Let $r$ be a polynomial degree, $\mathcal{T}_h = \{I_n\}_{n=0}^{N_h}$, be a partition of $\Omega$ with meshsize 
+$h = \max_{n \in \{0,\ldots,N_h\}} h_n > 0$, where $h_n = |x_{n+1} - x_n |$ and $I_n = (x_{n}, x_{n+1})$ for 
+$n=0,\ldots,N_h$.
+\begin{definition}
+	We define the linear interpolation operator 
+	\begin{eqnarray*}
+		\mathcal{I}_h^r : C^{0}(\Omega) \to V_h^r(\mathcal{T}_h) \cap C^0(\Omega),
+	\end{eqnarray*}
+	such that the face nodes $x_n$ are interpolated for all $n \in \{0,\ldots,N_h\}$, i.e.\@ for $v \in C^0(\Omega)$ we have
+	\begin{align*}
+		\mathcal{I}_h^r v (x_n^-) &= v(x_n) \qquad \forall n \in \{1,\ldots,N_h +1 \}, \\
+		\mathcal{I}_h^r v (x_n^+) &= v(x_n) \qquad \forall n \in \{0,\ldots,N_h \}.
+	\end{align*}
+	Note that for $r > 2$ we require $r-1$ additional interpolation nodes in each element $I \in \mathcal{T}_h$ besides the two element boundary nodes, for our purpose these 
+	can be arbitrary as long as they are distinct. 
+\end{definition}
+\begin{theorem}[Convergence in energy norm]
+	Let $u \in H^{r+1}(\Omega)$ be a solution of the SIPG variational formulation (\ref{eq:elliptic_sipg_var_form_extended}) and $u_h \in V_h^r(\mathcal{T}_h)$ be its
+	Galerkin approximation, i.e.\@ the solution of (\ref{eq:discrete_var_form_elliptic}). \\
+	Then there exists a constant $C(C_{\text{coer}}, c_{\max}) > 0$ independent of the meshsize $h$ and the solution $u$, such that 
+	\begin{equation}
+		\label{eq:elliptic_energy_convergence_rate}
+		\|u - u_h \|_{h} \leq C h^{r} \, |u|_{H^{r+1}(\Omega)}.
+	\end{equation}
+	
+\end{theorem}
+\begin{remark} 
+	\begin{enumerate}
+		\item The regularity assumption on the solution $u$ is essential, if $u$ is of lower regularity than the polynomial degree, then the optimal convergence rate is not achieved. 
+		\item Recall $c_{\max}$ is the maximum of the coefficient $c$ in the pde (\ref{eq:elliptic_pde}) and $C_{\text{coerc}}$ is the coercivity constant from theorem \ref{thr:cont_coerc_bilin_form}.
+	\end{enumerate}
+\end{remark}
+\begin{proof}
+	\begin{proofstep}
+		We interpolate the solution $u$ and shall for readability write $\mathcal{I}_h^r u = \mathcal{I}_h u \in V_h$. By the triangle inequality we can estimate
+		\begin{equation}
+			\label{eq:proof_triangle_ineq_energy_conv_elliptic}
+			\| u - u_h \|_h \leq \|u - \mathcal{I}_h u \|_h + \|\mathcal{I}_h u - u_h \|_h.
+		\end{equation}
+		By the construction of the interpolant we know that $[ (u- \mathcal{I}_h u)(x_n)] = 0$ for all $n\in \{0,\ldots,N_h+1\}$, so the first term of 
+		(\ref{eq:proof_triangle_ineq_energy_conv_elliptic}) becomes
+		\begin{align}
+			\|u - \mathcal{I}_h u \|_h &\leq \|\sqrt{c}(u - \mathcal{I}_h u)' \|_{L^2(\Omega)} \leq \sqrt{c_{\max}} \Big( \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)}^2 \Big)^{1/2} \nonumber \\
+			&\leq \sqrt{c_{\max}}\, h^{r} \Big( \sum_{n=0}^{N_h} |u |_{H^{r+1}(I_n)}^2 \Big)^{1/2} = \sqrt{c_{\max}}\, h^{r} \, |u |_{H^{r+1}(\Omega)}, \label{eq:proof_elliptic_energy_conv_first_term}
+		\end{align}
+		where in the last inequality we have used the interpolant estimate (lemma \ref{lemma:interp_estimate}).
+	\end{proofstep}
+	\begin{proofstep}
+		Only the second term of (\ref{eq:proof_triangle_ineq_energy_conv_elliptic}) remains to be estimated. Define $e_h := u_h - \mathcal{I}_h u \in V_h$ and note that
+		\begin{equation*}
+			b(e_h, e_h) = \underbrace{b(u_h - u, e_h)}_{= 0} + \, b(u - \mathcal{I}_h u, e_h),
+		\end{equation*}
+		by Galerkin orthogonality (\ref{eq:galerkin_orthogonality}). Using the coercivity of the bilinear form $b$ on $V_h$ we can estimate 
+		\begin{align*}
+			C_{\text{coerc}} \|e_h\|_{h}^2 &\leq b(e_h, e_h) = b(u - \mathcal{I}_h u, e_h) \\
+			&= \Big| \underbrace{\sum_{n=0}^{N_h} \int_{I_n} c \,(u - \mathcal{I}_h u)' \, e_h' \text{ d} x }_{=: T_1}
+			- \underbrace{\sum_{n=0}^{N_h + 1} \{c(x_n) (u - \mathcal{I}_h u)'(x_n) \} [e_h(x_n)]}_{=: T_2}  \\
+			&- \sum_{n=0}^{N_h + 1} \{c(x_n) e_h^{\prime}(x_n)\}\underbrace{[(u - \mathcal{I}_h u)(x_n)]}_{=0} 
+			+ \sum_{n=0}^{N_h + 1} \texttt{a}_n \underbrace{[(u - \mathcal{I}_h u)(x_n)]}_{=0} [e_h(x_n)] \Big| \\
+			& = | T_1 - T_2 |. 
+		\end{align*}
+		We first estimate $|T_1| $, using Cauchy-Schwarz and Young's inequality: $ ab \leq \frac{a^2}{2 \varepsilon} + \frac{b^2 \varepsilon}{2}$, for $a,b \in \mathbb{R}, \varepsilon > 0$, 
+		we find
+		\begin{align*}
+			|T_1| &\leq \sqrt{c_{\max}} \, \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)} \| \sqrt{c}\, e_h' \|_{L^2(I_n)} 
+			& \leq  \sqrt{c_{\max}} \, \Big( \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)}^2 \Big)^{1/2} 
+			\underbrace{\Big( \sum_{n=0}^{N_h} \| \sqrt{c}\, e_h' \|_{L^2(I_n)}^2 \Big)^{1/2}}_{\leq \|e_h\|_h} \\
+			& \leq \frac{c_{\max}}{C_{\text{coerc}}} \sum_{n=0}^{N_h} | u- \mathcal{I}_h u |^2_{H^1(I_n)} + \frac{C_{\text{coerc}}}{4} \|e_h \|_{h}^2,
+		\end{align*}
+		having used $\varepsilon = \frac{C_{\text{coerc}}}{2}$. Finally applying lemma \ref{lemma:interp_estimate} again yields 
+		\begin{equation}
+			\label{eq:proof_elliptic_energy_error_T1}
+			|T_1| \leq \frac{c_{\max}}{C_{\text{coerc}}} h^{2r} \,|u|_{H^2(\Omega)}^2 + \frac{C_{\text{coerc}}}{4} \|e_h\|_{h}^2.
+		\end{equation}
+	\end{proofstep}
+\end{proof}
