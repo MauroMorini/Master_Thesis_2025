@@ -8,8 +8,9 @@ import fem1d.*
 % Settings
 c_handle_idx = 2;
 u_exact_handle_idx = 10;
-dof = 2;
+dof = 3;
 sigma = 10*dof^2;
+integrate_with_higher_quad = false;
 
 % define function handles (real solution)   
 % Cell array of 10 C^2 functions on [0,1]
@@ -66,7 +67,7 @@ for i = 1:length(H_meshsizes)
 
     % set values from handles
     Mesh_quad = copy(Mesh);
-    Mesh_quad.dof = dof;
+    Mesh_quad.dof = dof + double(integrate_with_higher_quad);
     Mesh_quad.updatePet();
     [nodes_quad, ~, elements_quad] = Mesh_quad.getPet();
     c_vals = c_handle(nodes_quad(elements_quad));
@@ -82,7 +83,7 @@ for i = 1:length(H_meshsizes)
 
     % calculate errors 
     [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solution{i}, exact_solution_struct);
-    % errors(3,i) = dg1d.energyNormError1D(nodes, elements, uh, c_vals, sigma, u_exact_vals, du_exact_vals);
+    errors(3,i) = dg1d.energyNormError1D(nodes, elements, uh, c_vals, sigma, u_exact_vals, du_exact_vals);
 end
 
 % plot solution
@@ -112,16 +113,16 @@ legend("h^"+(dof-1), "h^"+(dof), "L2", "H1", "energy")
 title("Convergence of Errors for P^"+(dof-1)+ "elements");
 
 
-dof = 3;
-H_meshsizes = 2.^-(2:10);
-line_width = 2;
-figure;
-loglog(H_meshsizes, errors_quad_p2(1,:), '-x', 'LineWidth', line_width);
-hold on
-loglog(H_meshsizes, errors_quad_p2(2,:), '-o','LineWidth', line_width);
-loglog(H_meshsizes, errors_exact_quad_p2(1,:), '-x', 'LineWidth', line_width);
-loglog(H_meshsizes, errors_exact_quad_p2(2,:), '-o', 'LineWidth', line_width);
-hold off
-xlabel('Step Size (H)');
-ylabel('Error');
-legend("L2 quad", "H1 quad", "L2 exact", "H1 exact")
+% dof = 3;
+% H_meshsizes = 2.^-(2:10);
+% line_width = 2;
+% figure;
+% loglog(H_meshsizes, errors_quad_p2(1,:), '-x', 'LineWidth', line_width);
+% hold on
+% loglog(H_meshsizes, errors_quad_p2(2,:), '-o','LineWidth', line_width);
+% loglog(H_meshsizes, errors_exact_quad_p2(1,:), '-x', 'LineWidth', line_width);
+% loglog(H_meshsizes, errors_exact_quad_p2(2,:), '-o', 'LineWidth', line_width);
+% hold off
+% xlabel('Step Size (H)');
+% ylabel('Error');
+% legend("L2 quad", "H1 quad", "L2 exact", "H1 exact")
