@@ -25,7 +25,7 @@ Since (\ref{eq:discrete_var_form_elliptic}) corresponds to the finite dimensiona
 system (\ref{eq:fully_discrete_dg_system_elliptic}) uniqueness and existence of a solution
 are equivalent.
 The bilinear form $b_h$ is \textit{symmetric} by construction
-the goal of this section is to show that $b_h$ is also \textit{coercive}.
+the goal of this section is to show that $b_h$ is also \textit{coercive} for $\sigma > 0$ big enough.
 From the coercivity of $b_h$ it will follow that the matrix $\textbf{B}$ in (\ref{eq:fully_discrete_dg_system_elliptic})
 is positive definite and hence invertible, which means there exists a (unique) solution
 of (\ref{eq:discrete_var_form_elliptic}).
@@ -57,7 +57,7 @@ We start by considering the finite dimensional case, inspired by \cite{warburton
 
 \begin{lemma}[Discrete trace inequality]
 	\label{lemma:inv_ineq}
-	Let $r\in \mathbb{N}$ be the polynomial degree,
+	Let $r \geq 1$ be the polynomial degree,
 	$a,b\in \mathbb{R}$ with $a<b$ and let $\mathcal{P}^r([a,b])$ denote the
 	space of polynomials of degree $r$ defined on $[a,b]$. \\
 	For any $v\in \mathcal{P}^r([a,b])$ we have:
@@ -169,27 +169,27 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 	We define the \textbf{energy norm} on $V_h$ by
 	\begin{equation}
 		\label{def:energy_norm}
-		\|v\|_h^2 := \sum_{n=0}^{N} \int_{I_n} c(x)v'(x)^2\text{d}x + \sum_{n=0}^{N+1}{\normalfont\texttt{a}_n}[v(x_n)]^2
+		\|v\|_{\epsilon}^2 := \sum_{n=0}^{N} \int_{I_n} c(x)v'(x)^2\text{d}x + \sum_{n=0}^{N+1}{\normalfont\texttt{a}_n}[v(x_n)]^2
 	\end{equation}
 	where {\normalfont\texttt{a}} denotes the penalization term in (\ref{def:penalization_function}).
 \end{definition}
 \begin{lemma}
 	\label{lemma:energy_norm_is_norm}
-	$\|\cdot\|_h$ defines a norm on $V_h$.
+	$\|\cdot\|_{\epsilon}$ defines a norm on $V_h$.
 \end{lemma}
 \begin{proof}
-	Clearly we have $\|\lambda v\|_h =|\lambda|\, \|v\|_h$ for all $\lambda \in \mathbb{R}, v\in V_h$. \\ \\
-	By definition we have $\texttt{a}, c>0$ and by extension $\|v\|_h \geq 0$ for all
-	$v\in V_h$. Suppose now that $\|v\|_h = 0$ for some $v\in V_h$, then we must have $v|_{I_n} \equiv \text{const}$
+	Clearly we have $\|\lambda v\|_{\epsilon} =|\lambda|\, \|v\|_{\epsilon}$ for all $\lambda \in \mathbb{R}, v\in V_h$. \\ \\
+	By definition we have $\texttt{a}, c>0$ and by extension $\|v\|_{\epsilon} \geq 0$ for all
+	$v\in V_h$. Suppose now that $\|v\|_{\epsilon} = 0$ for some $v\in V_h$, then we must have $v|_{I_n} \equiv \text{const}$
 	and $[v(x_n)] = 0$ for all $n$. So $v$ must be constant on all elements and have a jump of zero at the element boundaries.
 	These two facts combined imply that $v$ is constant on all of $\Omega$. By the definition of the jump
 	at the boundary nodes of $\Omega$ it immediately follows that $v=0$. Clearly
-	$\|0\|_h=0$, therefore $\|\cdot\|_h$ is positive definite. \\ \\
+	$\|0\|_{\epsilon}=0$, therefore $\|\cdot\|_{\epsilon}$ is positive definite. \\ \\
 	Using $[v(x_n) + w(x_n)] = [v(x_n)] + [w(x_n)] \quad \forall v,w \in V_h, n = 0,\ldots,N+1$ we find
 	\begin{align*}
-		\|v+w\|_h & \leq \Big(\sum_{n=0}^{N} (\|\sqrt{c}v'\|_{L^2(I_n)}+\|\sqrt{c}w'\|_{L^2(I_n)})^2 +
+		\|v+w\|_{\epsilon} & \leq \Big(\sum_{n=0}^{N} (\|\sqrt{c}v'\|_{L^2(I_n)}+\|\sqrt{c}w'\|_{L^2(I_n)})^2 +
 		\sum_{n=0}^{N+1} (\sqrt{\texttt{a}_n}([v(x_n)] + [w(x_n)]))^2\Big)^{1/2}                       \\
-		          & \leq \|v\|_h + \|w\|_h
+		          & \leq \|v\|_{\epsilon} + \|w\|_{\epsilon}
 	\end{align*}
 	where in the last inequality we have used the triangle inequality of the euclidian vector norm on $\mathbb{R}^{2N+3}$, with the vector given
 	as
@@ -197,7 +197,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 	\[
 		\textbf{v} = \big[\|\sqrt{c}v'\|_{L^2(I_0)},\ldots,\|\sqrt{c}v'\|_{L^2(I_N)}, \sqrt{\texttt{a}_0}[v(x_0)],\ldots,\sqrt{\texttt{a}_{N+1}}[v(x_{N+1})]\big]^T
 	\]
-	this shows the triangle inequality for $\|\cdot\|_h$ and hence it is a norm.
+	this shows the triangle inequality for $\|\cdot\|_{\epsilon}$ and hence it is a norm.
 \end{proof}
 
 \begin{theorem}
@@ -216,7 +216,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		Let $w\in V_h$. Note that
 		\begin{equation}
 			\label{eq:coerc_thr_relation_bilin_form_with_norm}
-			b_h(w,w) = \|w\|_h^2 - 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]
+			b_h(w,w) = \|w\|_{\epsilon}^2 - 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]
 		\end{equation}
 		To derive the coercivity of $b_h$ we will estimate the term $2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]$
 		from above applying Lemma \ref{lemma:inv_ineq} and additional smaller tools:\\
@@ -263,10 +263,10 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		Finally putting together (\ref{eq:coerc_thr_relation_bilin_form_with_norm}), (\ref{eq:2_coerc_thr_first_estimate}) and
 		(\ref{eq:coerc_thr_last_estimate}) yields
 		\begin{align*}
-			b_h(w,w) & \geq \|w\|_h^2 - 3C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
+			b_h(w,w) & \geq \|w\|_{\epsilon}^2 - 3C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
 			- \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber                                                                           \\
 			         & = (1 - 3C_{\sigma}) \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2 + \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber \\
-			         & \geq \frac{1}{2} \|w\|_h^2
+			         & \geq \frac{1}{2} \|w\|_{\epsilon}^2
 		\end{align*}
 		for $\sigma \geq \frac{6 (r+1)^2 c_{\max} }{c_{\min}}$, which proves the coercivity
 		of $b_h$ on $V_h$.
@@ -346,7 +346,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 			\leq |\textbf{u}|\, |\textbf{v}|                                                                                                          \\
 			 & \leq \Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}u'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n [u(x_n)]^2\Big)^{1/2}
 			\Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}v'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n [v(x_n)]^2\Big)^{1/2}         \\
-			 & \leq C_{\text{cont}}\|u\|_h \|v\|_h
+			 & \leq C_{\text{cont}}\|u\|_{\epsilon} \|v\|_{\epsilon}
 		\end{align*}
 		where $\displaystyle C_{\text{cont}} := (3+\frac{5}{4}C_{\sigma})$. This last estimate together with
 		\ref{eq:cont_thr_estimate_elliptic_part} proves the continuity of $b_h$.
@@ -394,7 +394,7 @@ Find $u \in V$ such that:
     \label{eq:elliptic_sipg_var_form_extended}
     b(u, v) = \ell(v), \qquad \forall v\in V
 \end{equation}
-Furthermore we extend the energy norm $\| \cdot \|_h$ as presented in (\ref{def:energy_norm}) to $V$. Note that this still defines a norm, since in 
+Furthermore we extend the energy norm $\| \cdot \|_{\epsilon}$ as presented in (\ref{def:energy_norm}) to $V$. Note that this still defines a norm, since in 
 lemma \ref{lemma:energy_norm_is_norm} we never explicitly need the finite dimensionality of $V_h$. \\
 
 \subsubsection*{Lower Regularity Solutions}
@@ -421,6 +421,7 @@ our Galerkin approximation approximates the wanted exact solution, i.e.\@ that t
 formulation of the problem.
 
 \begin{theorem}
+	\label{thr:elliptic_consistency_sipg_variational_formulation}
 	The SIPG variational formulation is consistent. That is, for $u \in H^2(\Omega)$ we have: \\
 	$u$ is a solution of (\ref{eq:elliptic_weak_form}) if and only if $u$ solves (\ref{eq:elliptic_sipg_var_form_extended})
 \end{theorem}
@@ -487,7 +488,7 @@ In this section we analyze the error between the Galerkin approximation resultin
 We will focus on the error in the energy norm $\| \cdot \|_{h}$ but also mention the resulting error measured in the $L^2$-norm.
 \\ \\
 We start by recalling an important polynomial approximation result for finite elements. \\
-Fix a polynomial degree $r \in \mathbb{N}$ and let $I = (a, b) \subset \mathbb{R}$ be an element of length $h = b-a$. We denote the linear interpolation operator by
+Fix a polynomial degree $r \geq 1$ and let $I = (a, b) \subset \mathbb{R}$ be an element of length $h = b-a$. We denote the linear interpolation operator by
 \begin{equation}
 	\mathcal{I}_h^r : L^2(I) \to \mathcal{P}^r(I),
 \end{equation}
@@ -556,8 +557,8 @@ then since $V_h \subset V$ it holds that
 \end{equation}
 This is commonly known as \textit{Galerkin orthogonality}. \\
 We will now estimate the error of the Galerkin approximation in reference to the continuous solution. To do so recall the following setup. \\ \\
-Let $r$ be a polynomial degree, $\mathcal{T}_h = \{I_n\}_{n=0}^{N_h}$, be a partition of $\Omega$ with meshsize 
-$h = \max_{n \in \{0,\ldots,N_h\}} h_n > 0$, where $h_n = |x_{n+1} - x_n |$ and $I_n = (x_{n}, x_{n+1})$ for 
+Let $r \geq 1$ be a polynomial degree, $\mathcal{T}_h = \{I_n\}_{n=0}^{N_h}$, be a partition of $\Omega$ with meshsize 
+$ h = \max_{n \in \{0,\ldots,N_h\}} h_n > 0$, where $h_n = |x_{n+1} - x_n |$ and $I_n = (x_{n}, x_{n+1})$ for 
 $n=0,\ldots,N_h$.
 \begin{definition}
 	We define the linear interpolation operator 
@@ -573,12 +574,14 @@ $n=0,\ldots,N_h$.
 	can be arbitrary as long as they are distinct. 
 \end{definition}
 \begin{theorem}[Convergence in energy norm]
+	\label{thr:elliptic_energy_convergence}
+	Let $\sigma > 0$ big enough, such that the SIPG bilinear form is coercive on $V_h^r(\mathcal{T}_h)$.
 	Let $u \in H^{r+1}(\Omega)$ be a solution of the SIPG variational formulation (\ref{eq:elliptic_sipg_var_form_extended}) and $u_h \in V_h^r(\mathcal{T}_h)$ be its
 	Galerkin approximation, i.e.\@ the solution of (\ref{eq:discrete_var_form_elliptic}). \\
-	Then there exists a constant $C(C_{\text{coer}}, c_{\max}) > 0$ independent of the meshsize $h$ and the solution $u$, such that 
+	Then there exists a constant $C_{\epsilon}(C_{\text{coer}}, c_{\max}, \sigma) > 0$ independent of the meshsize $h$ and the solution $u$, such that 
 	\begin{equation}
 		\label{eq:elliptic_energy_convergence_rate}
-		\|u - u_h \|_{h} \leq C h^{r} \, |u|_{H^{r+1}(\Omega)}.
+		\|u - u_h \|_{h} \leq C_{\epsilon} h^{r} \, |u|_{H^{r+1}(\Omega)}.
 	\end{equation}
 	
 \end{theorem}
@@ -593,12 +596,12 @@ $n=0,\ldots,N_h$.
 		We interpolate the solution $u$ and shall for readability write $\mathcal{I}_h^r u = \mathcal{I}_h u \in V_h$. By the triangle inequality we can estimate
 		\begin{equation}
 			\label{eq:proof_triangle_ineq_energy_conv_elliptic}
-			\| u - u_h \|_h \leq \|u - \mathcal{I}_h u \|_h + \|\mathcal{I}_h u - u_h \|_h.
+			\| u - u_h \|_{\epsilon} \leq \|u - \mathcal{I}_h u \|_{\epsilon} + \|\mathcal{I}_h u - u_h \|_{\epsilon}.
 		\end{equation}
 		By the construction of the interpolant we know that $[ (u- \mathcal{I}_h u)(x_n)] = 0$ for all $n\in \{0,\ldots,N_h+1\}$, so the first term of 
 		(\ref{eq:proof_triangle_ineq_energy_conv_elliptic}) becomes
 		\begin{align}
-			\|u - \mathcal{I}_h u \|_h &\leq \|\sqrt{c}(u - \mathcal{I}_h u)' \|_{L^2(\Omega)} \leq \sqrt{c_{\max}} \Big( \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)}^2 \Big)^{1/2} \nonumber \\
+			\|u - \mathcal{I}_h u \|_{\epsilon} &\leq \|\sqrt{c}(u - \mathcal{I}_h u)' \|_{L^2(\Omega)} \leq \sqrt{c_{\max}} \Big( \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)}^2 \Big)^{1/2} \nonumber \\
 			&\leq \sqrt{c_{\max}}\, h^{r} \Big( \sum_{n=0}^{N_h} |u |_{H^{r+1}(I_n)}^2 \Big)^{1/2} = \sqrt{c_{\max}}\, h^{r} \, |u |_{H^{r+1}(\Omega)}, \label{eq:proof_elliptic_energy_conv_first_term}
 		\end{align}
 		where in the last inequality we have used the interpolant estimate (lemma \ref{lemma:interp_estimate}).
@@ -622,19 +625,140 @@ $n=0,\ldots,N_h$.
 		\begin{align*}
 			|T_1| &\leq \sqrt{c_{\max}} \, \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)} \| \sqrt{c}\, e_h' \|_{L^2(I_n)} 
 			& \leq  \sqrt{c_{\max}} \, \Big( \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)}^2 \Big)^{1/2} 
-			\underbrace{\Big( \sum_{n=0}^{N_h} \| \sqrt{c}\, e_h' \|_{L^2(I_n)}^2 \Big)^{1/2}}_{\leq \|e_h\|_h} \\
+			\underbrace{\Big( \sum_{n=0}^{N_h} \| \sqrt{c}\, e_h' \|_{L^2(I_n)}^2 \Big)^{1/2}}_{\leq \|e_h\|_{\epsilon}} \\
 			& \leq \frac{c_{\max}}{C_{\text{coer}}} \sum_{n=0}^{N_h} | u- \mathcal{I}_h u |^2_{H^1(I_n)} + \frac{C_{\text{coer}}}{4} \|e_h \|_{h}^2,
 		\end{align*}
 		having used $\varepsilon = \frac{C_{\text{coer}}}{2}$. Finally applying lemma \ref{lemma:interp_estimate} again yields 
 		\begin{equation}
 			\label{eq:proof_elliptic_energy_error_T1}
-			|T_1| \leq \frac{c_{\max}}{C_{\text{coer}}} h^{2r} \,|u|_{H^2(\Omega)}^2 + \frac{C_{\text{coer}}}{4} \|e_h\|_{h}^2.
+			|T_1| \leq \frac{c_{\max}}{C_{\text{coer}}} h^{2r} \,|u|_{H^{r+1}(\Omega)}^2 + \frac{C_{\text{coer}}}{4} \|e_h\|_{h}^2.
 		\end{equation}
 		To estimate $T_2$ we make again use of Young's inequality with $\displaystyle \varepsilon = \frac{\texttt{a}_n}{2}C_{\text{coer}}$ and find
-		\begin{equation*}
-			|T_2| = \Big|\sum_{n=0}^{N_h+1} \{c(x_n)(u-\mathcal{I}_n u)'(x_n)\}[e_h(x_n)] \Big| 
+		\begin{align*}
+			|T_2| &= \Big|\sum_{n=0}^{N_h+1} \{c(x_n)(u-\mathcal{I}_n u)'(x_n)\}[e_h(x_n)] \Big| 
 			\leq \Big|\sum_{n=0}^{N_h+1} \frac{\{c(x_n)(u-\mathcal{I}_n u)'(x_n)\}^2}{\texttt{a}_n \, C_{\text{coer}} } \Big|
+			+ \frac{C_{\text{coer}}}{4} \sum_{n=0}^{N_h+1} \texttt{a}_n [e_h(x_n)]^2 \\
+			& \leq \Big|\sum_{n=0}^{N_h+1} \frac{\{c(x_n)(u-\mathcal{I}_n u)'(x_n)\}^2}{\texttt{a}_n \, C_{\text{coer}} } \Big|
+			+ \frac{C_{\text{coer}}}{4} \|e_h\|_{\epsilon}^2.
+		\end{align*}
+		Fix $n \in \{1,\ldots,N_h\} $, then $x_n$ is an interior face node and shared boundary of the elements $I_{n-1}, I_n$. Using the continuous trace inequality 
+		(lemma \ref{lemma:cont_trace_ineq}) and consequently the interpolant estimate (lemma \ref{lemma:interp_estimate}) we estimate
+		\begin{align*}
+			|(u - \mathcal{I}_h u)'(x_n^+)|^2 
+			&\leq 2 h_n^{-1} |u - \mathcal{I}_h u|_{H^1(I_n)}^2 + 2 h_n |u - \mathcal{I}_h u|_{H^2(I_n)}^2 \\
+			&\leq 2 h_n^{-1} \, h_n^{2r} |u|_{H^{r+1}(I_n)}^2 + 2 h_n\, h_n^{2(r-1)} |u|_{H^{r+1}(I_n)}^2 
+			= 4 h_n^{2r-1} \, |u|_{H^{r+1}(I_n)}^2,
+		\end{align*}
+		and analogously we find 
+		\begin{equation*}
+			|(u - \mathcal{I}_h u)'(x_n^-)|^2 \leq 4 h_{n-1}^{2r-1} \, |u|_{H^{r+1}(I_{n-1})}^2
 		\end{equation*}
-		
+		for the lower element. Recall that $\displaystyle \texttt{a}_n = \frac{\sigma \, \max(c(x_n^+), c(x_n^-))}{\min(h_{n-1}, h_{n})}$ (see \ref{def:penalization_function}), using this 
+		and the estimates above we find 
+		\begin{align*}
+			\frac{\{c(x_n)(u - \mathcal{I}_h u)'(x_n)\}^2}{\texttt{a}_n C_{\text{coer}}}
+			&= \frac{c(x_n)^2 \min(h_{n-1}, h_n)}{\sigma C_{\text{coer}}\, \max(c(x_n^+), c(x_n^-))} \frac{| (u-\mathcal{I}_h u)'(x_n^-) + (u-\mathcal{I}_h u)'(x_n^+) |^2}{4}  \\
+			&\leq \frac{c(x_n)}{\sigma C_{\text{coer}}} \frac{\min(h_{n-1}, h_{n})}{2}\Big( |(u-\mathcal{I}_h u)'(x_n^-)|^2 + |(u-\mathcal{I}_h u)'(x_n^+)|^2 \Big) \\
+			& \leq \frac{c(x_n)}{\sigma C_{\text{coer}}} \frac{\min(h_{n-1}, h_{n})}{2}\Big( 4 h_{n-1}^{2r-1} \, |u|_{H^{r+1}(I_{n-1})}^2 + 4 h_{n}^{2r-1} \, |u|_{H^{r+1}(I_{n})}^2\Big) \\
+			& \leq \frac{2 c_{\max}}{\sigma C_{\text{coer}}} h^{2r} \Big(|u|_{H^{r+1}(I_{n-1})}^2 + |u|_{H^{r+1}(I_{n})}^2 \Big).
+		\end{align*}
+		Similarly for the boundary nodes, i.e.\@ $n \in \{0, N_h+1\}$ we find 
+		\begin{equation*}
+			\frac{\{c(x_{n})(u - \mathcal{I}_h u)'(x_{n})\}^2}{\texttt{a}_{n} C_{\text{coer}}} 
+			\leq \frac{4 c_{\max}}{\sigma C_{\text{coer}}} h^{2r} |u|^2_{H^{r+1}(I_{n})}.
+		\end{equation*}
+		This gives us now the tools to complete the estimate of $|T_2|$, we find
+		\begin{equation}
+			\label{eq:proof_elliptic_energy_error_T2}
+			|T_2| \leq \frac{6 c_{\max}}{\sigma C_{\text{coer}}} h^{2r} |u|^2_{H^{r+1}(\Omega)} + \frac{C_{\text{coer}}}{4} \|e_h\|_{\epsilon}^2.
+		\end{equation}
+		Combining the estimates (\ref{eq:proof_elliptic_energy_error_T1}), (\ref{eq:proof_elliptic_energy_error_T2}) yields
+		\begin{equation}
+			\label{eq:proof_elliptic_energy_comb_T1_T2_estimate_of_eh_with_coerc}
+			C_{\text{coer}} \|e_h\|_{\epsilon}^2 \leq \frac{C_{\text{coer}}}{2} \|e_h\|_{\epsilon}^2 + \frac{c_{\max}}{C_{\text{coer}}}(1 + \frac{6}{\sigma}) h^{2r} |u|^2_{H^{r+1}(\Omega)}. \nonumber
+		\end{equation}
+		By subtracting $\frac{C_{\text{coer}}}{2} \| e_h\|_{\epsilon}^2$ from both sides
+		and then multiplying by $\frac{2}{C_{\text{coer}}} $ we find 
+		\begin{equation}
+			\| e_h\|_{\epsilon}^2 \leq \frac{2c_{\max}}{(C_{\text{coer}})^2} \frac{6 + \sigma}{\sigma} h^{2r} |u|^2_{H^{r+1}(\Omega)}. \nonumber
+		\end{equation}
+		This, together with the estimate (\ref{eq:proof_elliptic_energy_conv_first_term}), we can now finally plug back into (\ref{eq:proof_triangle_ineq_energy_conv_elliptic}) and get
+		\begin{equation*}
+			\|u - u_h \|_{\epsilon} \leq \sqrt{c_{\max}}\Big(1 + \frac{\sqrt{2(\sigma + 6)}}{C_{\text{coer}}\sqrt{\sigma}}\Big) \, h^r |u|_{H^{r+1}(\Omega)}
+			= C_{\epsilon} h^r |u|_{H^{r+1}(\Omega)},
+		\end{equation*}
+		for $\displaystyle C_{\epsilon} :=  \sqrt{c_{\max}}\Big(1 + \frac{\sqrt{2(\sigma + 6)}}{C_{\text{coer}}\sqrt{\sigma}}\Big)$, which proofs (\ref{eq:elliptic_energy_convergence_rate}).
+	\end{proofstep}
+	\\
+\end{proof}
+
+Next we show that measuring the error in the $L^2$-norm gives us a power of $h$ more than in the energy norm. This coincides with the convergence rates known from
+continuous FEM. 
+
+\begin{theorem}[$L^2$-convergence]
+	\label{thr:elliptic_l2_convergence}
+	Under the same assumptions as in theorem \ref{thr:elliptic_energy_convergence}, there exists a constant $C_{L}(C_{\epsilon}, \Omega, c, \sigma) > 0$ 
+	independent of the meshsize $h$ and the solution $u$, such that
+	\begin{equation}
+		\label{eq:elliptic_l2_convergence_rate}
+		\|u - u_h \|_{L^2(\Omega)} \leq C_{L} h^{r+1} |u|_{H^{r+1}(\Omega)}.
+	\end{equation}
+\end{theorem}
+\begin{proof}
+	We will prove the theorem using a duality argument often referred to as \textit{Aubin-Nitsche trick}.
+	\begin{proofstep}
+		Define the error $e := u - u_h \in V$ and consider the dual problem 
+		\begin{align}
+			&-(c \, \varphi ')' = e \qquad \text{ in }\Omega \label{eq:proof_elliptic_l2_conv_dual_problem}, \\
+			&\varphi(0) = \varphi(1) = 0 \label{eq:proof_elliptic_l2_conv_dual_problem_bc}.
+		\end{align}
+		By Lax-Milgram there exists a unique weak solution $\varphi \in H^1_0(\Omega)$ of (\ref{eq:proof_elliptic_l2_conv_dual_problem})-(\ref{eq:proof_elliptic_l2_conv_dual_problem_bc}).
+		Furthermore by elliptic regularity it holds that $\varphi \in H^2(\Omega)$ with
+		\begin{equation}
+			\label{eq:proof_elliptic_l2_conv_elliptic_regularity}
+			\| \varphi \|_{H^2(\Omega)} \leq \tilde{C} \|e \|_{L^2(\Omega)},
+		\end{equation}
+		where $\tilde{C} > 0$ is a constant only dependent on $\Omega$ and the coefficient $c \in C^1(\Omega)$(see for example Evans chapter 6.3 \cite{EvansPDE}).
+		By the consistency of the SIPG variational formulation (see theorem \ref{thr:elliptic_consistency_sipg_variational_formulation}) $\varphi$ satisfies
+		\begin{equation*}
+			b(\varphi, v) = (e, v)_{L^2(\Omega)} \qquad \forall v \in V.
+		\end{equation*}
+		Note that the right-hand side contains only the $L^2$-term since the dual problem is posed with homogeneous Dirichlet boundary conditions (\ref{eq:proof_elliptic_l2_conv_dual_problem_bc}).
+		In particular since $e \in V$ we have $b(\varphi, e) = \| e \|_{L^2(\Omega)}^2$. \\
+		Next we interpolate $\varphi$ using the $\mathcal{P}^1$-interpolant $\mathcal{I}_h^1$ (not $\mathcal{P}^r$), this means $\mathcal{I}_h^1 \varphi \in V_h^r(\mathcal{T}_h)$
+		since $r \geq 1$. 
+		Now using Galerkin orthogonality (\ref{eq:galerkin_orthogonality}) and the symmetry of the bilinear form $b$ we find
+		\begin{equation}
+			\| e \|_{L^2(\Omega)}^2 = b(\varphi, e) = b(e, \varphi - \mathcal{I}_h^1 \varphi) \nonumber,
+		\end{equation}
+		which in turn we can estimate using Cauchy-Schwarz as follows:
+		\begin{align*}
+			b(e, \varphi - \mathcal{I}_h^1 \varphi) 
+			& = \sum_{n=0}^{N_h} \int_{I_n} c \, e' (\varphi - \mathcal{I}_h^1 \varphi)' \text{ d}x 
+			- \sum_{n=0}^{N_h + 1} \{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) \}[e(x_n)] \\
+			&- \sum_{n=0}^{N_h + 1} \{ c(x_n) e'(x_n)\}\underbrace{[(\varphi - \mathcal{I}_h^1 \varphi)(x_n)]}_{=0} 
+			+ \sum_{n=0}^{N_h + 1} \texttt{a}_n [e(x_n)]\underbrace{[(\varphi - \mathcal{I}_h^1 \varphi)(x_n)]}_{=0} \\
+			& \leq \sqrt{c_{\max}} \Big(\sum_{n=0}^{N_h} \int_{I_n}  \abs{(\varphi - \mathcal{I}_h^1 \varphi)'}^2 \text{d}x \Big)^{1/2}
+			\underbrace{\Big(\sum_{n=0}^{N_h} \int_{I_n} c \abs{e'}^2 \text{d}x \Big)^{1/2}}_{\leq \norm{e}_{\epsilon}} \\
+			&+ \Big(\sum_{n=0}^{N_h + 1} \frac{{\{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) \}}^2}{\texttt{a}_n} \Big)^{1/2} 
+			\underbrace{\Big(\sum_{n=0}^{N_h + 1} \texttt{a}_n [e(x_n)]^2 \Big)^{1/2}}_{\leq \norm{e}_{\epsilon}}.
+		\end{align*}
+		We know from theorem \ref{thr:elliptic_energy_convergence} that $\norm{e}_{\epsilon} \leq C_{\epsilon} h^r |u|_{H^{r+1}(\Omega)}$,
+		and from the proof that 
+		\begin{enumerate}
+			\item $ \displaystyle \abs{\varphi - \mathcal{I}_h^1 \varphi}_{H^1(\Omega)}^2 \leq h^2 \abs{\varphi}_{H^2(\Omega)}^2 \qquad \forall n \in \countset{0}{N_h} $,
+			\item $\displaystyle \frac{{\{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) \}}^2}{\texttt{a}_n} 
+				\leq \gamma_n \frac{c_{\max}}{\sigma} h^2 \, \Big( \abs{\varphi}_{H^2(I_{n-1})}^2 + \abs{\varphi}_{H^2(I_{n})}^2 \Big) \qquad \forall n \in \countset{0}{N_h+1}$,
+		\end{enumerate}
+		where $\gamma_n = 2$ for $n \in \countset{1}{N_h}$ and $\gamma_n = 4$ for $n \in \{0, N_h+ 1\}$. Putting all of the above together we find
+		\begin{equation*}
+			\norm{e}_{L^2(\Omega)}^2 \leq \Big( \sqrt{c_{\max}} + \sqrt{\frac{6 c_{\max}}{\sigma}} \Big) C_{\epsilon} h^{r+1} \abs{\varphi}_{H^2(\Omega)} \abs{u}_{H^{r+1}(\Omega)}
+			\leq \Big(1 + \sqrt{\frac{6}{\sigma}}\Big)\sqrt{c_{\max}} C_{\epsilon} \tilde{C} \norm{e}_{L^2(\Omega)} \abs{u}_{H^{r+1}(\Omega)},
+		\end{equation*}
+		where we have used the estimate (\ref{eq:proof_elliptic_l2_conv_elliptic_regularity}). Dividing by $\norm{e}_{L^2(\Omega)}$ on both sides finally yields 
+		\begin{equation}
+			\norm{e}_{L^2(\Omega)} \leq C_{L} h^{r+1} \abs{u}_{H^{r+1}(\Omega)} \nonumber,
+		\end{equation}
+		where $C_L = \Big(1 + \sqrt{\frac{6}{\sigma}}\Big)\sqrt{c_{\max}} C_{\epsilon} \tilde{C} $. \\
 	\end{proofstep}
 \end{proof}
