@@ -9,15 +9,16 @@ classdef BoundaryCondition1D
     end
 
     methods
-        function obj = BoundaryCondition1D(bc_type, bc_location)
+        function obj = BoundaryCondition1D(bc_type, bc_location, bc_fun)
             % constructor
             arguments (Input)
                 bc_type string 
                 bc_location double 
+                bc_fun function_handle
             end
             obj.bc_type = bc_type;
             obj.bc_location = bc_location;
-            
+            obj.bc_fun = bc_fun;
         end
 
         function bc_val = get_bc_val(obj, time)
