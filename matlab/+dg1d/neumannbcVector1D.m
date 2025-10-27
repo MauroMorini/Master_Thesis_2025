@@ -8,7 +8,7 @@ function neumann_vect = neumannbcVector1D(nodes, elements, c_vals, g_vals)
         nodes           % (num_nodes, 1) node value matrix
         elements        % (num_el, dof) connectivity (element index) matrix 
         c_vals          % (num_el, num_quad) (elliptic inner function)
-        g_vals          % (num_nodes,1)  matrix of the b.c.
+        g_vals          % (1,2)  vector of the b.c.
     end
     arguments (Output)
         neumann_vect  % (num_nodes, 1) boundary condition rhs vector
@@ -30,13 +30,13 @@ function neumann_vect = neumannbcVector1D(nodes, elements, c_vals, g_vals)
     lower_boundary_element_idx = 1;
     h = abs(nodes(elements(lower_boundary_element_idx,end))-nodes(elements(lower_boundary_element_idx,1)));
     triplet_list_rows(1:dof) = elements(lower_boundary_element_idx,:).';
-    triplet_list_entries(1:dof) = c_vals(lower_boundary_element_idx,1)*g_vals(elements(lower_boundary_element_idx,1))*(phi_val(:,1)); % note here we have no negative sign because g = n*du
+    triplet_list_entries(1:dof) = c_vals(lower_boundary_element_idx,1)*g_vals(1)*(phi_val(:,1)); % note here we have no negative sign because g = n*du
 
     % upper boundary face contribution     
     upper_boundary_element_idx = size(elements,1);
     h = abs(nodes(elements(upper_boundary_element_idx,end))-nodes(elements(upper_boundary_element_idx,1)));
     triplet_list_rows(dof+1:end) = elements(upper_boundary_element_idx,:).';
-    triplet_list_entries(dof+1:end) = c_vals(upper_boundary_element_idx,end)*g_vals(elements(upper_boundary_element_idx,end))*(phi_val(:,end)); 
+    triplet_list_entries(dof+1:end) = c_vals(upper_boundary_element_idx,end)*g_vals(2)*(phi_val(:,end)); 
 
     neumann_vect = sparse(triplet_list_rows, 1, triplet_list_entries, num_nodes, 1);
 end

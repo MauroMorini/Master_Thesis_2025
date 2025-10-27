@@ -19,8 +19,7 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
     [lower_boundary_element_idx, upper_boundary_element_idx] = Mesh.getBoundaryElementIdx();
 
     % extract boundary condition
-    g_vals = zeros(size(nodes)); 
-    g_vals([elements(lower_boundary_element_idx,1), elements(upper_boundary_element_idx, end)]) = boundary_cond.values;
+    g_vals = boundary_cond.values;
 
     % collect system matrices
     A = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
