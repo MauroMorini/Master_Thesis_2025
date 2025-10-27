@@ -5,7 +5,7 @@ function [l2_error, h1_error] = errors1D(numerical_sol_struct, exact_sol_struct)
     % and FEM solution is L2 projected, so the FEM-space should be a subset of the numerical solution space
     arguments (Input)
         numerical_sol_struct    % struct: {"mesh": MeshIntervalDG1d, "sol": (num_nodes, 1) sol vector, "type": string "numerical_solution"}
-        exact_sol_struct        % struct either like numerical sol (for FEM exact sol), or struct: {"u_handle": @(x) u, "du_handle": @(x) du}
+        exact_sol_struct        % struct either like numerical sol (for FEM exact sol), or struct: {"u_handle": @(x) u, "du_handle": @(x) du, "type": "exact_solution"}
     end
     arguments (Output)
         l2_error                % scalar value of L^2 error over domain

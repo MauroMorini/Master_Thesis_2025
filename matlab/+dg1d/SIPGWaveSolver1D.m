@@ -153,7 +153,7 @@ classdef SIPGWaveSolver1D < handle
         function obj = leap_frog_leap(obj)
             % main iteration, applies leapfrog time integration
             
-            for i = 2:length(obj.times)
+            for i = 2:length(obj.times)-1
                 system_struct = obj.setup_system(obj.times(i));
                 system_matrix = system_struct.M;
                 system_rhs = obj.dt^2*system_struct.load_vector + ...

@@ -174,6 +174,14 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             refinableTIdx = find(D/refFactor >= obj.h_min);
         end
 
+        function obj = refineAll(obj, refine_factor)
+            % refines all refinable elements and sets h_min and h_max smaller depending on the refinement factor
+            obj.h_min = obj.h_min/refine_factor;
+            ref_idx = obj.getRefinableElements(refine_factor);
+            obj.refineElementsByFact(ref_idx, refine_factor);
+            obj.h_max = obj.h_max/refine_factor;
+        end
+
         function KIdx = findElementAt(obj, x)
             % finds element containing point x, if x is in two elements it
             % returns an array
