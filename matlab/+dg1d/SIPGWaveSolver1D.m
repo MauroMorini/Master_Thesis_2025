@@ -12,7 +12,8 @@ classdef SIPGWaveSolver1D < handle
         solution                            % (num_nodes, num_steps) solution matrix
         initial_matrix_struct               % struct as a collection of assembled initial matrices
         dt double = 0                       % global stepsize for time integration    
-        times (1,:) double                  % time vector containing all steps made                             
+        times (1,:) double                  % time vector containing all steps made 
+        matrix_update_type = NaN            % dictates how matrices are updated in each time step                            
     end
 
     methods
@@ -31,10 +32,19 @@ classdef SIPGWaveSolver1D < handle
             if obj.sigma <= 0
                 obj.sigma = 10*obj.initial_mesh.dof^2;
             end
+            if ~isnan(obj.matrix_update_type)
+
+            elseif isnan(obj.pde_data.wave_speed_is_time_dependent) || obj.pde_data.wave_speed_is_time_dependent
+                obj.matrix_update_type = "brute-force";
+            elseif ~obj.pde_data.wave_speed_is_time_dependent
+                obj.matrix_update_type = "time-independent";
+            end
+
         end
 
         function obj = assemble_initial_matrices(obj)
             % collects system matrices into a struct for later time adaptation
+            % with the coefficients at time t0
 
             % initialization
             t0 = obj.pde_data.initial_time;
@@ -58,6 +68,28 @@ classdef SIPGWaveSolver1D < handle
             
         end
 
+        function matrix_struct = assemble_matrices_at_time(obj, t)
+            % similarly to assemble_initial_matrices assembles all required matrices into a struct
+            % but with the coefficients a t time t
+            c_fun_initial = @(x) obj.pde_data.wave_speed_coeff_fun(x, t);
+
+            % initialize c_vals
+            [nodes_quad, ~, elements_quad] = obj.quadrature_mesh.getPet();
+            c_vals = c_fun_initial(nodes_quad(elements_quad));
+
+            % get matrices
+            [nodes, ~, elements] = obj.initial_mesh.getPet();
+            A = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
+            M = fem1d.massMatrix1D(nodes, elements, ones(size(c_vals)));
+            B_flux_int = dg1d.interiorFluxMatrix1D(nodes, elements, c_vals);
+            B_flux_bound = dg1d.boundaryFluxMatrix1D(nodes, elements, c_vals);
+            B_penalty_int = dg1d.interiorPenaltyMatrix1D(nodes, elements, c_vals, obj.sigma);
+            B_penalty_bound = dg1d.boundaryPenaltyMatrix1D(nodes, elements, c_vals, obj.sigma);
+
+            matrix_struct = struct("A", A, "M", M, "B_flux_int", B_flux_int, "B_flux_bound", B_flux_bound, ...
+                                         "B_penalty_int", B_penalty_int, "B_penalty_bound", B_penalty_bound);
+        end
+
         function obj = calculate_stable_stepsize(obj)
             % calculates a stable stepsize dt if one has not already been chosen using the initial mass and stiffness matrices
             if obj.dt > 0
@@ -72,8 +104,17 @@ classdef SIPGWaveSolver1D < handle
 
         function system_struct = setup_system(obj, current_time)
             % sets up system by introducing time dependent components and boundary conditions
-            % TODO: update stiffness matrix in time
-            system_struct = obj.initial_matrix_struct;
+            % TODO: update stiffness matrix in time non brute-force
+
+            switch obj.matrix_update_type
+                case "brute-force"
+                    system_struct = obj.assemble_matrices_at_time(current_time);
+                case "time-independent"
+                    system_struct = obj.initial_matrix_struct;
+                otherwise
+                    error("matrix update type:  " + obj.matrix_update_type + "  has not been implemented")
+            end
+            %system_struct = obj.initial_matrix_struct;
             system_struct.time = current_time;
             
             % collect load vector

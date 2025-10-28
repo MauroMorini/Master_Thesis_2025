@@ -4,7 +4,7 @@ clc; clear; close all;
 
 % Settings
 h = 1;
-dof = 2;
+dof = 3;
 plot_time = 2;
 num_plot_nodes = 1000;
 
@@ -14,6 +14,7 @@ waveguide.createUniformMesh(h);
 waveguide.dof = dof;
 waveguide.updatePet();
 sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
+sipg_solver.sigma = 20;
 sipg_solver.run();
 
 [~, time_idx] = min(abs(sipg_solver.times - plot_time));
@@ -32,14 +33,15 @@ waveguide.plotMesh(f);
 
 % Settings
 initial_meshsize = 2;
-dof = 2;
-num_ref = 8;
+dof = 5;
+num_ref = 5;
 refine_factor = 2;
+c_index = 3;
 
 % initialization
 errors = zeros(2, num_ref);
 meshsizes = zeros(1, num_ref);
-pde_data = fem1d.PDEData.generate_gaussian_puls_data_on_waveguide();
+pde_data = fem1d.PDEData.generate_gaussian_puls_data_on_waveguide(c_index);
 waveguide = mesh.MeshIntervalDG1d(pde_data.boundary_points, [2*initial_meshsize, initial_meshsize/50]);
 waveguide.createUniformMesh(initial_meshsize);
 waveguide.dof = dof;
@@ -72,6 +74,7 @@ loglog(meshsizes, errors(2,:), 'LineWidth', line_width);
 hold off
 xlabel('Step Size (H)');
 ylabel('Error');
-legend("h^"+(dof-1), "h^"+(dof), "L2", "H1", "energy")
+dof_plot = 2;
+legend("h^"+(dof_plot-1), "h^"+(dof_plot), "L2", "H1", "energy")
 title("Convergence of Errors for P^"+(dof-1)+ "elements");
 
