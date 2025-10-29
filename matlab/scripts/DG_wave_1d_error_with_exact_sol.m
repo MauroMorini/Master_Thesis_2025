@@ -14,17 +14,17 @@ waveguide.createUniformMesh(h);
 waveguide.dof = dof;
 waveguide.updatePet();
 sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
-sipg_solver.sigma = 20;
+%sipg_solver.sigma = 20;
 sipg_solver.run();
 
-[~, time_idx] = min(abs(sipg_solver.times - plot_time));
-uh = sipg_solver.solution(:,time_idx);
+wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
+[uh, t] = wave_postprocessor.get_solution_at_time(plot_time);
 f = figure;
 waveguide.plotDGsol(uh, f);
 
 figure;
 plot_nodes = linspace(pde_data.boundary_points(1),pde_data.boundary_points(2),num_plot_nodes)';
-plot(plot_nodes, pde_data.u_exact_fun(plot_nodes, sipg_solver.times(time_idx)))
+plot(plot_nodes, pde_data.u_exact_fun(plot_nodes, t))
 
 f = figure;
 waveguide.plotMesh(f);
@@ -33,10 +33,11 @@ waveguide.plotMesh(f);
 
 % Settings
 initial_meshsize = 2;
-dof = 5;
-num_ref = 5;
+dof = 3;
+num_ref = 7;
 refine_factor = 2;
 c_index = 3;
+dt_scaling_factor = 1;
 
 % initialization
 errors = zeros(2, num_ref);
@@ -53,12 +54,11 @@ for i = 1:num_ref
         waveguide.updatePet();
     end
     sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
+    sipg_solver.dt = waveguide.h_min;
     sipg_solver.run();
-    numerical_sol_struct = struct("mesh", waveguide, "sol", sipg_solver.solution(:, end), "type","numerical_solution");
-    final_time_num = sipg_solver.times(end);
-    exact_sol_struct = struct("u_handle", @(x) pde_data.u_exact_fun(x,final_time_num),...
-                              "du_handle", @(x) pde_data.grad_u_exact_fun(x,final_time_num),"type","exact_solution");
-    [errors(1,i), errors(2,i)] = fem1d.errors1D(numerical_sol_struct, exact_sol_struct);
+    wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
+    wave_postprocessor.calculate_errors();
+    [errors(1,i), errors(2,i), errors(3,i)] = wave_postprocessor.errors_obj.getErrors();
     meshsizes(i) = waveguide.h_max;
 end
 
@@ -70,7 +70,7 @@ hold on
 loglog(meshsizes, meshsizes.^(dof), '--', 'LineWidth', line_width);
 loglog(meshsizes, errors(1,:), 'LineWidth', line_width);
 loglog(meshsizes, errors(2,:), 'LineWidth', line_width);
-% loglog(meshsizes, errors(3,:), 'LineWidth', line_width);
+loglog(meshsizes, errors(3,:), 'LineWidth', line_width);
 hold off
 xlabel('Step Size (H)');
 ylabel('Error');

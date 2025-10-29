@@ -33,6 +33,7 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
         face_node_to_element_map
         lower_boundary_element_idx
         upper_boundary_element_idx
+        is_resonator_mesh = false;
     end
 
     methods

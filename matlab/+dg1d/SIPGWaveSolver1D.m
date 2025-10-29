@@ -12,7 +12,7 @@ classdef SIPGWaveSolver1D < handle
         solution                            % (num_nodes, num_steps) solution matrix
         initial_matrix_struct               % struct as a collection of assembled initial matrices
         dt double = 0                       % global stepsize for time integration    
-        times (1,:) double                  % time vector containing all steps made 
+        time_vector (1,:) double                  % time vector containing all steps made 
         matrix_update_type = NaN            % dictates how matrices are updated in each time step                            
     end
 
@@ -99,7 +99,12 @@ classdef SIPGWaveSolver1D < handle
             M_loc = obj.initial_matrix_struct.M;
             lMax = eigs(B_loc,1);
             lMin = eigs(M_loc,1,0);
-            obj.dt = sqrt(lMin/lMax);
+            obj.dt = sqrt(lMin/lMax)*0.9;
+
+            % correct for case where eigs doesn't converge
+            if isnan(obj.dt)
+                obj.dt = obj.initial_mesh.h_min*0.5;
+            end
         end
 
         function system_struct = setup_system(obj, current_time)
@@ -171,7 +176,7 @@ classdef SIPGWaveSolver1D < handle
             % using a taylor-expansion
             u0 = obj.pde_data.initial_displacement(obj.initial_mesh.nodes);
             v0 = obj.pde_data.initial_velocity(obj.initial_mesh.nodes); 
-            system_struct = obj.setup_system(obj.times(1));
+            system_struct = obj.setup_system(obj.time_vector(1));
             obj.solution(:, 1) = u0;
             system_matrix = system_struct.M;
             system_rhs = system_struct.M*u0 + obj.dt*system_struct.M*v0 + obj.dt^2/2*(system_struct.load_vector - system_struct.B*u0);
@@ -186,16 +191,16 @@ classdef SIPGWaveSolver1D < handle
             obj.assemble_initial_matrices();
             obj.calculate_stable_stepsize();
 
-            obj.times = obj.pde_data.initial_time:obj.dt:obj.pde_data.final_time;
-            obj.solution = zeros(size(obj.initial_mesh.nodes,1), size(obj.times, 2));
+            obj.time_vector = obj.pde_data.initial_time:obj.dt:obj.pde_data.final_time;
+            obj.solution = zeros(size(obj.initial_mesh.nodes,1), size(obj.time_vector, 2));
             obj.implement_initial_conditions();
         end
 
         function obj = leap_frog_leap(obj)
             % main iteration, applies leapfrog time integration
             
-            for i = 2:length(obj.times)-1
-                system_struct = obj.setup_system(obj.times(i));
+            for i = 2:length(obj.time_vector)-1
+                system_struct = obj.setup_system(obj.time_vector(i));
                 system_matrix = system_struct.M;
                 system_rhs = obj.dt^2*system_struct.load_vector + ...
                             (2*system_struct.M - obj.dt^2*system_struct.B)*obj.solution(:, i) - ...

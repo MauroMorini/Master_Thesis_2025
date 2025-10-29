@@ -130,6 +130,9 @@ for i = 1:num_refinement_iterations-1
         reference_struct = numerical_solutions{i+1};
     end
     [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solutions{i}, reference_struct);
+    errors_1d_obj = fem1d.Errors1D(exact_solution_struct.u_handle, exact_solution_struct.du_handle, numerical_solutions{i}.sol, numerical_solutions{i}.mesh);
+    errors_1d_obj.run();
+    [errors(1,i),errors(2,i)] = errors_1d_obj.getErrors();
 end
 
 % plot solution
