@@ -35,7 +35,7 @@ initial_meshsize = 2;
 dof = 2;
 num_ref = 6;
 refine_factor = 2;
-c_index = 2;
+c_index = 3;
 dt_scaling_factor = 0.5;
 
 % initialization

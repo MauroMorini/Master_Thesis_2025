@@ -174,8 +174,8 @@ classdef SIPGWaveSolver1D < handle
             system_struct = obj.setup_system(obj.time_vector(1));
             obj.solution(:, 1) = u0;
             system_matrix = system_struct.M;
-            system_rhs = system_struct.M*u0 + obj.dt*system_struct.M*v0 + obj.dt^2/2*(system_struct.load_vector - system_struct.B*u0);
-            obj.solution(:, 2) = obj.solve_system(system_matrix, system_rhs);
+            system_rhs = obj.dt^2/2*(system_struct.load_vector - system_struct.B*u0 - system_struct.R*v0);
+            obj.solution(:, 2) = u0 + obj.dt*v0 + obj.solve_system(system_matrix, system_rhs);
         end
 
         function obj = setup_iteration(obj)
@@ -196,10 +196,10 @@ classdef SIPGWaveSolver1D < handle
             
             for i = 2:length(obj.time_vector)-1
                 system_struct = obj.setup_system(obj.time_vector(i));
-                system_matrix = system_struct.M;
+                system_matrix = (system_struct.M + obj.dt/2*system_struct.R);
                 system_rhs = obj.dt^2*system_struct.load_vector + ...
                             (2*system_struct.M - obj.dt^2*system_struct.B)*obj.solution(:, i) - ...
-                             system_struct.M*obj.solution(:, i-1);
+                            (system_struct.M - obj.dt/2*system_struct.R)*obj.solution(:, i-1);
                 obj.solution(:, i+1) = obj.solve_system(system_matrix, system_rhs);
             end
         end
