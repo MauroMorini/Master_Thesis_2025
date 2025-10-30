@@ -12,9 +12,6 @@ classdef WavePostprocessor1D < handle
 
         function obj = calculate_errors(obj)
             if ~obj.wave_solver.pde_data.has_exact_solution
-                obj.l2_error = NaN;
-                obj.h1_error = NaN;
-                obj.energy_error = NaN;
                 warning("no error could be calculated since there is no exact solution")
                 return
             end

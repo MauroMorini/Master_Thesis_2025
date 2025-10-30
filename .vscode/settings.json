@@ -1,3 +1,6 @@
 {
-    "MATLAB.installPath": " '/usr/local/MATLAB/R2025b'"
+    "MATLAB.installPath": "/usr/local/MATLAB/R2025b",
+    "MATLAB.defaultEditor": false,
+    "matlab.languageServer.start": "onStart",
+    "cmake.sourceDirectory": "/home/mauro/workspace/unibas/Master_Thesis_2025/cpp"
 }

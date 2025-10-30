@@ -2,3 +2,4 @@ cpp/build/
 report/build/
 report/main.synctex.gz
 matlab/trash/
+.vscode/

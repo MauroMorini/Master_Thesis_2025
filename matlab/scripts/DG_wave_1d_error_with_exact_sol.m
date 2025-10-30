@@ -20,24 +20,23 @@ sipg_solver.run();
 wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
 [uh, t] = wave_postprocessor.get_solution_at_time(plot_time);
 f = figure;
-waveguide.plotDGsol(uh, f);
-
-figure;
+hold on
 plot_nodes = linspace(pde_data.boundary_points(1),pde_data.boundary_points(2),num_plot_nodes)';
-plot(plot_nodes, pde_data.u_exact_fun(plot_nodes, t))
+plot(plot_nodes, pde_data.u_exact_fun(plot_nodes, t), 'LineWidth', 3)
+waveguide.plotDGsol(uh, f);
+hold off
 
-f = figure;
-waveguide.plotMesh(f);
+
 
 %% errors
 
 % Settings
 initial_meshsize = 2;
-dof = 3;
-num_ref = 7;
+dof = 2;
+num_ref = 6;
 refine_factor = 2;
-c_index = 3;
-dt_scaling_factor = 1;
+c_index = 2;
+dt_scaling_factor = 0.5;
 
 % initialization
 errors = zeros(2, num_ref);
@@ -45,6 +44,7 @@ meshsizes = zeros(1, num_ref);
 pde_data = fem1d.PDEData.generate_gaussian_puls_data_on_waveguide(c_index);
 waveguide = mesh.MeshIntervalDG1d(pde_data.boundary_points, [2*initial_meshsize, initial_meshsize/50]);
 waveguide.createUniformMesh(initial_meshsize);
+waveguide.buildResonatorMesh([4, 6], [initial_meshsize, initial_meshsize/5]);
 waveguide.dof = dof;
 waveguide.updatePet();
 
@@ -54,7 +54,7 @@ for i = 1:num_ref
         waveguide.updatePet();
     end
     sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
-    sipg_solver.dt = waveguide.h_min;
+    % sipg_solver.dt = waveguide.h_min*dt_scaling_factor;
     sipg_solver.run();
     wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
     wave_postprocessor.calculate_errors();
