@@ -13,7 +13,7 @@ classdef SIPGWaveSolver1D < handle
         initial_matrix_struct               % struct as a collection of assembled initial matrices
         dt double = 0                       % global stepsize for time integration    
         time_vector (1,:) double            % time vector containing all steps made 
-        matrix_update_type = NaN            % dictates how matrices are updated in each time step
+        matrix_update_type = []             % dictates how matrices are updated in each time step
                                             % in {"time-independent", "brute-force", "piecewise-const-coefficient-in-space"}                            
     end
 
@@ -33,7 +33,9 @@ classdef SIPGWaveSolver1D < handle
             if obj.sigma <= 0
                 obj.sigma = 10*obj.initial_mesh.dof^2;
             end
-            obj.matrix_update_type = obj.pde_data.wave_speed_type;
+            if isempty(obj.matrix_update_type)
+                obj.matrix_update_type = obj.pde_data.wave_speed_type;
+            end
         end
 
         function obj = assemble_initial_matrices(obj)
@@ -41,13 +43,15 @@ classdef SIPGWaveSolver1D < handle
             % with the coefficients at time t0
 
             t0 = obj.pde_data.initial_time;
-            obj.initial_matrix_struct = obj.assemble_matrices_at_time(t0);
+            system_struct = obj.assemble_matrices_at_time(t0);
             
+            obj.initial_matrix_struct = system_struct;
         end
 
-        function matrix_struct = assemble_matrices_at_time(obj, t)
+        function system_struct = assemble_matrices_at_time(obj, t)
             % similarly to assemble_initial_matrices assembles all required matrices into a struct
             % but with the coefficients a t time t
+            % changes matrices at the boundary depending on the boundary condition
             c_fun_initial = @(x) obj.pde_data.wave_speed_coeff_fun(x, t);
 
             % initialize c_vals
@@ -63,8 +67,28 @@ classdef SIPGWaveSolver1D < handle
             B_penalty_int = dg1d.interiorPenaltyMatrix1D(nodes, elements, c_vals, obj.sigma);
             B_penalty_bound = dg1d.boundaryPenaltyMatrix1D(nodes, elements, c_vals, obj.sigma);
 
-            matrix_struct = struct("A", A, "M", M, "B_flux_int", B_flux_int, "B_flux_bound", B_flux_bound, ...
+            system_struct = struct("A", A, "M", M, "B_flux_int", B_flux_int, "B_flux_bound", B_flux_bound, ...
                                          "B_penalty_int", B_penalty_int, "B_penalty_bound", B_penalty_bound);
+                                         
+            % change matrices based on b.c.
+            [~, ~, elements] = obj.initial_mesh.getPet();
+            [lower_boundary_element_idx, upper_boundary_element_idx] = obj.initial_mesh.getBoundaryElementIdx();
+            boundary_element_idx = [lower_boundary_element_idx, upper_boundary_element_idx];
+            for i = 1:2
+                boundary_condition = obj.pde_data.boundary_conditions{i};
+                switch boundary_condition.bc_type
+                    case "dirichlet"
+                    case "neumann"
+                        system_struct.B_flux_bound(elements(boundary_element_idx(i),:), elements(boundary_element_idx(i),:)) = 0;
+                        system_struct.B_penalty_bound(elements(boundary_element_idx(i),:), elements(boundary_element_idx(i),:)) = 0;
+                    case "transparent"
+                        system_struct.B_flux_bound(elements(boundary_element_idx(i),:), elements(boundary_element_idx(i),:)) = 0;
+                        system_struct.B_penalty_bound(elements(boundary_element_idx(i),:), elements(boundary_element_idx(i),:)) = 0;
+                    otherwise
+                        error("the boundary condition type << " + bc_type + " >> has not been implemented")
+                end
+            end
+            system_struct.B = system_struct.A - system_struct.B_flux_bound - system_struct.B_flux_int + system_struct.B_penalty_int + system_struct.B_penalty_bound;
         end
 
         function obj = calculate_stable_stepsize(obj)
@@ -76,7 +100,7 @@ classdef SIPGWaveSolver1D < handle
             M_loc = obj.initial_matrix_struct.M;
             lMax = eigs(B_loc,1);
             lMin = eigs(M_loc,1,0);
-            obj.dt = sqrt(lMin/lMax)*0.9;
+            obj.dt = sqrt(lMin/lMax)*0.5/obj.initial_mesh.dof;
 
             % correct for case where eigs doesn't converge
             if isnan(obj.dt)
@@ -86,7 +110,6 @@ classdef SIPGWaveSolver1D < handle
 
         function system_struct = setup_system(obj, current_time)
             % sets up system by introducing time dependent components and boundary conditions
-            % TODO: update stiffness matrix in time non brute-force
 
             if obj.matrix_update_type == "brute-force"
                 system_struct = obj.assemble_matrices_at_time(current_time);
@@ -102,14 +125,16 @@ classdef SIPGWaveSolver1D < handle
             system_struct = obj.impose_boundary_conditions(system_struct);
 
             if obj.matrix_update_type == "piecewise-const-coefficient-in-space"
+                changed_global_dofs = zeros(size(obj.initial_mesh.nodes,1), 1);
                 for i = 0:size(obj.initial_mesh.resonators_matrix, 1)
                     res_idx = find(obj.initial_mesh.element_idx_to_resonator_idx_map == i);
                     if isempty(res_idx)
                         continue
                     end
-                    res_idx = obj.initial_mesh.elements(res_idx,:);
+                        res_idx = obj.initial_mesh.elements(res_idx,:);
                     res_idx = res_idx(:);
-                    c_res = @(t) obj.pde_data.wave_speed_coeff_fun(obj.initial_mesh.nodes(res_idx(1)), t);
+                    changed_global_dofs(res_idx) = changed_global_dofs(res_idx) + 1;
+                    c_res = @(t) obj.pde_data.wave_speed_coeff_fun(obj.initial_mesh.nodes(res_idx(2)), t);
                     system_struct.B(res_idx, res_idx) = system_struct.B(res_idx, res_idx)/c_res(obj.pde_data.initial_time)*c_res(current_time);
                 end
             end
@@ -143,27 +168,28 @@ classdef SIPGWaveSolver1D < handle
             transparent_bc_matrix = sparse(size(nodes, 1), size(nodes, 1)); 
 
             for i = 1:2
-                bc_type = obj.pde_data.boundary_conditions{i}.bc_type;
-                switch bc_type
+                boundary_condition = obj.pde_data.boundary_conditions{i};
+                switch boundary_condition.bc_type
                     case "dirichlet"
                         neumann_vector(elements(boundary_element_idx(i),:)) = 0;
                     case "neumann"
                         dirichlet_vector(elements(boundary_element_idx(i),:)) = 0;
-                        system_struct.B_flux_bound(elements(boundary_element_idx(i),:), elements(boundary_element_idx(i),:)) = 0;
-                        system_struct.B_penalty_bound(elements(boundary_element_idx(i),:), elements(boundary_element_idx(i),:)) = 0;
                     case "transparent"
                         dirichlet_vector(elements(boundary_element_idx(i),:)) = 0;
                         neumann_vector(elements(boundary_element_idx(i),:)) = 0;
-                        system_struct.B_flux_bound(elements(boundary_element_idx(i),:), elements(boundary_element_idx(i),:)) = 0;
-                        system_struct.B_penalty_bound(elements(boundary_element_idx(i),:), elements(boundary_element_idx(i),:)) = 0;
-                        transparent_bc_matrix(end, end) = sqrt(c_vals(end, end));
+                        if boundary_condition.bc_location == obj.initial_mesh.lower_interval_bound
+                            transparent_bc_matrix(1, 1) = sqrt(c_vals(1, 1));
+                        elseif boundary_condition.bc_location == obj.initial_mesh.upper_interval_bound
+                            transparent_bc_matrix(end, end) = sqrt(c_vals(end, end));
+                        else
+                            error(sprintf('transparent b.c. neither at the upper nor lower interval bound, but at: %d', boundary_condition.bc_location));
+                        end
                     otherwise
                         error("the boundary condition type << " + bc_type + " >> has not been implemented")
                 end
             end
             system_struct.R = transparent_bc_matrix; 
             system_struct.load_vector = system_struct.load_vector + dirichlet_vector + neumann_vector;
-            system_struct.B = system_struct.A - system_struct.B_flux_bound - system_struct.B_flux_int + system_struct.B_penalty_int + system_struct.B_penalty_bound;
         end
 
         function obj = implement_initial_conditions(obj)

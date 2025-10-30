@@ -50,7 +50,7 @@ classdef PDEData < handle
             end
             boundary_points = [0, 10];
             initial_time = 0;
-            final_time = 2;
+            final_time = 2.5;
             has_exact_solution = true;
 
             % symbolic calculations
@@ -80,7 +80,7 @@ classdef PDEData < handle
 
             boundary_conditions = cell(1,2);
             boundary_conditions{1} = fem1d.BoundaryCondition1D("dirichlet", boundary_points(1), @(x,t) u_exact_fun(x,t) );
-            boundary_conditions{2} = fem1d.BoundaryCondition1D("transparent", boundary_points(2), u_exact_fun);
+            boundary_conditions{2} = fem1d.BoundaryCondition1D("dirichlet", boundary_points(2), u_exact_fun);
             pde_data = fem1d.PDEData(initial_time, final_time, initial_displacement, initial_velocity, boundary_points,...
                                 boundary_conditions, rhs_fun, wave_speed_coeff_fun);
             pde_data.u_exact_fun = u_exact_fun;
@@ -93,8 +93,8 @@ classdef PDEData < handle
             syms x t
             c_cell = {  struct("c_sym", x*0+1, "type", "time-independent");
                         struct("c_sym", (sin(x) + 2)*(cos(t)+2), "type", "brute-force");
-                        struct("c_sym", (sin(x) + 2), "type", "time-independent");
-                        struct("c_sym", (sin(10*t) + 2), "type", "piecewise-const-coefficient-in-space");
+                        struct("c_sym", exp(2*x), "type", "time-independent");
+                        struct("c_sym", (sin(1*t) + 2), "type", "piecewise-const-coefficient-in-space");
             };
             c_sym = c_cell{index}.c_sym;
             type = c_cell{index}.type;
