@@ -123,20 +123,29 @@ classdef SIPGWaveSolver1D < handle
             f_values = obj.pde_data.rhs_fun(obj.quadrature_mesh.nodes(obj.quadrature_mesh.elements), current_time);
             system_struct.load_vector = fem1d.loadVector1D(obj.initial_mesh.nodes, obj.initial_mesh.elements, f_values);
             system_struct = obj.impose_boundary_conditions(system_struct);
-
+            
             if obj.matrix_update_type == "piecewise-const-coefficient-in-space"
-                changed_global_dofs = zeros(size(obj.initial_mesh.nodes,1), 1);
-                for i = 0:size(obj.initial_mesh.resonators_matrix, 1)
-                    res_idx = find(obj.initial_mesh.element_idx_to_resonator_idx_map == i);
-                    if isempty(res_idx)
-                        continue
-                    end
-                        res_idx = obj.initial_mesh.elements(res_idx,:);
-                    res_idx = res_idx(:);
-                    changed_global_dofs(res_idx) = changed_global_dofs(res_idx) + 1;
-                    c_res = @(t) obj.pde_data.wave_speed_coeff_fun(obj.initial_mesh.nodes(res_idx(2)), t);
-                    system_struct.B(res_idx, res_idx) = system_struct.B(res_idx, res_idx)/c_res(obj.pde_data.initial_time)*c_res(current_time);
+                system_struct = obj.update_matrices_for_piecewise_const_coefficient(system_struct);
+            end
+        end
+
+        function system_struct = update_matrices_for_piecewise_const_coefficient(obj, system_struct)
+            % updates the matrices in system_struct based on the resonator distribution in the mesh 
+            % by dividing through the initial coefficient and multiplying the current 
+            B_test = zeros(size(obj.initial_mesh.nodes,1), size(obj.initial_mesh.nodes,1));
+            
+            changed_global_dofs = zeros(size(obj.initial_mesh.nodes,1), 1);
+            for i = 0:size(obj.initial_mesh.resonators_matrix, 1)
+                res_idx = find(obj.initial_mesh.element_idx_to_resonator_idx_map == i);
+                if isempty(res_idx)
+                    continue
                 end
+                res_idx = obj.initial_mesh.elements(res_idx,:);
+                res_idx = res_idx(:);
+                changed_global_dofs(res_idx) = changed_global_dofs(res_idx) + 1;
+                c_res = @(t) obj.pde_data.wave_speed_coeff_fun(obj.initial_mesh.nodes(res_idx(2)), t);
+                system_struct.B(res_idx, res_idx) = system_struct.B(res_idx, res_idx)*c_res(current_time)/c_res(obj.pde_data.initial_time);
+                B_test(res_idx, res_idx) = B_test(res_idx, res_idx) + 1; 
             end
         end
 

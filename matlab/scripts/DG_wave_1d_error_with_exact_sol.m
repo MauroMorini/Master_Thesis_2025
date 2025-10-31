@@ -5,9 +5,9 @@ clc; clear; close all;
 % Settings
 initial_meshsize = 2;
 dof = 2;
-num_ref = 5;
+num_ref = 8;
 refine_factor = 2;
-c_index = 3;
+c_index = 1;
 dt_scaling_factor = 0.5;
 
 % initialization
@@ -26,8 +26,8 @@ for i = 1:num_ref
         waveguide.updatePet();
     end
     sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
-    sipg_solver.matrix_update_type = "piecewise-const-coefficient-in-space";
-    % sipg_solver.dt = waveguide.h_min*dt_scaling_factor/dof;
+    % sipg_solver.matrix_update_type = "piecewise-const-coefficient-in-space";
+    sipg_solver.dt = waveguide.h_min*dt_scaling_factor/dof;
     sipg_solver.run();
     wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
     wave_postprocessor.calculate_errors();
