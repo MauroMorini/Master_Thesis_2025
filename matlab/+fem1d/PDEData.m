@@ -105,7 +105,7 @@ classdef PDEData < handle
             % symbolic calculations
             syms x t
             u_exact_sym = exp(-(x-t+2)^2);
-            u_exact_sym = sin(2*pi*(x - t) - pi)/(2*pi);
+            u_exact_sym = sin(2*pi*(x - t) - pi);
             u_t_exact_sym = diff(u_exact_sym, t);
             grad_u_exact_sym = diff(u_exact_sym, x);
             rhs_sym = diff(u_t_exact_sym,t) - diff(grad_u_exact_sym, x);
