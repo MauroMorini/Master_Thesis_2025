@@ -27,6 +27,7 @@ classdef SIPGWaveSolver1D < handle
         function obj = initialize_quadrature(obj)
             obj.quadrature_mesh = copy(obj.initial_mesh);
             obj.quadrature_mesh.dof = obj.quadrature_mesh.dof + 1;
+            obj.quadrature_mesh.updatePet();
         end
 
         function obj = setup_settings(obj)
@@ -61,7 +62,11 @@ classdef SIPGWaveSolver1D < handle
             % get matrices
             [nodes, ~, elements] = obj.initial_mesh.getPet();
             A = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
-            M = fem1d.massMatrix1D(nodes, elements, ones(size(c_vals)));
+            if isempty(obj.initial_matrix_struct)
+                M = fem1d.massMatrix1D(nodes, elements, ones(size(c_vals)));
+            else
+                M = obj.initial_matrix_struct.M;
+            end
             B_flux_int = dg1d.interiorFluxMatrix1D(nodes, elements, c_vals);
             B_flux_bound = dg1d.boundaryFluxMatrix1D(nodes, elements, c_vals);
             B_penalty_int = dg1d.interiorPenaltyMatrix1D(nodes, elements, c_vals, obj.sigma);
@@ -228,10 +233,11 @@ classdef SIPGWaveSolver1D < handle
 
         function obj = leap_frog_leap(obj)
             % main iteration, applies leapfrog time integration
+            M = obj.initial_matrix_struct.M;
             
             for i = 2:length(obj.time_vector)-1
                 system_struct = obj.setup_system(obj.time_vector(i));
-                system_matrix = (system_struct.M + obj.dt/2*system_struct.R);
+                system_matrix = (M + obj.dt/2*system_struct.R);
                 system_rhs = obj.dt^2*system_struct.load_vector + ...
                             (2*system_struct.M - obj.dt^2*system_struct.B)*obj.solution(:, i) - ...
                             (system_struct.M - obj.dt/2*system_struct.R)*obj.solution(:, i-1);

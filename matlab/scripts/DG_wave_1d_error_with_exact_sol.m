@@ -4,8 +4,8 @@ clc; clear; close all;
 
 % Settings
 initial_meshsize = 2;
-dof = 2;
-num_ref = 8;
+dof = 3;
+num_ref = 6;
 refine_factor = 2;
 c_index = 1;
 dt_scaling_factor = 0.5;

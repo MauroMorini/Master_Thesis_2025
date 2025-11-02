@@ -90,19 +90,22 @@ classdef PDEData < handle
             pde_data.wave_speed_type = wave_speed_type;
         end
 
-        function [pde_data, resonator_matrix] = generate_gaussian_puls_data_on_waveguide_with_resonators()
+        function [pde_data, resonator_matrix] = generate_gaussian_puls_data_on_waveguide_with_resonators(wavespeedIdx)
+            arguments (Input)
+                wavespeedIdx = 2;
+            end
 
             boundary_points = [0, 10];
             initial_time = 0;
             final_time = 20;
             has_exact_solution = false;
             resonator_matrix = [6, 7; 9, 9.5];
-            wave_speed_type = "piecewise-const-coefficient-in-space";
+            % wave_speed_type = "piecewise-const-coefficient-in-space";
 
             % symbolic calculations
             syms x t
             u_exact_sym = exp(-(x-t+2)^2);
-            % u_exact_sym = cos(2*pi*(x - t));
+            u_exact_sym = sin(2*pi*(x - t) - pi)/(2*pi);
             u_t_exact_sym = diff(u_exact_sym, t);
             grad_u_exact_sym = diff(u_exact_sym, x);
             rhs_sym = diff(u_t_exact_sym,t) - diff(grad_u_exact_sym, x);
@@ -112,9 +115,25 @@ classdef PDEData < handle
             grad_u_exact_fun = matlabFunction(grad_u_exact_sym, 'Vars', {x,t});
             u_t_exact_fun = matlabFunction(u_t_exact_sym, 'Vars', {x,t});
             rhs_fun = matlabFunction(rhs_sym, 'Vars', {x,t});
-            wave_speed_coeff_fun = @(x,t) 1*(x < resonator_matrix(1,1) | (x > resonator_matrix(1,2) & x < resonator_matrix(2,1)) | x > resonator_matrix(2,2)) +... 
-                (1+0.2*cos(pi/2*t))/0.1.*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2)) | (x >= resonator_matrix(2,1) & x <= resonator_matrix(2,2)) );
-            wave_speed_coeff_fun = @(x,t) ones(size(x));
+            
+            switch wavespeedIdx
+                case 1
+                    wave_speed_coeff_fun = @(x,t) 1*(x < resonator_matrix(1,1) | (x > resonator_matrix(1,2) & x < resonator_matrix(2,1)) | x > resonator_matrix(2,2)) +... 
+                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2)) | (x >= resonator_matrix(2,1) & x <= resonator_matrix(2,2)) );
+                    wave_speed_type = "brute-force";
+                case 2
+                    wave_speed_coeff_fun = @(x,t) ones(size(x));
+                    wave_speed_type = "time-independent";
+                case 3
+                    wave_speed_coeff_fun = @(x,t) 1*(x < resonator_matrix(1,1) | (x > resonator_matrix(1,2) & x < resonator_matrix(2,1)) | x > resonator_matrix(2,2)) +... 
+                        0.2*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2)) | (x >= resonator_matrix(2,1) & x <= resonator_matrix(2,2)) );
+                    wave_speed_type = "time-independent";
+                otherwise
+                    
+            end
+            
+
+                %
             % check for scalar functions
             u_exact_fun = @(x,t) u_exact_fun(x,t) + zeros(size(x));
             grad_u_exact_fun = @(x,t) grad_u_exact_fun(x,t) + zeros(size(x));
