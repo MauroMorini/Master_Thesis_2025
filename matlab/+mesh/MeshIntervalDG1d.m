@@ -33,6 +33,11 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
         face_node_to_element_map
         lower_boundary_element_idx
         upper_boundary_element_idx
+        is_resonator_mesh = false;
+        resonators_matrix                   % (num_res, 2) matrix which contains the intervals which correspond with a resonator 
+                                            % each row has to be sorted from small to big
+        element_idx_to_resonator_idx_map    % (num_el, 1) int vector containing number in {0,...,num_res} corresponding to resonator indices
+                                            % and 0 corresponding to the background
     end
 
     methods
@@ -93,6 +98,9 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             % find boundary element indices
             obj.lower_boundary_element_idx = 1;
             obj.upper_boundary_element_idx = size(obj.elements, 1);
+
+            % update resonator map
+            obj.fill_element_idx_to_resonator_idx_map();
         end
 
         function obj = setNodes(obj)
@@ -262,7 +270,7 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
                 error("the stepsizes are either too big or too small in comparison to h_max, h_min")
             end
             if h_resonator >= min(abs(resonators_mat(:,1)- resonators_mat(:,2)))
-                error("the resonator stepsize is bigger or equal the length of one of thhe resonators")
+                error("the resonator stepsize is bigger or equal the length of one of the resonators")
             end
 
             % sort resonators 
@@ -273,7 +281,8 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             % build resonator mesh by setting face nodes
             last_node_in_chain = obj.lower_interval_bound;
             local_faces = [];
-            for resonator_idx = 1:size(resonators_mat_sorted,1)
+            num_res = size(resonators_mat_sorted,1);
+            for resonator_idx = 1:num_res
 
                 % build up to lower resonator boundary node
                 resonators = resonators_mat_sorted(resonator_idx, :);
@@ -298,6 +307,23 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             end
 
             obj.element_interface_nodes = [local_faces';obj.upper_interval_bound];
+            obj.resonators_matrix = resonators_mat_sorted;
+            obj.is_resonator_mesh = true;
+        end
+
+        function obj = fill_element_idx_to_resonator_idx_map(obj)
+            obj.element_idx_to_resonator_idx_map = zeros(size(obj.element_interface_nodes));
+            if ~obj.is_resonator_mesh
+                obj.element_idx_to_resonator_idx_map(end) = [];
+                return
+            end
+            num_res = size(obj.resonators_matrix, 1);
+            for i = 1:num_res
+                resonator_loc = obj.resonators_matrix(i, :);
+                res_idx = find(resonator_loc(1) <= obj.element_interface_nodes & obj.element_interface_nodes < resonator_loc(2));
+                obj.element_idx_to_resonator_idx_map(res_idx) = i;
+            end
+            obj.element_idx_to_resonator_idx_map(end) = [];
         end
 
 % VISUALIZE ------------------------------------------------------------------------------------------------------

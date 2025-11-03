@@ -82,8 +82,12 @@ for i = 1:length(H_meshsizes)
     disp("calculated uh for h = " + Mesh.h_max + "   ...   i = " + i)
 
     % calculate errors 
-    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solution{i}, exact_solution_struct);
-    errors(3,i) = dg1d.energyNormError1D(nodes, elements, uh, c_vals, sigma, u_exact_vals, du_exact_vals);
+    % [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solution{i}, exact_solution_struct);
+    errors_1d_obj = fem1d.Errors1D(exact_solution_struct.u_handle, exact_solution_struct.du_handle, numerical_solution{i}.sol, numerical_solution{i}.mesh);
+    errors_1d_obj.initialize_dg_settings(c_handle, sigma);
+    errors_1d_obj.run();
+    [errors(1,i),errors(2,i), errors(3,i)] = errors_1d_obj.getErrors();
+    % errors(3,i) = dg1d.energyNormError1D(nodes, elements, uh, c_vals, sigma, u_exact_vals, du_exact_vals);
 end
 
 % plot solution

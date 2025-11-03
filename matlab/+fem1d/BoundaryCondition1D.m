@@ -6,6 +6,7 @@ classdef BoundaryCondition1D
         bc_type                 % string, could be "neumann", "dirichlet"
         bc_location             % scalar point where b.c. is
         bc_fun                  % @(x,t) function handle of rhs value 
+        outward_normal          % scalar in {1, -1} 
     end
 
     methods

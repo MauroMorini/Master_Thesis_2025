@@ -9,7 +9,7 @@ import fem1d.*
 % Settings
 c_handle_idx = 1;
 u_exact_handle_idx = 10;
-dof = 2;
+dof = 5;
 sigma = 10*dof^2;
 num_refinement_iterations = 10;
 overwrite_functions_bool = false;
@@ -59,7 +59,7 @@ exact_solution_struct = struct("u_handle", u_exact_handle, "du_handle", du_exact
 boundary_cond = struct("values", [u_exact_handle(boundary_nodes(1)), du_exact_handle(boundary_nodes(2))], "lower_boundary_type", "dirichlet", "upper_boundary_type", "neumann");
 
 % create initial mesh
-resonators_mat = [0.5, 0.6];
+resonators_mat = [0.5, 0.6; 0.6, 0.9; 0.9, 1];
 H_meshsizes = zeros(1,num_refinement_iterations); 
 H_meshsizes(1) = initial_meshsize;
 Mesh = mesh.MeshIntervalDG1d(boundary_nodes, [initial_meshsize, initial_meshsize/100]);
@@ -130,6 +130,9 @@ for i = 1:num_refinement_iterations-1
         reference_struct = numerical_solutions{i+1};
     end
     [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solutions{i}, reference_struct);
+    errors_1d_obj = fem1d.Errors1D(exact_solution_struct.u_handle, exact_solution_struct.du_handle, numerical_solutions{i}.sol, numerical_solutions{i}.mesh);
+    errors_1d_obj.run();
+    [errors(1,i),errors(2,i)] = errors_1d_obj.getErrors();
 end
 
 % plot solution

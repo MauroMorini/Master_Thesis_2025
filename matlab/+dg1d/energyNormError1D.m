@@ -72,5 +72,5 @@ function energy_error = energyNormError1D(nodes, elements, uh_vals, c_vals, sigm
     u_exact_loc = u_exact_vals(elements(boundary_el_idx(2), end));
     penalty_error = penalty_error + sigma*c_max/h_min * ( u_exact_loc - uh_loc)^2;    
 
-    energy_error = sqrt(der_error);
+    energy_error = sqrt(der_error + penalty_error);
 end
