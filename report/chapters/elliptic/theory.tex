@@ -490,7 +490,8 @@ We will focus on the error in the energy norm $\| \cdot \|_{h}$ but also mention
 We start by recalling an important polynomial approximation result for finite elements. \\
 Fix a polynomial degree $r \geq 1$ and let $I = (a, b) \subset \mathbb{R}$ be an element of length $h = b-a$. We denote the linear interpolation operator by
 \begin{equation}
-	\mathcal{I}_h^r : L^2(I) \to \mathcal{P}^r(I),
+	\label{def:interpolation_operator}
+	\mathcal{I}_h^r : C(\overline{I}) \to \mathcal{P}^r(I),
 \end{equation}
 where the distinct interpolation nodes are $\xi_0,\ldots,\xi_r \in I$. For our purpose the exact positioning of these nodes can be arbitrary. 
 For readability if the context allows it we will denote the $i$-th derivative of a function $v$ by $\frac{\text{d}^i}{\text{d} x^i} v = v^{(i)}$.
