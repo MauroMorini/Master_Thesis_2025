@@ -97,15 +97,15 @@ classdef PDEData < handle
 
             boundary_points = [0, 10];
             initial_time = 0;
-            final_time = 20;
+            final_time = 10;
             has_exact_solution = false;
-            resonator_matrix = [6, 7; 9, 9.5];
+            resonator_matrix = [5, 5.5; 7, 7.5];
             % wave_speed_type = "piecewise-const-coefficient-in-space";
 
             % symbolic calculations
             syms x t
             u_exact_sym = exp(-(x-t+2)^2);
-            u_exact_sym = sin(2*pi*(x - t) - pi);
+            %u_exact_sym = sin(2*pi*(x - t) - pi);
             u_t_exact_sym = diff(u_exact_sym, t);
             grad_u_exact_sym = diff(u_exact_sym, x);
             rhs_sym = diff(u_t_exact_sym,t) - diff(grad_u_exact_sym, x);

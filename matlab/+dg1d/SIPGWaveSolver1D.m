@@ -109,7 +109,7 @@ classdef SIPGWaveSolver1D < handle
             M_loc = obj.initial_matrix_struct.M;
             lMax = eigs(B_loc,1);
             lMin = eigs(M_loc,1,0);
-            obj.dt = sqrt(lMin/lMax)*0.5/obj.initial_mesh.dof;
+            obj.dt = sqrt(lMin/lMax)/obj.initial_mesh.dof;
 
             % correct for case where eigs doesn't converge
             if isnan(obj.dt)
@@ -373,7 +373,8 @@ classdef SIPGWaveSolver1D < handle
                 system_rhs = obj.dt^2*system_struct.load_vector + ...
                             (2*system_struct.M - obj.dt^2*system_struct.B)*obj.solution(:, i) - ...
                             (system_struct.M - obj.dt/2*system_struct.R)*obj.solution(:, i-1);
-                obj.solution(:, i+1) = obj.solve_system(system_matrix, system_rhs);
+                % obj.solution(:, i+1) = obj.solve_system(system_matrix, system_rhs);
+                obj.solution(:, i+1) = system_matrix\system_rhs;
             end
         end
 
