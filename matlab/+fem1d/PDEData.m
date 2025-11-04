@@ -118,22 +118,20 @@ classdef PDEData < handle
             
             switch wavespeedIdx
                 case 1
-                    wave_speed_coeff_fun = @(x,t) 1*(x < resonator_matrix(1,1) | (x > resonator_matrix(1,2) & x < resonator_matrix(2,1)) | x > resonator_matrix(2,2)) +... 
-                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2)) | (x >= resonator_matrix(2,1) & x <= resonator_matrix(2,2)) );
-                    wave_speed_type = "brute-force";
-                case 2
                     wave_speed_coeff_fun = @(x,t) ones(size(x));
                     wave_speed_type = "time-independent";
-                case 3
+                case 2
                     wave_speed_coeff_fun = @(x,t) 1*(x < resonator_matrix(1,1) | (x > resonator_matrix(1,2) & x < resonator_matrix(2,1)) | x > resonator_matrix(2,2)) +... 
                         0.2*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2)) | (x >= resonator_matrix(2,1) & x <= resonator_matrix(2,2)) );
                     wave_speed_type = "time-independent";
+                case 3
+                    wave_speed_coeff_fun = @(x,t) 1*(x < resonator_matrix(1,1) | (x > resonator_matrix(1,2) & x < resonator_matrix(2,1)) | x > resonator_matrix(2,2)) +... 
+                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2)) | (x >= resonator_matrix(2,1) & x <= resonator_matrix(2,2)) );
+                    wave_speed_type = "brute-force";
                 otherwise
                     
             end
-            
 
-                %
             % check for scalar functions
             u_exact_fun = @(x,t) u_exact_fun(x,t) + zeros(size(x));
             grad_u_exact_fun = @(x,t) grad_u_exact_fun(x,t) + zeros(size(x));

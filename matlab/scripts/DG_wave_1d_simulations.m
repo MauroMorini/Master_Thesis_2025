@@ -24,7 +24,7 @@ clc;clear;close all;
 
 %% 
 % Settings
-h = 0.1;
+h = 0.3;
 dof = 3;
 dt_scaling = 0.5/10;
 c_idx = 3;
@@ -37,7 +37,8 @@ waveguide.updatePet();
 sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
 sipg_solver.dt = waveguide.h_min*dt_scaling/waveguide.dof;
 % sipg_solver.sigma = 20;
-% sipg_solver.matrix_update_type = "brute-force";
+% sipg_solver.matrix_update_type = "piecewise-const-coefficient-in-space";
+sipg_solver.matrix_update_type = "brute-force";
 sipg_solver.run();
 
 %% plot
@@ -56,7 +57,7 @@ end
 
 %% plot animation
 f = figure;
-plot_times = 0:0.01:20;
+plot_times = 0:0.01:10;
 num_plot_nodes = 1000;
 plot_nodes = linspace(pde_data.boundary_points(1),pde_data.boundary_points(2),num_plot_nodes)';
 wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);

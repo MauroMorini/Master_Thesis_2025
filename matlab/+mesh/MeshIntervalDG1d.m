@@ -326,6 +326,19 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             obj.element_idx_to_resonator_idx_map(end) = [];
         end
 
+        function upper_element_idx = getInteriorResonatorBoundaryFace(obj)
+            % For a resonator mesh finds the interface nodes in the interior domain which are the boundary face
+            % between two resonators (or background and resonator) the actual upper_element_idx maps to the element
+            % above (to the right) of the interface. Boundary faces are not considered (they just correspond to the endpoints
+            % of the element matrix anyways since it's sorted)
+            upper_element_idx = [];
+            if ~obj.is_resonator_mesh
+                return
+            end
+            H = abs(diff(obj.element_idx_to_resonator_idx_map));
+            upper_element_idx =  find(H > 0) + 1;
+        end
+
 % VISUALIZE ------------------------------------------------------------------------------------------------------
         function f = plotMesh(obj, f)
             if nargin == 1
