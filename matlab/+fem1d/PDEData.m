@@ -97,15 +97,15 @@ classdef PDEData < handle
 
             boundary_points = [0, 10];
             initial_time = 0;
-            final_time = 20;
+            final_time = 10;
             has_exact_solution = false;
-            resonator_matrix = [6, 7; 9, 9.5];
+            resonator_matrix = [5, 5.5; 7, 7.5];
             % wave_speed_type = "piecewise-const-coefficient-in-space";
 
             % symbolic calculations
             syms x t
             u_exact_sym = exp(-(x-t+2)^2);
-            u_exact_sym = sin(2*pi*(x - t) - pi);
+            %u_exact_sym = sin(2*pi*(x - t) - pi);
             u_t_exact_sym = diff(u_exact_sym, t);
             grad_u_exact_sym = diff(u_exact_sym, x);
             rhs_sym = diff(u_t_exact_sym,t) - diff(grad_u_exact_sym, x);
@@ -119,7 +119,7 @@ classdef PDEData < handle
             switch wavespeedIdx
                 case 1
                     wave_speed_coeff_fun = @(x,t) 1*(x < resonator_matrix(1,1) | (x > resonator_matrix(1,2) & x < resonator_matrix(2,1)) | x > resonator_matrix(2,2)) +... 
-                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2)) | (x >= resonator_matrix(2,1) & x <= resonator_matrix(2,2)) );
+                        (1+0.2*cos(pi/2*t))/0.1.*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2)) | (x >= resonator_matrix(2,1) & x <= resonator_matrix(2,2)) );
                     wave_speed_type = "brute-force";
                 case 2
                     wave_speed_coeff_fun = @(x,t) ones(size(x));
@@ -131,9 +131,7 @@ classdef PDEData < handle
                 otherwise
                     
             end
-            
 
-                %
             % check for scalar functions
             u_exact_fun = @(x,t) u_exact_fun(x,t) + zeros(size(x));
             grad_u_exact_fun = @(x,t) grad_u_exact_fun(x,t) + zeros(size(x));
