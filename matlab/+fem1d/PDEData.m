@@ -154,7 +154,7 @@ classdef PDEData < handle
             c_cell = {  struct("c_sym", x*0+1, "type", "time-independent");
                         struct("c_sym", (sin(x) + 2)*(cos(t)+2), "type", "brute-force");
                         struct("c_sym", (sin(x) + 2), "type", "time-independent");
-                        struct("c_sym", (sin(1*t) + 2), "type", "piecewise-const-coefficient-in-space");
+                        struct("c_sym", (sin(1*t) + 2), "type", "brute-force");
             };
             c_sym = c_cell{index}.c_sym;
             type = c_cell{index}.type;

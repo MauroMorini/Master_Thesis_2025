@@ -73,6 +73,50 @@ classdef Errors1D < handle
             end
         end
 
+        function obj = write_errors_to_csv(obj, filename, errors, meshsizes, metadata_input)
+            % takes a matrix of multiple errors and meshsizes and creates a csv file 
+            % writing into it the errors and meshsizes and commented lines for metadata
+            arguments (Input)
+                obj
+                filename string
+                errors                      % (num_errors, num_meshsizes)
+                meshsizes                   % (1, num_meshsizes)
+                metadata_input string       % string containing more metadata given from the outside
+            end
+            if isfile(filename)
+                warning("a file with the name: " + filename + " already exists..... will be saved with the ending -temp")
+                filename = erase(filename, ".csv");
+                filename = filename + "-temp.csv";
+                if isfile(filename)
+                    delete(filename);
+                    fprintf('overwriting %s ... \n', filename)
+                end
+            end
+
+            assert(size(errors, 2) == size(meshsizes, 2), "there have to be as many meshsizes as error columns");
+
+            % collect metadata
+            dof = obj.mesh.dof;
+            quad_dof = obj.quadrature_mesh.dof;
+
+            file_id = fopen(filename, 'w');
+            
+            % write metadata 
+            fprintf(file_id, '# Errors of SIPG numerical solution \n');
+            fprintf(file_id, '# Domain: (%g, %g) \n', obj.mesh.lower_interval_bound, obj.mesh.upper_interval_bound);
+            fprintf(file_id, '# DoF of the solution (per cell): %g \n', dof);
+            fprintf(file_id, '# DoF of the quadrature mesh: %g \n', quad_dof);
+            fprintf(file_id, '# sigma: %g \n', obj.sigma);
+            fprintf(file_id, '# Resonators: %s \n', mat2str(obj.mesh.resonators_matrix));
+            fprintf(file_id, '\n%s \n', metadata_input);
+
+            % write errors
+            fprintf(file_id, 'meshsize,L2-error,H1-error,energy-error \n');
+            fclose(file_id);
+            M = [meshsizes', errors'];
+            writematrix(M, filename, 'Delimiter', ',', 'WriteMode', 'append');
+        end
+
         function obj = run(obj)
             obj.generate_quadrature_mesh();
             obj.interpolate_sol_at_quad_mesh();

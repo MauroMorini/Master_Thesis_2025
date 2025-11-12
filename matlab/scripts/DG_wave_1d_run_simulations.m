@@ -1,6 +1,7 @@
 % script to simulate and observe a wave solved with sipg in space and leapfrog in time
 
 clc;clear;close all;
+save_to_h5 = true;
 
 % Settings
 % h = 0.1;
@@ -44,4 +45,7 @@ sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
 sipg_solver.run();
 
 wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
-wave_postprocessor.write_to_hdf5(filename);
+
+if save_to_h5
+    wave_postprocessor.write_to_hdf5(filename);
+end
