@@ -53,6 +53,10 @@ classdef WavePostprocessor1D < handle
                 warning("a file with the name: " + filename + " already exists..... will be saved with the ending -temp")
                 filename = erase(filename, ".h5");
                 filename = filename + "-temp.h5";
+                if isfile(filename)
+                    delete(filename);
+                    fprintf('overwriting %s ... \n', filename)
+                end
             end
 
             % write mesh

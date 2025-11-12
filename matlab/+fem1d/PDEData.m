@@ -44,19 +44,20 @@ classdef PDEData < handle
     end
 
     methods (Static)
-        function pde_data = generate_exact_gaussian_puls_data_on_waveguide(wave_speed_index)
+        function pde_data = generate_smooth_pde_data(u_exact_index, wave_speed_index)
             arguments (Input)
+                u_exact_index = 1;
                 wave_speed_index = 1;
             end
             boundary_points = [0, 10];
             initial_time = 0;
-            final_time = 5;
+            final_time = 10;
             has_exact_solution = true;
 
             % symbolic calculations
             syms x t
             [wave_speed_coeff_sym, wave_speed_type] = fem1d.PDEData.generateSmoothWaveSpeed(wave_speed_index);
-            u_exact_sym = exp(-(x-t+1)^2);
+            u_exact_sym = fem1d.PDEData.generateSmoothExactSol(u_exact_index);
             u_t_exact_sym = diff(u_exact_sym, t);
             grad_u_exact_sym = diff(u_exact_sym, x);
             rhs_sym = diff(u_t_exact_sym,t) - diff(wave_speed_coeff_sym*grad_u_exact_sym, x);
@@ -89,9 +90,10 @@ classdef PDEData < handle
             pde_data.wave_speed_type = wave_speed_type;
         end
 
-        function [pde_data, resonator_matrix] = generate_gaussian_puls_data_on_waveguide_with_resonators(wavespeedIdx)
+        function [pde_data, resonator_matrix] = generate_pde_data_with_resonators(u_exact_index, wave_speed_index)
             arguments (Input)
-                wavespeedIdx = 1;
+                u_exact_index = 1;
+                wave_speed_index = 1;
             end
 
             boundary_points = [0, 10];
@@ -103,8 +105,7 @@ classdef PDEData < handle
 
             % symbolic calculations
             syms x t
-            u_exact_sym = exp(-(x-t+2)^2);
-            u_exact_sym = sin(2*pi*(x - t) - pi);
+            u_exact_sym = fem1d.PDEData.generateSmoothExactSol(u_exact_index);
             u_t_exact_sym = diff(u_exact_sym, t);
             grad_u_exact_sym = diff(u_exact_sym, x);
             rhs_sym = diff(u_t_exact_sym,t) - diff(grad_u_exact_sym, x);
@@ -115,21 +116,7 @@ classdef PDEData < handle
             u_t_exact_fun = matlabFunction(u_t_exact_sym, 'Vars', {x,t});
             rhs_fun = matlabFunction(rhs_sym, 'Vars', {x,t});
             
-            switch wavespeedIdx
-                case 1
-                    wave_speed_coeff_fun = @(x,t) ones(size(x));
-                    wave_speed_type = "time-independent";
-                case 2
-                    wave_speed_coeff_fun = @(x,t) 1*( (x < resonator_matrix(1,1)) | (x > resonator_matrix(1,2) ) )+... 
-                        0.2*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2))  );
-                    wave_speed_type = "time-independent";
-                case 3
-                    wave_speed_coeff_fun = @(x,t) 1*((x < resonator_matrix(1,1)) | (x > resonator_matrix(1,2) )) +... 
-                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(1,1) & x <= resonator_matrix(1,2))  );
-                    wave_speed_type = "brute-force";
-                otherwise
-                    
-            end
+            [wave_speed_coeff_fun, wave_speed_type] = fem1d.PDEData.generateDiscontinuousWaveSpeed(resonator_matrix, wave_speed_index);
 
             initial_displacement = @(x) u_exact_fun(x, initial_time);
             initial_velocity = @(x) u_t_exact_fun(x, initial_time);
@@ -160,15 +147,42 @@ classdef PDEData < handle
             type = c_cell{index}.type;
         end
 
-        function [c_fun, type] = generateDiscontinuousWaveSpeed(resIdx)
+        function u_sym = generateSmoothExactSol(index)
             syms x t
-            c_cell = {  struct("c_sym", x*0+1, "type", "time-independent");
-                        struct("c_sym", (sin(x) + 2)*(cos(t)+2), "type", "brute-force");
-                        struct("c_sym", (sin(x) + 2), "type", "time-independent");
-                        struct("c_sym", (sin(1*t) + 2), "type", "piecewise-const-coefficient-in-space");
-            };
-            c_sym = c_cell{index}.c_sym;
-            type = c_cell{index}.type;
+            u_cell = {  exp(-(x-t+2)^2);
+                        exp(-2*pi*(x-t+2)^2);
+                        sin((x - t) - pi);
+                        sin(2*pi*(x - t) - pi);
+                        };
+            u_sym = u_cell{index};
+        end
+
+        function [c_fun, type] = generateDiscontinuousWaveSpeed(resonator_matrix, index)
+            num_res = size(resonator_matrix, 1);
+            switch num_res
+                case 0
+                    c_cell = {  @(x,t) ones(size(x));
+                                };
+                    type_cell =  { "time-independent";
+                                    };
+                case 1
+                    c_cell = {  @(x,t) ones(size(x));
+                                @(x,t)  1*( (x < resonator_matrix(1,1)) | (x > resonator_matrix(1,2) ) )+... 
+                                        0.2*( (x >= resonator_matrix(1,1)) & (x <= resonator_matrix(1,2)));
+                                @(x,t)  1*( (x < resonator_matrix(1,1)) | (x > resonator_matrix(1,2) ) )+... 
+                                        20*( (x >= resonator_matrix(1,1)) & (x <= resonator_matrix(1,2))); 
+                                @(x,t)  1*( (x < resonator_matrix(1,1)) | (x > resonator_matrix(1,2)) ) +... 
+                                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(1,1)) & (x <= resonator_matrix(1,2))  );
+                                };
+                    type_cell =  {  "time-independent";
+                                    "time-independent";
+                                    "brute-force";
+                                    };
+                otherwise
+                    error('Discontinuous Wave Speed for %g Resonators has not been implemented', num_res)
+            end
+            c_fun = c_cell{index};
+            type = type_cell{index};
         end
     end
 end

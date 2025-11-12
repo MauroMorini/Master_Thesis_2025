@@ -98,6 +98,7 @@ classdef Errors1D < handle
             % collect metadata
             dof = obj.mesh.dof;
             quad_dof = obj.quadrature_mesh.dof;
+            cr = obj.interpolate_convergence_rates(meshsizes, errors);
 
             file_id = fopen(filename, 'w');
             
@@ -109,18 +110,34 @@ classdef Errors1D < handle
             fprintf(file_id, '# sigma: %g \n', obj.sigma);
             fprintf(file_id, '# Resonators: %s \n', mat2str(obj.mesh.resonators_matrix));
             fprintf(file_id, '\n%s \n', metadata_input);
+            fprintf(file_id, '# Interpolated Convergence Rates ------------- \n# l2: %g,  h1: %g,  energy: %g \n\n', cr(2,1),cr(2,2),cr(2,3));
 
             % write errors
             fprintf(file_id, 'meshsize,L2-error,H1-error,energy-error \n');
             fclose(file_id);
             M = [meshsizes', errors'];
             writematrix(M, filename, 'Delimiter', ',', 'WriteMode', 'append');
+
+            % append 
         end
 
         function obj = run(obj)
             obj.generate_quadrature_mesh();
             obj.interpolate_sol_at_quad_mesh();
             obj.calculate_errors();
+        end
+    end
+
+    methods (Static)
+        function convergence_rates = interpolate_convergence_rates(meshsizes, errors)
+            % calculate convergence rates using linear interpolation (least squares)
+            arguments (Input)
+                meshsizes (1,:)             % (1, num_meshsizes)
+                errors                      % (num_error_types, num_meshsizes)
+            end
+            assert(size(errors, 2) == size(meshsizes, 2), "there must be as many error measurements as meshsizes")
+            X = [ones(length(meshsizes),1), log(meshsizes')];
+            convergence_rates = X\log(errors');
         end
     end
 end
