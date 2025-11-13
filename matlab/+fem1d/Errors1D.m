@@ -118,7 +118,6 @@ classdef Errors1D < handle
             M = [meshsizes', errors'];
             writematrix(M, filename, 'Delimiter', ',', 'WriteMode', 'append');
 
-            % append 
         end
 
         function obj = run(obj)
@@ -138,6 +137,29 @@ classdef Errors1D < handle
             assert(size(errors, 2) == size(meshsizes, 2), "there must be as many error measurements as meshsizes")
             X = [ones(length(meshsizes),1), log(meshsizes')];
             convergence_rates = X\log(errors');
+        end
+
+        function [meshsizes, errors, metadata] = read_errors_from_csv(filename)
+            % reads a csv file created by write_errors function 
+            arguments (Input)
+                filename string
+            end
+            arguments (Output)
+                meshsizes (1,:)     % (1, num_meshsizes) matrix with corresponding meshsizes
+                errors              % (num_error_types, num_meshsizes) error matrix
+                metadata string     % a string containing all the metadata for output (not processed)
+            end
+
+            % get data
+            data = readmatrix(filename, "CommentStyle", "#");
+            errors = data(:, 2:end)';
+            meshsizes = data(:, 1)';
+
+            % get metadata
+            f_id = fopen(filename, 'r');
+            comments = textscan(f_id, '#%[^\n]');
+            fclose(f_id);
+            metadata = strjoin(strcat('#', comments{1}), newline);
         end
     end
 end
