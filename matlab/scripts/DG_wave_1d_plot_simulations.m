@@ -1,15 +1,15 @@
 clc;clear;close all;
 
-save_video = false;
-plot_images = true;
+save_video = true;
+plot_images = false;
 
 % settings
-filename_index = 1;
-plot_times = 0:20;
+filename_index = 105;
+plot_times = 0:5:20;
 
 % read file
 filepath = "data/matlab/wave/hdf5/";
-filename = filepath + "wave-" + filename_index + "-temp.h5";
+filename = filepath + "wave-" + filename_index + ".h5";
 wave_postprocessor = dg1d.WavePostprocessor1D();
 wave_postprocessor.read_from_hdf5(filename);
 disp(wave_postprocessor.metadata)
