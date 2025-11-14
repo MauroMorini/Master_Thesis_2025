@@ -16,6 +16,7 @@ classdef PDEData < handle
         grad_u_exact_fun                                % @(x,t) spacial derivative function handle of exact solution
         has_exact_solution logical                      % true if u_exact_fun and grad_u_exact_fun are initialized 
         wave_speed_type = "brute-force"                 % helps deciding matrix update scheme
+        wave_speed_is_continuous = true;                
     end 
 
     methods
@@ -133,6 +134,7 @@ classdef PDEData < handle
             pde_data.grad_u_exact_fun = grad_u_exact_fun;
             pde_data.has_exact_solution = has_exact_solution;
             pde_data.wave_speed_type = wave_speed_type;
+            pde_data.wave_speed_is_continuous = false;
         end
 
         function [c_sym, type] = generateSmoothWaveSpeed(index)

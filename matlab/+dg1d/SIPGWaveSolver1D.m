@@ -15,7 +15,8 @@ classdef SIPGWaveSolver1D < handle
         time_vector (1,:) double            % time vector containing all steps made 
         matrix_update_type = []             % dictates how matrices are updated in each time step
                                             % in {"time-independent", "brute-force", "piecewise-const-coefficient-in-space"} 
-        matrix_resonator_masks              % struct, see recompute_matrix_resonator_masks() for definition                        
+        matrix_resonator_masks              % struct, see recompute_matrix_resonator_masks() for definition       
+        wave_speed_cell                     % (1,2) cell with the c_vals calculated at the initial time int the first entry and for the current time in the second entry                  
     end
 
     methods
@@ -45,6 +46,17 @@ classdef SIPGWaveSolver1D < handle
             % with the coefficients at time t0
 
             t0 = obj.pde_data.initial_time;
+
+            % initialize c_vals
+            [nodes_quad, ~, elements_quad] = obj.quadrature_mesh.getPet();
+            c_evaluation_nodes = nodes_quad(elements_quad);
+            if ~obj.pde_data.wave_speed_is_continuous
+                c_evaluation_nodes(:, end) = c_evaluation_nodes(:, end) - 1e-14; 
+                c_evaluation_nodes(:, 1) = c_evaluation_nodes(:, 1) + 1e-14; 
+            end
+            c_vals_temp = obj.pde_data.wave_speed_coeff_fun(c_evaluation_nodes, t0);
+            obj.wave_speed_cell = {c_vals_temp, c_vals_temp};
+
             system_struct = obj.assemble_matrices_at_time(t0);
 
             if obj.matrix_update_type == "piecewise-const-coefficient-in-space"
@@ -58,11 +70,15 @@ classdef SIPGWaveSolver1D < handle
             % similarly to assemble_initial_matrices assembles all required matrices into a struct
             % but with the coefficients a t time t
             % changes matrices at the boundary depending on the boundary condition
-            c_fun_initial = @(x) obj.pde_data.wave_speed_coeff_fun(x, t);
 
             % initialize c_vals
             [nodes_quad, ~, elements_quad] = obj.quadrature_mesh.getPet();
-            c_vals = c_fun_initial(nodes_quad(elements_quad));
+            c_evaluation_nodes = nodes_quad(elements_quad);
+            if ~obj.pde_data.wave_speed_is_continuous
+                c_evaluation_nodes(:, end) = c_evaluation_nodes(:, end) - 1e-14; 
+                c_evaluation_nodes(:, 1) = c_evaluation_nodes(:, 1) + 1e-14; 
+            end
+            c_vals = obj.pde_data.wave_speed_coeff_fun(c_evaluation_nodes, t);
 
             % get matrices
             [nodes, ~, elements] = obj.initial_mesh.getPet();
@@ -120,6 +136,16 @@ classdef SIPGWaveSolver1D < handle
         function system_struct = setup_system(obj, current_time)
             % sets up system by introducing time dependent components and boundary conditions
 
+            % initialize c_vals
+            [nodes_quad, ~, elements_quad] = obj.quadrature_mesh.getPet();
+            c_evaluation_nodes = nodes_quad(elements_quad);
+            if ~obj.pde_data.wave_speed_is_continuous
+                c_evaluation_nodes(:, end) = c_evaluation_nodes(:, end) - 1e-14; 
+                c_evaluation_nodes(:, 1) = c_evaluation_nodes(:, 1) + 1e-14; 
+            end
+            c_vals_temp = obj.pde_data.wave_speed_coeff_fun(c_evaluation_nodes, current_time);
+            obj.wave_speed_cell{2} = c_vals_temp;
+
             if obj.matrix_update_type == "brute-force"
                 system_struct = obj.assemble_matrices_at_time(current_time);
             else
@@ -171,6 +197,42 @@ classdef SIPGWaveSolver1D < handle
             obj.matrix_resonator_masks = struct("A_masks", A_masks, "B_flux_masks", B_flux_masks, "B_penalty_masks", B_penalty_masks);
         end
 
+        function system_struct = update_mat_test(obj, system_struct)
+            % just for debugging 
+            current_time = system_struct.time;
+            num_res = size(obj.initial_mesh.resonators_matrix, 1);
+            for i = 0:num_res
+
+                % find global dof indices which are in the current resonator
+                res_el = find(obj.initial_mesh.element_idx_to_resonator_idx_map == i);
+                if isempty(res_el)
+                    continue
+                end
+                res_idx = obj.initial_mesh.elements(res_el,:);
+                res_idx = res_idx(:);      
+
+                % current and old c_value in resonator
+                c_res_initial = obj.wave_speed_cell{1}(res_el(1,1));
+                c_res_current = obj.wave_speed_cell{2}(res_el(1,1));
+                c_multiplier = c_res_current/c_res_initial;
+
+                system_struct.A(res_idx,res_idx) = system_struct.A(res_idx,res_idx)*c_multiplier;
+                system_struct.B_flux_int(res_idx,res_idx) = system_struct.B_flux_int(res_idx,res_idx)*c_multiplier;
+                system_struct.B_penalty_int(res_idx,res_idx) = system_struct.B_penalty_int(res_idx,res_idx)*c_multiplier;
+                system_struct.B_bound(res_idx,res_idx) = system_struct.B_bound(res_idx,res_idx)*c_multiplier;
+            end
+
+            system_struct.B = system_struct.A - system_struct.B_flux_int + system_struct.B_penalty_int + system_struct.B_bound;
+
+            system_struct_updated = obj.assemble_matrices_at_time(current_time);
+            errors = [  norm(full(system_struct_updated.A - system_struct.A));
+                        norm(full(system_struct_updated.B_flux_int - system_struct.B_flux_int));
+                        norm(full(system_struct_updated.B_penalty_int - system_struct.B_penalty_int));
+                        norm(full(system_struct_updated.B_bound - system_struct.B_bound));
+                        norm(full(system_struct_updated.B - system_struct.B))];
+            s = 1;
+        end
+
         function system_struct = update_matrices_for_piecewise_const_coefficient(obj, system_struct)
             % updates the matrices in system_struct based on the resonator distribution in the mesh 
             % by dividing through the initial coefficient and multiplying the current 
@@ -182,17 +244,15 @@ classdef SIPGWaveSolver1D < handle
             [B_penalty_rows, B_penalty_cols, B_penalty_vals] = find(system_struct.B_penalty_int);
 
             current_time = system_struct.time;
-
-            % calculate c_vals per resonator 
-            c_temp = @(x,t) obj.pde_data.wave_speed_coeff_fun(x,t);
-            nodes_in_resonators = (obj.initial_mesh.resonators_matrix(:, 1) + obj.initial_mesh.resonators_matrix(:, 2))/2;
-            elements_in_background_idx = find(obj.initial_mesh.element_idx_to_resonator_idx_map == 0);
-            node_in_background = obj.initial_mesh.nodes(obj.initial_mesh.elements(elements_in_background_idx(1),2));
-            c_vals = [c_temp(nodes_in_resonators, obj.pde_data.initial_time), c_temp(nodes_in_resonators, current_time)];
-            % TODO: presave function values
             
             % iterate over resonators
             for i = 0:size(obj.initial_mesh.resonators_matrix, 1)
+
+                % current and old c_value in resonator
+                res_el = find(obj.initial_mesh.element_idx_to_resonator_idx_map == i);
+                c_res_initial = obj.wave_speed_cell{1}(res_el(1,1));
+                c_res_current = obj.wave_speed_cell{2}(res_el(1,1));
+                c_multiplier = c_res_current/c_res_initial;
 
                 % find triplet indices, such that both rows and cols are in the resonator
                 A_triplets_in_resonator_idx = obj.matrix_resonator_masks(i+1).A_masks;
@@ -200,10 +260,9 @@ classdef SIPGWaveSolver1D < handle
                 B_penalty_triplets_in_resonator_idx = obj.matrix_resonator_masks(i+1).B_penalty_masks;
 
                 % update all entries for which both dofs (row and col) are in the resonator 
-                c_res = @(t) c_temp(obj.initial_mesh.nodes(A_rows(A_triplets_in_resonator_idx(1))), t);
-                A_vals(A_triplets_in_resonator_idx) = A_vals(A_triplets_in_resonator_idx)*c_res(current_time)/c_res(obj.pde_data.initial_time);
-                B_flux_vals(B_flux_triplets_in_resonator_idx) = B_flux_vals(B_flux_triplets_in_resonator_idx)*c_res(current_time)/c_res(obj.pde_data.initial_time);
-                B_penalty_vals(B_penalty_triplets_in_resonator_idx) = B_penalty_vals(B_penalty_triplets_in_resonator_idx)*c_res(current_time)/c_res(obj.pde_data.initial_time);
+                A_vals(A_triplets_in_resonator_idx) = A_vals(A_triplets_in_resonator_idx)*c_multiplier;
+                B_flux_vals(B_flux_triplets_in_resonator_idx) = B_flux_vals(B_flux_triplets_in_resonator_idx)*c_multiplier;
+                B_penalty_vals(B_penalty_triplets_in_resonator_idx) = B_penalty_vals(B_penalty_triplets_in_resonator_idx)*c_multiplier;
             end
 
             % recalculate interior resonator interface values for flux and penalty matrix (updating connecting information between resonators)
@@ -239,6 +298,8 @@ classdef SIPGWaveSolver1D < handle
                 h_loc = [abs(nodes_loc(1,1) - nodes_loc(1,end)); abs(nodes_loc(2,1) - nodes_loc(2,end))];
                 c_vals_loc = [c_temp(nodes_loc(1,1), current_time), c_temp(nodes_loc(1,1), obj.pde_data.initial_time);
                               c_temp(nodes_loc(2,2), current_time), c_temp(nodes_loc(2,2), obj.pde_data.initial_time)];
+                c_vals_loc = [obj.wave_speed_cell{2}(k,1), obj.wave_speed_cell{1}(k,1);
+                              obj.wave_speed_cell{2}(k-1,end), obj.wave_speed_cell{2}(k-1,end)];
                 bordering_elements = [elements_loc(1,:), elements_loc(2,:)];
                 B_loc_row_idx = repmat(bordering_elements.', 1, 2*dof);
                 B_loc_col_idx = repmat(bordering_elements, 2*dof, 1);
@@ -283,6 +344,15 @@ classdef SIPGWaveSolver1D < handle
             system_struct.B_penalty_int = sparse(B_penalty_rows, B_penalty_cols, B_penalty_vals, n, n);
             
             system_struct.B = system_struct.A - system_struct.B_flux_int + system_struct.B_penalty_int + system_struct.B_bound;
+
+            % debug tests
+            system_struct_updated = obj.assemble_matrices_at_time(current_time);
+            errors = [  norm(full(system_struct_updated.A - system_struct.A));
+                        norm(full(system_struct_updated.B_flux_int - system_struct.B_flux_int));
+                        norm(full(system_struct_updated.B_penalty_int - system_struct.B_penalty_int));
+                        norm(full(system_struct_updated.B_bound - system_struct.B_bound));
+                        norm(full(system_struct_updated.B - system_struct.B))];
+            s = 1;
         end
 
         function x = solve_system(obj, A, b)

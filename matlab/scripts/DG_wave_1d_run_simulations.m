@@ -5,10 +5,10 @@ save_to_h5 = true;
 
 % Settings
 h = 0.5;
-filename_index = 105;
+filename_index = 205;
 u_exact_index = 2;
 wave_speed_index = 3;
-dof = 3;
+dof = 2;
 
 filepath = "data/matlab/wave/hdf5/";
 filename = filepath + "wave-" + filename_index + ".h5";
