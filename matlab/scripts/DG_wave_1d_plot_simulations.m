@@ -4,7 +4,7 @@ save_video = true;
 plot_images = false;
 
 % settings
-filename_index = 13;
+filename_index = 26;
 plot_times = 0:20;
 
 % read file

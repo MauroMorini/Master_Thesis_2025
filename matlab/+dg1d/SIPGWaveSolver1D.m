@@ -125,8 +125,6 @@ classdef SIPGWaveSolver1D < handle
                 B_loc_col_idx = repmat(bordering_elements, 2*dof, 1);
                 
                 % flux update
-                B_flux_loc_plus = [c_vals_loc(1,1)*B_flux_ref_1/h_loc(1), (c_vals_loc(2,1)*B_flux_ref_21/h_loc(2) + c_vals_loc(1,1)*B_flux_ref_22/h_loc(1));
-                                    (c_vals_loc(2, 1)*B_flux_ref_21/h_loc(2) + c_vals_loc(1, 1)*B_flux_ref_22/h_loc(1)).', c_vals_loc(2, 1)*B_flux_ref_3/h_loc(2)];
                 B_flux_loc_minus = [c_vals_loc(1,2)*B_flux_ref_1/h_loc(1), (c_vals_loc(2,2)*B_flux_ref_21/h_loc(2) + c_vals_loc(1,2)*B_flux_ref_22/h_loc(1));
                                   (c_vals_loc(2, 2)*B_flux_ref_21/h_loc(2) + c_vals_loc(1, 2)*B_flux_ref_22/h_loc(1)).', c_vals_loc(2, 2)*B_flux_ref_3/h_loc(2)];
                 B_flux_loc = -B_flux_loc_minus;
@@ -138,8 +136,6 @@ classdef SIPGWaveSolver1D < handle
                 % penalty update
                 h_min_loc = min(h_loc);
                 c_max_loc = max(c_vals_loc, [], 1);
-                B_penalty_loc_plus = obj.sigma*c_max_loc(1)/h_min_loc*[B_penalty_ref_1, B_penalty_ref_2;
-                                                                B_penalty_ref_2.', B_penalty_ref_3];
                 B_penalty_loc_minus = obj.sigma*c_max_loc(2)/h_min_loc*[B_penalty_ref_1, B_penalty_ref_2;
                                                                 B_penalty_ref_2.', B_penalty_ref_3];
                 B_penalty_loc = -B_penalty_loc_minus;
@@ -178,7 +174,6 @@ classdef SIPGWaveSolver1D < handle
                 % current and old c_value in resonator
                 res_el = find(obj.initial_mesh.element_idx_to_resonator_idx_map == i);
                 c_res_initial = obj.wave_speed_cell{1}(res_el(1,1));
-                c_res_current = obj.wave_speed_cell{2}(res_el(1,1));
                 c_multiplier = 1/c_res_initial;
 
                 % find triplet indices, such that both rows and cols are in the resonator
@@ -328,42 +323,6 @@ classdef SIPGWaveSolver1D < handle
             system_struct = obj.impose_boundary_conditions(system_struct);
         end
 
-        function system_struct = update_mat_test(obj, system_struct)
-            % just for debugging 
-            current_time = system_struct.time;
-            num_res = size(obj.initial_mesh.resonators_matrix, 1);
-            for i = 0:num_res
-
-                % find global dof indices which are in the current resonator
-                res_el = find(obj.initial_mesh.element_idx_to_resonator_idx_map == i);
-                if isempty(res_el)
-                    continue
-                end
-                res_idx = obj.initial_mesh.elements(res_el,:);
-                res_idx = res_idx(:);      
-
-                % current and old c_value in resonator
-                c_res_initial = obj.wave_speed_cell{1}(res_el(1,1));
-                c_res_current = obj.wave_speed_cell{2}(res_el(1,1));
-                c_multiplier = c_res_current/c_res_initial;
-
-                system_struct.A(res_idx,res_idx) = system_struct.A(res_idx,res_idx)*c_multiplier;
-                system_struct.B_flux_int(res_idx,res_idx) = system_struct.B_flux_int(res_idx,res_idx)*c_multiplier;
-                system_struct.B_penalty_int(res_idx,res_idx) = system_struct.B_penalty_int(res_idx,res_idx)*c_multiplier;
-                system_struct.B_bound(res_idx,res_idx) = system_struct.B_bound(res_idx,res_idx)*c_multiplier;
-            end
-
-            system_struct.B = system_struct.A - system_struct.B_flux_int + system_struct.B_penalty_int + system_struct.B_bound;
-
-            system_struct_updated = obj.assemble_matrices_at_time(current_time);
-            errors = [  norm(full(system_struct_updated.A - system_struct.A));
-                        norm(full(system_struct_updated.B_flux_int - system_struct.B_flux_int));
-                        norm(full(system_struct_updated.B_penalty_int - system_struct.B_penalty_int));
-                        norm(full(system_struct_updated.B_bound - system_struct.B_bound));
-                        norm(full(system_struct_updated.B - system_struct.B))];
-            s = 1;
-        end
-
         function system_struct = update_matrices_for_piecewise_const_coefficient(obj, current_time)
             % updates the matrices in system_struct based on the resonator distribution in the mesh 
             % by dividing through the initial coefficient and multiplying the current 
@@ -381,7 +340,6 @@ classdef SIPGWaveSolver1D < handle
 
                 % current and old c_value in resonator
                 res_el = find(obj.initial_mesh.element_idx_to_resonator_idx_map == i);
-                c_res_initial = obj.wave_speed_cell{1}(res_el(1,1));
                 c_res_current = obj.wave_speed_cell{2}(res_el(1,1));
                 c_multiplier = c_res_current;
 
@@ -436,8 +394,6 @@ classdef SIPGWaveSolver1D < handle
                 % flux update
                 B_flux_loc_plus = [c_vals_loc(1,1)*B_flux_ref_1/h_loc(1), (c_vals_loc(2,1)*B_flux_ref_21/h_loc(2) + c_vals_loc(1,1)*B_flux_ref_22/h_loc(1));
                                     (c_vals_loc(2, 1)*B_flux_ref_21/h_loc(2) + c_vals_loc(1, 1)*B_flux_ref_22/h_loc(1)).', c_vals_loc(2, 1)*B_flux_ref_3/h_loc(2)];
-                B_flux_loc_minus = [c_vals_loc(1,2)*B_flux_ref_1/h_loc(1), (c_vals_loc(2,2)*B_flux_ref_21/h_loc(2) + c_vals_loc(1,2)*B_flux_ref_22/h_loc(1));
-                                  (c_vals_loc(2, 2)*B_flux_ref_21/h_loc(2) + c_vals_loc(1, 2)*B_flux_ref_22/h_loc(1)).', c_vals_loc(2, 2)*B_flux_ref_3/h_loc(2)];
                 B_flux_loc = B_flux_loc_plus;
                 B_flux_vals(flux_triplet_iterator:(flux_triplet_iterator + 4*dof^2 - 1)) = B_flux_loc(:);
                 B_flux_rows(flux_triplet_iterator:(flux_triplet_iterator + 4*dof^2 - 1)) = B_loc_row_idx(:);
@@ -449,8 +405,6 @@ classdef SIPGWaveSolver1D < handle
                 c_max_loc = max(c_vals_loc, [], 1);
                 B_penalty_loc_plus = obj.sigma*c_max_loc(1)/h_min_loc*[B_penalty_ref_1, B_penalty_ref_2;
                                                                 B_penalty_ref_2.', B_penalty_ref_3];
-                B_penalty_loc_minus = obj.sigma*c_max_loc(2)/h_min_loc*[B_penalty_ref_1, B_penalty_ref_2;
-                                                                B_penalty_ref_2.', B_penalty_ref_3];
                 B_penalty_loc = B_penalty_loc_plus;
                 B_penalty_vals(penalty_triplet_iterator:(penalty_triplet_iterator + 4*dof^2 - 1)) = B_penalty_loc(:);
                 B_penalty_rows(penalty_triplet_iterator:(penalty_triplet_iterator + 4*dof^2 - 1)) = B_loc_row_idx(:);
@@ -460,7 +414,7 @@ classdef SIPGWaveSolver1D < handle
 
             % update boundary matrices
             [lower_boundary_element_idx, upper_boundary_element_idx] = obj.initial_mesh.getBoundaryElementIdx();
-            [nodes, ~, elements] = obj.initial_mesh.getPet();
+            [~, ~, elements] = obj.initial_mesh.getPet();
             c_vals_loc = [obj.wave_speed_cell{2}(lower_boundary_element_idx,1), obj.wave_speed_cell{1}(lower_boundary_element_idx,1);
                               obj.wave_speed_cell{2}(upper_boundary_element_idx,1), obj.wave_speed_cell{1}(upper_boundary_element_idx,1)];
             system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:)) = system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:))*c_vals_loc(1,2);

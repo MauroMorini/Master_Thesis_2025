@@ -101,10 +101,10 @@ classdef PDEData < handle
             initial_time = 0;
             final_time = 20;
             has_exact_solution = false;
-            resonator_matrix = [4, 4.5;
-                                5, 5.5;
-                                6, 6.5;
-                                7, 7.5];
+            resonator_matrix = [3, 3.25;
+                                3.5, 3.75;
+                                4, 4.25;
+                                4.5, 4.75];
 
             % symbolic calculations
             syms x t
@@ -231,10 +231,10 @@ classdef PDEData < handle
                                             ((x < resonator_matrix(2,1)) | (x > resonator_matrix(2,2))) & ...
                                             ((x < resonator_matrix(3,1)) | (x > resonator_matrix(3,2))) & ...
                                             ((x < resonator_matrix(4,1)) | (x > resonator_matrix(4,2)))) +... 
-                                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(1,1)) & (x <= resonator_matrix(1,2))  ) + ...
-                                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(2,1)) & (x <= resonator_matrix(2,2))  ) + ...
-                                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(3,1)) & (x <= resonator_matrix(3,2))  ) + ...
-                                        (1+0.4*cos(4*pi/2*t))/0.05.*( (x >= resonator_matrix(4,1)) & (x <= resonator_matrix(4,2))  );
+                                        (1+0.4*cos(4*pi/2*t))*20.*( (x >= resonator_matrix(1,1)) & (x <= resonator_matrix(1,2))  ) + ...
+                                        (1+0.4*cos(4*pi/2*t))*15.*( (x >= resonator_matrix(2,1)) & (x <= resonator_matrix(2,2))  ) + ...
+                                        (1+0.4*cos(4*pi/2*t))*10.*( (x >= resonator_matrix(3,1)) & (x <= resonator_matrix(3,2))  ) + ...
+                                        (1+0.4*cos(4*pi/2*t))*5.*( (x >= resonator_matrix(4,1)) & (x <= resonator_matrix(4,2))  );
                                 };
                     type_cell =  {  "time-independent";
                                     "time-independent";
