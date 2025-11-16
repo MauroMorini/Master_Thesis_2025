@@ -4,11 +4,11 @@ clc;clear;close all;
 save_to_h5 = true;
 
 % Settings
-h = 0.5;
-filename_index = 205;
+h = 0.1;
+filename_index = 15;
 u_exact_index = 2;
 wave_speed_index = 3;
-dof = 2;
+dof = 3;
 
 filepath = "data/matlab/wave/hdf5/";
 filename = filepath + "wave-" + filename_index + ".h5";
@@ -20,7 +20,7 @@ waveguide.updatePet();
 sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
 % sipg_solver.dt = waveguide.h_min*dt_scaling/waveguide.dof;
 % sipg_solver.sigma = 20;
-sipg_solver.matrix_update_type = "piecewise-const-coefficient-in-space";
+% sipg_solver.matrix_update_type = "piecewise-const-coefficient-in-space";
 % sipg_solver.matrix_update_type = "brute-force";
 sipg_solver.run();
 

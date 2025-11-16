@@ -12,7 +12,7 @@ u_exact_index = 1;
 is_resonator = false;
 dof = 2;
 dt_scaling_factor = 0.5/10;
-num_ref = 5;
+num_ref = 6;
 initial_meshsize = 1;
 refine_factor = 2;
 tic 
@@ -35,7 +35,6 @@ for i = 1:num_ref
         waveguide.updatePet();
     end
     sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
-    % sipg_solver.matrix_update_type = "piecewise-const-coefficient-in-space";
     % sipg_solver.dt = waveguide.h_min*dt_scaling_factor/dof;
     sipg_solver.run();
     wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
