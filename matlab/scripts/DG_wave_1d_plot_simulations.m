@@ -1,11 +1,11 @@
 clc;clear;close all;
 
-save_video = true;
-plot_images = false;
+save_video = false;
+plot_images = true;
 
 % settings
-filename_index = 26;
-plot_times = 0:20;
+filename_index = 298;
+plot_times = 10;
 
 % read file
 filepath = "data/matlab/wave/hdf5/";

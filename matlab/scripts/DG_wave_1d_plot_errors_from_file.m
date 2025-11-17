@@ -1,8 +1,8 @@
 %  extracts csv file containing errors and plots them for visualization
-clc;clear;close all;
+% clc;clear;close all;
 
 % Settings
-filename_index = 103;
+filename_index = 13;
 dof = 2;
 
 % read csv
@@ -18,10 +18,11 @@ dof_plot = 2;
 figure;
 loglog(meshsizes, meshsizes.^(dof_plot-1), '--','LineWidth', line_width);
 hold on
+grid on;
 loglog(meshsizes, meshsizes.^(dof_plot), '--', 'LineWidth', line_width);
-loglog(meshsizes, errors(1,:), 'LineWidth', line_width);
-loglog(meshsizes, errors(2,:), 'LineWidth', line_width);
-loglog(meshsizes, errors(3,:), 'LineWidth', line_width);
+loglog(meshsizes, errors(1,:),'x-' ,'LineWidth', line_width);
+loglog(meshsizes, errors(2,:),'o-' ,'LineWidth', line_width);
+loglog(meshsizes, errors(3,:), '^-','LineWidth', line_width);
 hold off
 xlabel('Step Size (H)');
 ylabel('Error');

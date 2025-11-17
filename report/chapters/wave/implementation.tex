@@ -1,0 +1,74 @@
+\section{Absorbing Boundary Conditions}
+\label{sec:transparent_bc}
+When simulating a wave a classical example of a domain on which to do so is a \textit{wave guide}, a rectangular domain through which the 
+wave is propagated. Since we restrict ourselves to the 1d case in this thesis, trivially every domain interval we can choose corresponds to 
+a sort of waveguide. We are interested in simulating a wave which propagates through this waveguide only coming from one direction. 
+Lets say we want to send a wave through the waveguide originating from the lower boundary of the domain. We can achieve that by imposing 
+a corresponding Dirichlet or Neumann boundary condition at the point of entry. A question arises: \\ \\
+\textit{What boundary condition should be imposed at the upper boundary?} \\ \\
+The answer may differ depending on the purpose of the simulation. The problem with using a simple Dirichlet or Neumann boundary condition at the upper boundary
+as well is that the incident wave is directly influenced and modified by the upper boundary condition. 
+Lets say we impose a Dirichlet boundary condition at the lower boundary and a homogeneous Neumann boundary condition at the upper boundary
+\begin{equation*}
+    u(0) = \sin(x-t),  \qquad u_x(1) = 0,
+\end{equation*}  
+then the upper boundary will reflect the full wave back. This clearly pollutes the incident wave and if we wanted to observe how the the incident wave changes 
+by passing through an inhomogeneous medium, the reflected wave would overshadow any slight modulation stemming from variations in the material.
+In reality in this context we are interested in simulating the problem on an unbounded domain. We would like the wave to just propagate through the upper boundary
+and not return. 
+To simulate an artificial boundary of this kind we need to impose artificial boundary conditions, these are often called \textit{absorbing-, transparent-,} or 
+\textit{non-reflecting} boundary conditions. \\ \\
+We impose the first order absorbing boundary condition 
+\begin{equation}
+    \label{eq:absorbing_bc}
+    \frac{\partial u}{\partial t} +  \sqrt{c} \frac{\partial u}{\partial n} = 0
+\end{equation}
+at the upper boundary (exit of the waveguide), which corresponds to 
+\begin{equation*}
+    u_t(10, \cdot) + \sqrt{c(10,\cdot)} u_x(10,\cdot) = 0 \qquad \text{in } [0, T].
+\end{equation*}
+
+To implement this boundary condition into our time-marching scheme we have to first treat the bilinear form $b$ at the upper boundary as if we were to implement 
+a Neumann boundary condition (see section \ref{sec:boundary_conditions_elliptic}), meaning after integrating by parts and summing over all elements we don't introduce
+the symmetry and penalty terms at the corresponding node $x_{N+1}$, instead we apply the absorbing boundary condition and get
+\begin{equation*}
+    -\{c(x_{N+1},t) \partial_x u_h(x_{N+1},t)\}[v(x_{N+1})] = \{\sqrt{c(x_{N+1},t)} \partial_t u_h(x_{N+1},t) \} [v(x_{N+1})].
+\end{equation*}
+
+the semi-discrete scheme (\ref{eq:wave_semidiscrete_var_form}) turns into
+\begin{equation*}
+    (\partial_{t}^2 u_h(t), v)_{L^2(\Omega)} + b(u_h,v;t) + \{\sqrt{c(x_{N+1},t)} \partial_t u_h(x_{N+1},t) \} [v(x_{N+1})] = \ell (v;t) 
+    \qquad \forall v \in V_h, t \in [0,T],
+\end{equation*}
+where 
+\begin{align*}
+    b(u,v;t) & = \sum_{n=0}^N \int_{I_n} c(x,t)u_x(x,t)v_x(x)\, \text{d}x
+		-\sum_{n=0}^{N} \{c(x_n,t)u_x(x_n, t)\}[v(x_n)] + \{c(x_n,t)v_x(x_n)\}[u(x_n,t)] \\
+		& + \sum_{n=0}^{N} \texttt{a}_n(t)[u(x_n,t)][v(x_n)],                                   \\
+		\ell(v;t)  & = (f(t),v)_{L^2(\Omega)}+ g_0(t)c(x_0^+,t)v_x(x_0^+) 
+	    + \texttt{a}_0(t) g_0(t) v(x_{0}^+)
+\end{align*}
+are slightly modified. \\
+And the semi-discrete matrix-vector system becomes
+\begin{equation*}
+     \textbf{M} \ddot{\mathbf{u}}(t) + \mathbf{B}(t)\mathbf{u}(t) + \mathbf{R}(t)\dot{\mathbf{u}}(t) = \mathbf{l}(t) \qquad \forall t \in  [0,T],
+\end{equation*}
+where $[\mathbf{R}(t)]_{i,j} = \{\sqrt{c(x_{N+1},t)} \Phi_j(x_{N+1},t) \} [\Phi_i(x_{N+1})]$ is a matrix where the only non-zero entry is the one at the bottom right corner
+where $i = j = \text{dim}(V_h)$ and $\Phi_i$ the basis centered at $x_{N+1}$ is.
+\\ \\
+From here on we can use a (second order) centered finite difference to approximate  
+\begin{equation*}
+    \dot{\mathbf{u}}(t) \approx \frac{\mathbf{u}(t + \Delta t) - 
+    \mathbf{u}(t - \Delta t)}{2 \Delta t} 
+\end{equation*}
+and similarly to before we find the slightly modified, fully-discrete leapfrog scheme
+\begin{equation*}
+    \Big(\mathbf{M} + \frac{\Delta t}{2}\mathbf{R}_m\Big) \mathbf{u}_{m+1} = \Delta t^2 \mathbf{l}_m + (2 \mathbf{M} - \Delta t^2 \mathbf{B}_m) \mathbf{u}_{m} 
+    + \Big(\frac{\Delta t}{2}\mathbf{R}_m - \mathbf{I}\Big) \mathbf{u}_{m-1}.
+\end{equation*}
+We have to also make a slight adjustment to the initialization of the solution at the first time-step $\mathbf{u}_1$. By using a Taylor-expansion and 
+the semi-discrete scheme we have just derived we can define
+\begin{equation*}
+    \mathbf{u}_1 :=   \mathbf{u}_0 + \Delta t \mathbf{v}_0 + 
+    \frac{\Delta t^2}{2}\mathbf{M}^{-1}( \mathbf{l}_0 - \mathbf{B}_0 \mathbf{u}_0 - \mathbf{R}_0 \mathbf{v}_0).
+\end{equation*}  

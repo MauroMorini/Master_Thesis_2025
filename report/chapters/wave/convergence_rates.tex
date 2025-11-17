@@ -1,0 +1,36 @@
+\section{Reproducing Convergence Rates}
+To test our code we reproduced the expected convergence rates for smooth solutions and coefficients.
+We chose the waveguide $\Omega = (0,10)$ as domain and fixed the endtime $T = 10$. Next we defined two exact solutions
+\begin{equation}
+    u_1(x,t) = e^{-(x-t+2)^2} ,\qquad u_2(x,t) = \sin(x-t - \pi) \nonumber
+\end{equation}
+and the coefficients
+\begin{equation*}
+    c_1(x,t) = 1, \quad c_2(x,t) = (\sin(x) + 2)(\cos(t) + 2), \quad c_3(x,t) = \sin(x) + 2, \quad c_4(x,t) = \sin(t) + 2.
+\end{equation*}
+We imposed Dirichlet boundary conditions on both boundary points based 
+on the exact solution and calculated the required forcing term $f_{i,j} = \partial_t^2 u_i - \partial_x(c_j \partial_x u_i)$ such that the chosen 
+exact solution $u_i$ solves the problem. In total for $i \in \{1,2\}$ and $j \in \{1,2,3,4\} $ we solved the pde: \\ \\
+Find $u \in C^2([0,T];H^2(\Omega))$ such that 
+\begin{subequations}
+    \begin{equation}
+        u_{tt} - (c_j u_x)_x = \partial_t^2 u_i - \partial_x (c_j \partial_x u_i) \qquad \text{in } \Omega \times [0,T],
+    \end{equation}
+    \begin{equation}
+        u(0,\cdot) = u_i(0, \cdot), \quad u(10,\cdot) = u_i(10,\cdot) \qquad \text{in } [0, T],
+    \end{equation}
+    \begin{equation}
+        u(\cdot, 0) = u_i(\cdot, 0), \quad u_t(\cdot, 0) = \partial_t u_i(\cdot, 0) \qquad \text{in } \Omega.
+    \end{equation}
+
+\end{subequations}
+
+We considered a sequence of uniform meshes of meshsize $h \in  \{1, \frac{1}{2}, \frac{1}{4}, \frac{1}{8}, \frac{1}{16}, \frac{1}{32}\}$. 
+For each mesh we fixed the stepsize $\Delta t = \frac{h}{100(r+1)}$, where $r \in \{1,2\}$ is the polynomial degree of the finite element space.
+We calculated the numerical solution $u_h$ for all timesteps using leapfrog in time and SIPG in space as presented in (\ref{eq:wave_fully_discrete_system}).
+We calculated the $L^2$-error, the broken $H^1$-error and the error in the energy norm between the exact solution $u_i$ and the numerical solution $u_h$ at 
+the final time $T$, meaning we considered the quantities
+\begin{equation}
+    \| u_i(\cdot, T) - u_h(\cdot, T) \|_{L^2(\Omega)}, \quad \| u_i(\cdot, T) - u_h(\cdot, T) \|_{H^1(\mathcal{T}_h)}, 
+    \quad \| u_i(\cdot, T) - u_h(\cdot, T) \|_{h}. \nonumber
+\end{equation}

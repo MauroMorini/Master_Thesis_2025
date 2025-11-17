@@ -81,8 +81,8 @@ classdef PDEData < handle
             initial_velocity = @(x) u_t_exact_fun(x, initial_time);
 
             boundary_conditions = cell(1,2);
-            boundary_conditions{1} = fem1d.BoundaryCondition1D("neumann", boundary_points(1), @(x,t) -grad_u_exact_fun(x,t) );
-            boundary_conditions{2} = fem1d.BoundaryCondition1D("transparent", boundary_points(2), u_exact_fun);
+            boundary_conditions{1} = fem1d.BoundaryCondition1D("dirichlet", boundary_points(1), @(x,t) u_exact_fun(x,t) );
+            boundary_conditions{2} = fem1d.BoundaryCondition1D("dirichlet", boundary_points(2), @(x,t) u_exact_fun(x,t));
             pde_data = fem1d.PDEData(initial_time, final_time, initial_displacement, initial_velocity, boundary_points,...
                                 boundary_conditions, rhs_fun, wave_speed_coeff_fun);
             pde_data.u_exact_fun = u_exact_fun;

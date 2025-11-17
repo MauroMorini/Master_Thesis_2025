@@ -67,8 +67,14 @@ classdef WavePostprocessor1D < handle
             h5create(filename, '/Mesh/element_interface_nodes', size(element_interface_nodes));
             h5write(filename, '/Mesh/element_interface_nodes', element_interface_nodes);
             resonators_matrix = obj.mesh.resonators_matrix;
-            h5create(filename, '/Mesh/resonators_matrix', size(resonators_matrix));
-            h5write(filename, '/Mesh/resonators_matrix', resonators_matrix);
+            if ~isempty(resonators_matrix)
+                h5create(filename, '/Mesh/resonators_matrix', size(resonators_matrix));
+                h5write(filename, '/Mesh/resonators_matrix', resonators_matrix);
+            else
+                h5create(filename, '/Mesh/resonators_matrix', 1);
+                h5write(filename, '/Mesh/resonators_matrix', NaN);
+            end
+            
             H = [obj.mesh.h_max, obj.mesh.h_min];
             h5create(filename, '/Mesh/meshsizes', size(H));
             h5write(filename, '/Mesh/meshsizes', H);
@@ -107,7 +113,7 @@ classdef WavePostprocessor1D < handle
             obj.mesh.resonators_matrix = h5read(filename, '/Mesh/resonators_matrix');
             obj.mesh.element_interface_nodes = element_interface_nodes;
             obj.mesh.dof = h5read(filename, '/Mesh/dof');
-            if ~isempty(obj.mesh.resonators_matrix)
+            if size(obj.mesh.resonators_matrix,2) == 2
                 obj.mesh.is_resonator_mesh = true;
             end 
             obj.mesh.updatePet();

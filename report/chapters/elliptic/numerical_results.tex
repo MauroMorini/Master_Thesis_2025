@@ -171,7 +171,7 @@ respectively.
 
 \subsubsection*{Method B: "Error Exact"}
 For this method we assembled the matrices \textbf{A}, \textbf{M}, \textbf{l} for the system 
-\ref{eq:elliptic_matrix_vect_system_with_mass} using $r+2$ Gauss-Lobatto quadrature nodes. This quadrature is exact for polynomials of order $2r+1$,
+(\ref{eq:elliptic_matrix_vect_system_with_mass}) using $r+2$ Gauss-Lobatto quadrature nodes. This quadrature is exact for polynomials of order $2r+1$,
 meaning the entries of the mass matrix \textbf{M} are calculated exactly. Next we solved the system yielding the numerical solution and in turn
 calculated the $L^2, H^1(\mathcal{T}_h)$-errors on all meshes and called it \texttt{L2 exact}, \texttt{H1 exact}
 respectively. 

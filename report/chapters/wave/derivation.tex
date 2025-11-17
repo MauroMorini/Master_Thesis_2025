@@ -79,7 +79,7 @@ variational formulation:
 Find $u_h \in C^2([0,T]; V_h)$ with $u_h(\cdot,0) = \mathcal{I}_h u_0, u_t(\cdot, 0) = \mathcal{I}_h v_0$ such that 
 \begin{equation}
     \label{eq:wave_semidiscrete_var_form}
-    (\partial_{tt}u_{h}(t), v)_{L^2(\Omega)} + b(u_h,v;t) = \ell(v;t) \qquad \forall v \in V_h, t \in [0,T],
+    (\partial_{t}^2 u_{h}(t), v)_{L^2(\Omega)} + b(u_h,v;t) = \ell(v;t) \qquad \forall v \in V_h, t \in [0,T],
 \end{equation}
 where 
 \begin{align*}
@@ -123,7 +123,7 @@ We introduce a second order finite difference quotient to approximate the second
 plugging this into (\ref{eq:wave_matrix-vector_semidiscrete_system}) and reforming yields the fully discrete, explicit leapfrog scheme 
 \begin{equation}
     \label{eq:wave_fully_discrete_system}
-    \mathbf{M}\mathbf{u}_{m+1} = \mathbf{l}_m + (2 \mathbf{M} - \Delta t^2 \mathbf{B}_m) \mathbf{u}_{m} - \mathbf{u}_{m-1}.
+    \mathbf{M}\mathbf{u}_{m+1} = \Delta t^2 \mathbf{l}_m + (2 \mathbf{M} - \Delta t^2 \mathbf{B}_m) \mathbf{u}_{m} - \mathbf{u}_{m-1}.
 \end{equation}
 This being a multistep scheme we have to initialize $\mathbf{u}_0, \mathbf{u}_1$. To do so we use the interpolated values of the initial 
 displacement to initialize $\mathbf{u}_0$, meaning we can write $ \mathcal{I}_h u_0 = \sum_{n=1}^{M} \alpha_n(0) \Phi_n $ for some coefficients $
@@ -131,6 +131,8 @@ displacement to initialize $\mathbf{u}_0$, meaning we can write $ \mathcal{I}_h 
 \begin{equation*}
     [\mathbf{u}_0]_i = \alpha_i(0).
 \end{equation*}
+In fact since we have chosen a Lagrangian basis for the space $V_h$, finding the coefficients $\alpha_i(0)$ corresponds to evaluating the to be interpolated function
+$u_0$ at the corresponding node $x_i$ on which the basis function $\Phi_i$ is stationed, i.e.\ $\alpha_i(0) = u_0(x_i)$. \\
 For $\mathbf{u}_1$ we Taylor-expand 
 \begin{equation*}
     \mathbf{u}_1 \approx \mathbf{u}(\Delta t) = \mathbf{u}_0 + \Delta t \mathbf{v}_0 + \frac{\Delta t^2}{2} \ddot{\mathbf{u}}(0) + \mathcal{O}(\Delta t^3),
