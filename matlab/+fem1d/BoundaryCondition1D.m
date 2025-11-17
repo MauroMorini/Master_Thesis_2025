@@ -3,7 +3,7 @@ classdef BoundaryCondition1D
     % could be time dependent or not 
     % and Neumann, Dirichlet or even Absorbing
     properties
-        bc_type                 % string, could be "neumann", "dirichlet"
+        bc_type                 % string, could be "neumann", "dirichlet", "transparent"
         bc_location             % scalar point where b.c. is
         bc_fun                  % @(x,t) function handle of rhs value 
         outward_normal          % scalar in {1, -1} 

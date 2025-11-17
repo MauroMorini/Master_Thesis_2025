@@ -326,6 +326,19 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             obj.element_idx_to_resonator_idx_map(end) = [];
         end
 
+        function upper_element_idx = getInteriorResonatorBoundaryFace(obj)
+            % For a resonator mesh finds the interface nodes in the interior domain which are the boundary face
+            % between two resonators (or background and resonator) the actual upper_element_idx maps to the element
+            % above (to the right) of the interface. Boundary faces are not considered (they just correspond to the endpoints
+            % of the element matrix anyways since it's sorted)
+            upper_element_idx = [];
+            if ~obj.is_resonator_mesh
+                return
+            end
+            H = abs(diff(obj.element_idx_to_resonator_idx_map));
+            upper_element_idx =  find(H > 0) + 1;
+        end
+
 % VISUALIZE ------------------------------------------------------------------------------------------------------
         function f = plotMesh(obj, f)
             if nargin == 1
@@ -338,13 +351,32 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             hold off
         end
 
-        function f = plotDGsol(obj, uh, f)
+        function f = plotDGsol(obj, uh, f, fast_plot)
         % plots dg solution visualizing the discontinuity
-            if nargin == 2
+            arguments (Input)
+                obj
+                uh
+                f = []
+                fast_plot = false;
+            end
+            if isempty(f)
                 f = figure;
             end
+
             % initialization
-            figure(f); 
+            ax = findall(f, 'type', 'axes');
+            if isempty(ax)
+                ax = axes('Parent', f);
+            end
+
+            if fast_plot
+                plot_nodes = obj.nodes;
+                plot(ax,plot_nodes, uh, "Color", 'k', 'LineWidth', 2);
+                xlabel(ax,"x")
+                ylabel(ax,"uh")
+                return
+            end
+
             element_faces = obj.element_interface_nodes;
             num_element_plot_points = obj.dof*10;
             bary_weights = common.calculateBarycentricWeights(obj.nodes, obj.elements);
@@ -357,10 +389,10 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
                 bary_weights_loc = bary_weights(obj.elements(k,:));
                 Phi_loc = common.evaluateLagrangeBarycentric(plot_nodes_loc, bary_weights_loc, element_nodes);
                 uh_vals_loc = sum(Phi_loc .* uh(obj.elements(k,:)), 1);
-                plot(plot_nodes_loc, uh_vals_loc, 'Color', 'k', 'LineWidth', 2)
-                plot([plot_nodes_loc(1), plot_nodes_loc(end)], [uh_vals_loc(1), uh_vals_loc(end)], 'o', 'Color', 'k', 'LineWidth', 2)
-                xlabel("x")
-                ylabel("uh")
+                plot(ax,plot_nodes_loc, uh_vals_loc, 'Color', 'k', 'LineWidth', 2)
+                plot(ax,[plot_nodes_loc(1), plot_nodes_loc(end)], [uh_vals_loc(1), uh_vals_loc(end)], 'o', 'Color', 'k', 'LineWidth', 2)
+                xlabel(ax,"x")
+                ylabel(ax,"uh")
             end
             hold off
         end

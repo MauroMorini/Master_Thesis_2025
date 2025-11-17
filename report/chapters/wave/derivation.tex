@@ -1,0 +1,151 @@
+\chapter{DG for the Wave Equation}
+In the last chapter we have derived the necessary theoretical tools and built code to solve the time-independent
+elliptic problem. This elliptic problem coincides with a time-independent version of the hyperbolic problem
+\begin{equation*}
+    u_{tt} - (c u_x)_x = f.
+\end{equation*} 
+We will use a \textit{method of lines} approach to first discretize in space with discontinuous Galerkin finite elements, 
+using what we have derived in the last chapter, and
+then discretize in time using leapfrog time-integration to solve the problem numerically. This chapter is structured similarly to the last one.
+First we pose the problem and recall some analysis on regularity and existence, uniqueness of solutions. 
+Next we discretize both in time and space deriving the fully discrete scheme. We will then again elaborate on the actual implementation of the program 
+as well as recalling convergence theory. Finally we will present the numerical experiments reproducing the expected convergence rates where 
+exact solutions are given and simulate the behavior of waves propagating through a waveguide with material properties varying in space and time. 
+
+% Problem ----------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Problem}
+Let $\Omega = (0,1)$ be the domain (waveguide) and let $T > 0$ be the endtime. The 1d wave equation with a time-dependent coefficient is given by 
+\begin{subequations} \label{eq:strong_form_wave}
+    \begin{align}
+        u_{tt}(x,t) - (c(x,t)u_x(x,t))_x &= f(x,t)  &&\forall (x,t) \in \Omega \times \left(0, T \right],
+    \end{align}
+    \begin{align}
+        u(0, t) = g_{0}(t), \quad u(1, t) &= g_{1}(t) &&\forall t \in [0,T],
+    \end{align}
+    \begin{align}
+        u(x,0) = u_0(x), \quad u_t(x, 0) &= v_0(x) &&\forall x \in  \Omega.
+    \end{align}
+\end{subequations}
+Similarly to the elliptic case we require the coefficient $c \in C^1( \overline{\Omega} \times \left[0,T \right])$ to be bounded by 
+\begin{equation}
+    \label{eq:wave_coefficient_bounds}
+    0 < c_{\min} \leq c(x,t) \leq c_{\max} < \infty \qquad \forall (x,t) \in  \overline{\Omega} \times [0,T].
+\end{equation}
+We assume the forcing term $ f \in L^2(0,T; L^2(\Omega)) $, the initial displacement $u_0 \in  H^1(\Omega)$, and the initial velocity $v_0 \in L^2(\Omega)$. 
+First we assume homogeneous Dirichlet boundary conditions, meaning $g_0 \equiv g_1 \equiv 0$. 
+Multiplying the pde (\ref{eq:strong_form_wave}a) by a test function $v \in  C^{\infty}_c (\Omega)$ and integrating by parts gives us the weak formulation: \\ \\
+Find $u \in L^2(0,T; H_0^1(\Omega))$, with $ u_t \in L^2(0,T;L^2(\Omega)), u_{tt} \in L^2(0,T;H^{-1}(\Omega)) $, such that
+\begin{subequations}
+    \label{eq:weak_form_wave}
+    \begin{equation}
+    \langle u_{tt}(t), v \rangle + a(u(t), v;t) = (f(t),v)_{L^2(\Omega)} \qquad \forall v \in C^{\infty}_c  (\Omega) \quad \text{for a.e. }t\in  (0,T),    
+    \end{equation}
+    \begin{equation}
+        u(\cdot, 0) = u_0, \quad u_t(\cdot, 0) = v_0,
+    \end{equation}
+\end{subequations}
+where 
+\begin{equation*}
+    a(u(t),v;t) = \int_{\Omega} c(x,t) u_x(x,t) v_x(x) \text{d}x
+\end{equation*}
+denotes the standard (time-dependent) elliptic bilinear form and $\langle \cdot, \cdot \rangle $ denotes the duality pairing between $H^{-1}(\Omega)$ and $H^1_0(\Omega)$.
+Note that both the time derivatives as well as the space derivatives have to be understood in a weak sense. 
+It is well known that the problem (\ref{eq:weak_form_wave}) is well posed (see section 7.2 Theorem 3 in \cite{EvansPDE}). Furthermore we even have 
+\begin{equation*}
+    u \in C^1([0,T]; L^2(\Omega)) \cap C([0,T];H_0^1(\Omega)),
+\end{equation*}
+which ensures the validity of the initial conditions (\ref{eq:weak_form_wave}b). \\
+We can furthermore deduce existence and uniqueness of the weak problem for inhomogeneous Dirichlet boundary conditions, if they are sufficiently regular. Suppose 
+for example $g_0 = g(0, \cdot), g_1 = g(1, \cdot)$ for some $g \in C^2([0,T]; H^2(\Omega))$. We can write $u = w + g$, where $w \in C^1([0,T]; L^2(\Omega)) \cap C([0,T];H_0^1(\Omega))$ 
+is the unique (weak) solution of 
+\begin{align*}
+    w_{tt} - (c w_x)_x &= f - g_{tt} + (c g_x)_x   &&\text{in } \Omega \times \left(0,T\right],\\
+    w(0,\cdot) = w(1,\cdot) &= 0 && \text{in } [0,T], \\
+    w(\cdot, 0) = u_0 - g(\cdot, 0), \quad w_t(\cdot, 0) &= v_0 - g_t(\cdot, 0) && \text{in } \Omega.
+\end{align*}
+With this we can conclude the problem to be well-posed and continue with the discretization procedure.
+
+% Spacial Discretization ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+\section{Variational Formulation and Fully-Discrete-Scheme}
+\subsection{Discretization in Space}
+We start by discretizing in space. To simplify and clarify calculations we assume the solution to be $u \in C^2([0,T];H^2(\Omega))$. We fix some time $t \in [0,T]$,
+the discretization in space is analogous to the elliptical case for each time $t$ (see section \ref{sec:elliptic_var_form} in chapter 1), so we will only briefly recall the steps. \\
+First we discretize the domain by choosing a partition $\mathcal{T}_h$ of $\Omega$ using the notation introduced in the last chapter.
+We multiply (\ref{eq:strong_form_wave}) by a test function
+$v \in V_h$, where $V_h^r(\mathcal{T}_h)$ is the discontinuous finite element space defined (\ref{def:discontinuous_finite_element_space}), multiply over each
+element $I \in \mathcal{T}_h$ by parts and finally sum up over all elements. After adding the symmetry and penalty terms necessary for the SIPG variational form we find the semi-discrete SIPG
+variational formulation:
+\begin{tcolorbox}[mythmstyle]
+Find $u_h \in C^2([0,T]; V_h)$ with $u_h(\cdot,0) = \mathcal{I}_h u_0, u_t(\cdot, 0) = \mathcal{I}_h v_0$ such that 
+\begin{equation}
+    \label{eq:wave_semidiscrete_var_form}
+    (\partial_{tt}u_{h}(t), v)_{L^2(\Omega)} + b(u_h,v;t) = \ell(v;t) \qquad \forall v \in V_h, t \in [0,T],
+\end{equation}
+where 
+\begin{align*}
+    b(u,v;t) & = \sum_{n=0}^N \int_{I_n} c(x,t)u_x(x,t)v_x(x)\, \text{d}x
+		-\sum_{n=0}^{N+1} \{c(x_n,t)u_x(x_n, t)\}[v(x_n)] + \{c(x_n,t)v_x(x_n)\}[u(x_n,t)] \\
+		& + \sum_{n=0}^{N+1} \texttt{a}_n(t)[u(x_n,t)][v(x_n)],                                   \\
+		\ell(v;t)  & = (f(t),v)_{L^2(\Omega)}-g_1(t)c(x_{N+1}^-,t)v_x(x_{N+1}^-) + g_0(t)c(x_0^+,t)v_x(x_0^+) \\
+		&+ \texttt{a}_{N+1}(t)g_1(t)v(x_{N+1}^-) + \texttt{a}_0(t) g_0(t) v(x_{0}^+).
+\end{align*}
+\end{tcolorbox}
+Recall $\mathcal{I}_h : C(\overline{\Omega}) \to V_h$ denotes the interpolation operator (\ref{def:interpolation_operator}) (one could also use $L^2$-projection). 
+Clearly we can not expect the semi-discrete solution to satisfy continuous initial conditions, therefore the semi-discrete formulation must introduce projected initial condition. \\
+Next we can rewrite (\ref{eq:wave_semidiscrete_var_form}) into matrix-vector form. To do so let $\Phi_1,\ldots,\Phi_M$ be a basis of $V_h$ and therefore write 
+\begin{equation*}
+    u_h(x, t) = \sum_{n=1}^{M} \alpha_n(t) \Phi_n(x).
+\end{equation*}
+We can plug this into the semi-discrete SIPG variational formulation (\ref{eq:wave_semidiscrete_var_form}), using linearity and the fact that testing against elements in a vector space is equivalent
+to testing against basis functions yields the matrix-vector system of ODEs
+\begin{equation}
+    \label{eq:wave_matrix-vector_semidiscrete_system}
+    \textbf{M} \ddot{\mathbf{u}}(t) + \mathbf{B}(t)\mathbf{u}(t) = \mathbf{l}(t) \qquad \forall t \in  [0,T].
+\end{equation}
+Here $[\mathbf{M}]_{i,j} = (\Phi_j, \Phi_i)_{L^2(\Omega)}$ is the \textit{mass matrix}, which in our case is not time-dependent. \\
+$ [\mathbf{B}(t)]_{i,j} = b(\Phi_j, \Phi_i; t)$ is the \textit{stiffness matrix}, similar to the elliptic case but now with a time-dependent coefficient $c$ and
+$ [\mathbf{l}(t)]_i = \ell(\Phi_i;t)$ the \textit{load vector}, also time-dependent. Finally $ [\mathbf{u}(t)]_i = \alpha_i(t)$ denotes the solution vector with the time-dependent coefficients
+as entries uniquely determining the semi-discrete solution.  \\
+\subsection{Discretization in Time}
+With this we come to the time-discretization. (\ref{eq:wave_matrix-vector_semidiscrete_system}) is a second order system of ODEs, meaning we can use a chosen time-integration
+scheme to discretize the solution in time. One benefit of using discontinuous Galerkin to discretize in space is that the mass matrix 
+$\mathbf{M}$ is block-diagonal, since by the construction of the basis 
+functions, each element is fully decoupled from the rest, this simplifies solving any linear system with the mass matrix as the system matrix. We can capitalize on this property of DG-FEM by choosing 
+an explicit time integration scheme. \\
+First we choose a (stable) stepsize $\Delta t > 0$, we write $t_m = m \cdot \Delta t \in [0, T]$ and denote 
+\begin{equation*}
+    \mathbf{u}_m := \mathbf{u}(t_m), \quad \mathbf{B}_m := \mathbf{B}(t_m), \quad \mathbf{l}_m := \mathbf{l}(t_m).
+\end{equation*}
+We introduce a second order finite difference quotient to approximate the second order time derivative
+\begin{equation*}
+    \ddot{\mathbf{u}}_m \approx \frac{ \mathbf{u}_{m+1} - 2 \mathbf{u}_{m} + \mathbf{u}_{m-1}}{\Delta t^2},
+\end{equation*}
+plugging this into (\ref{eq:wave_matrix-vector_semidiscrete_system}) and reforming yields the fully discrete, explicit leapfrog scheme 
+\begin{equation}
+    \label{eq:wave_fully_discrete_system}
+    \mathbf{M}\mathbf{u}_{m+1} = \mathbf{l}_m + (2 \mathbf{M} - \Delta t^2 \mathbf{B}_m) \mathbf{u}_{m} - \mathbf{u}_{m-1}.
+\end{equation}
+This being a multistep scheme we have to initialize $\mathbf{u}_0, \mathbf{u}_1$. To do so we use the interpolated values of the initial 
+displacement to initialize $\mathbf{u}_0$, meaning we can write $ \mathcal{I}_h u_0 = \sum_{n=1}^{M} \alpha_n(0) \Phi_n $ for some coefficients $
+\alpha_n(0) \in \mathbb{R}$ and get
+\begin{equation*}
+    [\mathbf{u}_0]_i = \alpha_i(0).
+\end{equation*}
+For $\mathbf{u}_1$ we Taylor-expand 
+\begin{equation*}
+    \mathbf{u}_1 \approx \mathbf{u}(\Delta t) = \mathbf{u}_0 + \Delta t \mathbf{v}_0 + \frac{\Delta t^2}{2} \ddot{\mathbf{u}}(0) + \mathcal{O}(\Delta t^3),
+\end{equation*}
+using (\ref{eq:wave_matrix-vector_semidiscrete_system}) we can rewrite $\ddot{\mathbf{u}}(0) = \mathbf{M}^{-1}( \mathbf{l}_0 - \mathbf{B}_0 \mathbf{u}_0)$ and define
+\begin{equation*}
+    \mathbf{u}_1 :=   \mathbf{u}_0 + \Delta t \mathbf{v}_0 + \frac{\Delta t^2}{2}\mathbf{M}^{-1}( \mathbf{l}_0 - \mathbf{B}_0 \mathbf{u}_0).
+\end{equation*}
+
+To guarantee stability of the leapfrog scheme $\Delta t$ has to be chosen small enough to satisfy the CFL condition, here this means specifically that 
+the matrix $\mathbf{M} - \frac{\Delta t^2}{4}\mathbf{B}(t)$ has to be symmetric positive definite (SPD) for all times. 
+This is equivalent to requiring that 
+\begin{equation*}
+    \Delta t < 2 \frac{\norm{\mathbf{M}}_2}{\norm{\mathbf{B}(t)}_2}  \qquad \forall t \in [0,T],
+\end{equation*}
+where $\norm{\mathbf{M}}_2^2 = \sigma_{\max}(\mathbf{M})$ is the spectral matrix norm. Indeed the expression is well-defined, since 
+$\mathbf{B}(t)$ itself is SPD for all $t \in [0,T]$. This follows from a slight adaptation of the coercivity proof of the SIPG bilinear form on $V_h$ 
+(Theorem \ref{thr:cont_coerc_bilin_form}). For further information on the stability of leapfrog see \cite{groteNumWaveLecture}.

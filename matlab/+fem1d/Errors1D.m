@@ -73,10 +73,93 @@ classdef Errors1D < handle
             end
         end
 
+        function obj = write_errors_to_csv(obj, filename, errors, meshsizes, metadata_input)
+            % takes a matrix of multiple errors and meshsizes and creates a csv file 
+            % writing into it the errors and meshsizes and commented lines for metadata
+            arguments (Input)
+                obj
+                filename string
+                errors                      % (num_errors, num_meshsizes)
+                meshsizes                   % (1, num_meshsizes)
+                metadata_input string       % string containing more metadata given from the outside
+            end
+            if isfile(filename)
+                warning("a file with the name: " + filename + " already exists..... will be saved with the ending -temp")
+                filename = erase(filename, ".csv");
+                filename = filename + "-temp.csv";
+                if isfile(filename)
+                    delete(filename);
+                    fprintf('overwriting %s ... \n', filename)
+                end
+            end
+
+            assert(size(errors, 2) == size(meshsizes, 2), "there have to be as many meshsizes as error columns");
+
+            % collect metadata
+            dof = obj.mesh.dof;
+            quad_dof = obj.quadrature_mesh.dof;
+            cr = obj.interpolate_convergence_rates(meshsizes, errors);
+
+            file_id = fopen(filename, 'w');
+            
+            % write metadata 
+            fprintf(file_id, '# Errors of SIPG numerical solution \n');
+            fprintf(file_id, '# Domain: (%g, %g) \n', obj.mesh.lower_interval_bound, obj.mesh.upper_interval_bound);
+            fprintf(file_id, '# DoF of the solution (per cell): %g \n', dof);
+            fprintf(file_id, '# DoF of the quadrature mesh: %g \n', quad_dof);
+            fprintf(file_id, '# sigma: %g \n', obj.sigma);
+            fprintf(file_id, '# Resonators: %s \n', mat2str(obj.mesh.resonators_matrix));
+            fprintf(file_id, '\n%s \n', metadata_input);
+            fprintf(file_id, '# Interpolated Convergence Rates ------------- \n# l2: %g,  h1: %g,  energy: %g \n\n', cr(2,1),cr(2,2),cr(2,3));
+
+            % write errors
+            fprintf(file_id, 'meshsize,L2-error,H1-error,energy-error \n');
+            fclose(file_id);
+            M = [meshsizes', errors'];
+            writematrix(M, filename, 'Delimiter', ',', 'WriteMode', 'append');
+
+        end
+
         function obj = run(obj)
             obj.generate_quadrature_mesh();
             obj.interpolate_sol_at_quad_mesh();
             obj.calculate_errors();
+        end
+    end
+
+    methods (Static)
+        function convergence_rates = interpolate_convergence_rates(meshsizes, errors)
+            % calculate convergence rates using linear interpolation (least squares)
+            arguments (Input)
+                meshsizes (1,:)             % (1, num_meshsizes)
+                errors                      % (num_error_types, num_meshsizes)
+            end
+            assert(size(errors, 2) == size(meshsizes, 2), "there must be as many error measurements as meshsizes")
+            X = [ones(length(meshsizes),1), log(meshsizes')];
+            convergence_rates = X\log(errors');
+        end
+
+        function [meshsizes, errors, metadata] = read_errors_from_csv(filename)
+            % reads a csv file created by write_errors function 
+            arguments (Input)
+                filename string
+            end
+            arguments (Output)
+                meshsizes (1,:)     % (1, num_meshsizes) matrix with corresponding meshsizes
+                errors              % (num_error_types, num_meshsizes) error matrix
+                metadata string     % a string containing all the metadata for output (not processed)
+            end
+
+            % get data
+            data = readmatrix(filename, "CommentStyle", "#");
+            errors = data(:, 2:end)';
+            meshsizes = data(:, 1)';
+
+            % get metadata
+            f_id = fopen(filename, 'r');
+            comments = textscan(f_id, '#%[^\n]');
+            fclose(f_id);
+            metadata = strjoin(strcat('#', comments{1}), newline);
         end
     end
 end
