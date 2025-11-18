@@ -5,7 +5,7 @@ save_to_h5 = true;
 
 % Settings
 h = 0.1;
-filename_index = 26;
+filename_index = 36;
 u_exact_index = 4;
 wave_speed_index = 3;
 dof = 3;

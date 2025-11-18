@@ -2,7 +2,7 @@
 clc;clear;close all;
 
 % Settings
-filename_index = 103;
+filename_index = 13;
 dof = 2;
 
 % read csv
