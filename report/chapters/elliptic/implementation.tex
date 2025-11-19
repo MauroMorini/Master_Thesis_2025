@@ -108,96 +108,11 @@ for the possibility of using \textit{mass-lumping}, meaning we can let the basis
 	[\mathbf{M}]_{i,j} = (\Phi_j, \Phi_i)_{L^2(\Omega)}.
 \end{equation*} 
 When we use $r+1$ Gauss-Lobatto nodes to approximate the integral $\int_{\Omega} \Phi_j \Phi_i \text{ d}x$ we introduce an error, since $ \Phi_j \Phi_i \in \mathcal{P}^{2r}$, but the resulting 
-mass-lumped mass matrix is diagonal, which is a crucial benefit in explicit time-marching schemes with continuous FEM spacial discretization. 
+mass-lumped mass matrix is diagonal, which is a crucial benefit in explicit time-marching schemes with continuous FEM spacial discretization. We compare the error created by using the inexact 
+$r+1$ node Gauss-Lobatto quadrature rule for $\mathcal{P}^r$-elements with a higher order Gauss-Lobatto quadrature rule experimentally in \ref{sec:elliptic_numerical_experiments}, but we can already 
+say that due to the decoupled element structure DG provides, the mass matrix is already block-diagonal and mass lumping provides no real benefit. \\ \\
+All of this being said the choice of the Gauss-Lobatto quadrature rule is in our case mainly preferential and also not the focus of this thesis.  
 
-When choosing basis nodes for a Lagrangian basis we have a couple of choices to make. \\ \\
-1. \textit{Should the quadrature nodes coincide with the basis nodes?} \\
-Having the quadrature nodes coincide with the basis nodes simplifies the calculations, because by the property of a Lagrangian basis the values of the basis functions at the quadrature nodes,
-i.e the basis nodes coincide with the Kroneker delta. So a value matrix composed of each value at the quadrature nodes for each basis function (per element) is just
-the identity matrix. Specifically we have: \\
-Let $\xi_0,\ldots,\xi_r$ be the basis- and quadrature nodes and let $ \widehat{\phi}_0,\ldots,\widehat{\phi}_r$ be the Lagrangian basis, then 
-\begin{equation*}
-	\widehat{\phi}_i(\xi_j) = \delta_{i,j} := 
-	\begin{cases}
-		1	&,\text{ for }i=j \\
-		0  &,\text{ for }i\neq j
-	\end{cases}
-\end{equation*}
-therefore $\textbf{I} = \textbf{L}$ where $\textbf{I}$ is the identity and $ [\textbf{L}]_{i,j} = [\widehat{\phi}_i(\xi_j)] $ the basis shape-function value-matrix.
-This reduces the computational cost, since there is no need to actually evaluate/interpolate the polynomials at the quadrature nodes. 
-The clear downside is that we couple the exactness of the quadrature to the polynomial degree of the basis function. If for example we fix a polynomial degree $r \in \mathbb{N}$.
-The Gauss-Lobatto quadrature with $r+1$ nodes is exact for polynomials of degree $2r-1$. When computing the mass matrix we have to calculate an 
-integral of the form $ \int_I \Phi_j \Phi_i \text{d}x $ where $I \in \mathcal{T}_h$ is a element and $\Phi_i \vert_I, \Phi_j \vert_I \in \mathcal{P}^r(I)$ are basis functions.
-This means $ \Phi_j \cdot \Phi_i \in  \mathcal{P}^{2r}$ and therefore we introduce an error. \\
-% TODO: elaborate on error and remark that the convergence rate is not influenced after testing it
-
-\noindent 2. \textit{Should there be basis nodes on the element boundaries?} \\
-In contrast to continuous FEM we do not need to impose continuity over the element boundaries, so we have the option of allowing 
-the nodes to be exclusively in the interior of the elements. This allows us to use Gauss-Legendre quadrature nodes in 1d for example, 
-which is exact for polynomials of degree $2r+1$ for $r+1$ quadrature nodes. This would remedy the issue of approximating the mass matrix inexactly as described before when 
-choosing the same quadrature nodes as basis nodes. The downside here is that we sill require boundary values to incorporate boundary conditions and calculating 
-the penalty, consistency and symmetry terms (see matrices $\textbf{B}_{\text{cons}}, \textbf{B}_{\text{penal}} $ in section \ref{sec:stiff_assembly}), 
-so the boundary values have to be interpolated. \\ 
-
-In this thesis we will not try to justify the choice of basis function too much and use Gauss-Lobatto quadrature nodes as basis nodes.
-This is a commonly used nodal basis in continuous 1d-FEM and we will also use it for our DG method. In Appendix A.2.3 of \cite{diPietro2012} the \textit{Fekete points}, which 
-in 1d coincide with the Gauss-Lobatto points, are recommended 
-with the argument that this nodal basis yields a mass matrix with an optimal condition number. 
-For more detailed information on choosing basis functions and alternative approaches see for example
-Appendix A.2 in \cite{diPietro2012}. \\ \\
-Let $n\in \{1,\ldots,N\}$ and $I_n \in \mathcal{T}_h$ be an arbitrary element.
-We denote $\hat{I} = (-1,1)$ the \textit{reference element} and $\displaystyle F_n : \hat{I} \to I_n, \, \xi \mapsto \frac{x_n + x_{n+1}}{2} + \frac{h_n}{2} \xi $
-the \textit{element map}. This now allows us to define a basis on the reference element and
-extend it to all elements using the element map. \\
-For a fixed polynomial degree $r \geq 2$ let $\xi_0,\ldots,\xi_{r} \in [-1,1]$ be the
-Gauss-Lobatto nodes. \\
-\begin{equation*}
-	\begin{tabular}{c|c}
-		\centering
-		$r = 2$ & $\{-1, 1\}$                                         \\
-		$r = 3$ & $\{-1,0, 1\}$                                       \\
-		$r = 4$ & $\{-1,-\frac{1}{\sqrt{5}}, \frac{1}{\sqrt{5}}, 1\}$ \\
-		\vdots  & \vdots                                              \\
-	\end{tabular}
-\end{equation*}
-The inner nodes are given by the roots of $L_{r-1}^{\prime}$, the derivative of the $r-1$-th Legendre polynomial.
-We define the basis on the reference element as the Lagrangian nodal basis
-
-\begin{equation}
-	\label{def:lagrange_ref_basis}
-	\widehat{\phi}_i(\xi) := \prod_{\substack{j = 0 \\ j\neq i}}^{r}\frac{\xi - \xi_j}{\xi_i - \xi_j},
-	\qquad \text{for } i=0,\ldots,r
-\end{equation}
-and define the basis functions on the element $I_n$ as
-\begin{equation}
-	\phi^n_i : I_n \to \mathbb{R}, \quad \phi^n_i(x) := \widehat{\phi}_i(F_n^{-1}(x))
-	\nonumber
-\end{equation}
-as a last step we extend the basis functions to the whole domain $\Omega$ by zero
-\begin{equation}
-	\Phi_i^n: \Omega \to \mathbb{R}, \quad \Phi_i^n(x) :=
-	\begin{cases}
-		\phi_i^n(x), & \text{for } x\in I_n \\
-		0,           & \text{else}
-	\end{cases}
-	\label{def:lagrange_basis_of_Vh}
-\end{equation}
-for $n=0,\ldots,N$ and $i=0,\ldots,r$. Clearly we have $\text{span}( \widehat{\phi}_0, \ldots, \widehat{\phi}_r) = \mathcal{P}^r(\hat{I})$
-and by extension $\text{span}(\Phi_0^0,\ldots,\Phi_r^N) = V_h^r(\mathcal{T}_h)$. It is essential
-that our basis has only local support, meaning the basis functions are zero on most of the domain. This is the key property which
-allows the final matrices to be sparse. Choosing basis functions with global support, the computational cost would be unfeasible for
-small mesh sizes. \\
-By having chosen a Lagrangian nodal basis the mesh nodes exactly coincide with the Gauss-Lobatto nodes on each
-element.
-To simplify the notation we introduce a \textit{local-to-global} index map
-\begin{equation}
-	\label{def:local_to_global_map}
-	T: \{0,\ldots,N\} \times \{0,\ldots,r\} \to \{1,\ldots,M\}
-\end{equation}
-where $M = (r+1)(N+1) = \dim(V_h)$. $T$ takes an element index $n$ and a local basis function index $i$ as inputs
-and returns the globally assigned node index $T(n,i)$. $T$ corresponds to the
-\textit{connectivity matrix}. In the simplest case we have the global index ordered from left to right and get
-$T(n,i) = nr + i$.
 
 %---Matrix Assembly-------------------------------------------------------------------
 \section{Stiffness Matrix Assembly}
