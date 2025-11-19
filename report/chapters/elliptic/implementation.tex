@@ -1,15 +1,15 @@
 %---Matrix-Vector System---------------------------------------------------------
 \section{Matrix-Vector System}
 \label{sec:matrix_vect_syst}
-We will now in derive the fully discrete Matrix-Vector system given by
-the variational form (\ref{eq:discrete_var_form_elliptic}). To do so let
+We will now transform the variational form (\ref{eq:discrete_var_form_elliptic}) into Matrix-Vector system form. 
+To do so let
 $r \in \mathbb{N}$ denote the polynomial degree and consequently the element degree of freedom.
 Note that in this thesis we will only consider global polynomial degrees, meaning one set polynomial degree for all elements.
 Next let $\{\Phi_0,\ldots,\Phi_M\}$ be a basis of $V_h$, where $M = \dim(V_h)$.
 We can represent the sought Galerkin approximation as $u_h = \sum_{j=0}^{M} \alpha_j \Phi_j\in V_h$ for coefficients
 $\alpha_j \in \mathbb{R}$. Then (\ref{eq:discrete_var_form_elliptic}) is equivalent to:
 \begin{equation*}
-	\sum_{j=0}^{M} \alpha_j b_h(\Phi_j, \Phi_i) = \ell_h(\Phi_i) \qquad \forall i=0,\ldots,M
+	\sum_{j=0}^{M} \alpha_j b_h(\Phi_j, \Phi_i) = \ell_h(\Phi_i) \qquad \forall i=0,\ldots,M,
 \end{equation*}
 which corresponds to the system:
 \begin{equation}
@@ -24,8 +24,8 @@ for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \P
 \section{Basis of Finite Element Space}
 \label{sec:ell_basis}
 There are many ways of choosing basis functions for finite element spaces. In this thesis we soley focus on elementwise nodal Lagrangian basis functions, although there are alternatives
-which are just as valid, like the modal Legendre basis.
-When choosing basis nodes for a lagrangian basis we have a couple of choices to make. \\ \\
+which might be just as valid depending on the goal one pursues, like for example a modal Legendre basis.
+When choosing basis nodes for a Lagrangian basis we have a couple of choices to make. \\ \\
 1. \textit{Should the quadrature nodes coincide with the basis nodes?} \\
 Having the quadrature nodes coincide with the basis nodes simplifies the calculations, because by the property of a Lagrangian basis the values of the basis functions at the quadrature nodes,
 i.e the basis nodes coincide with the Kroneker delta. So a value matrix composed of each value at the quadrature nodes for each basis function (per element) is just
