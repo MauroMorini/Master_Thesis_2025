@@ -3,9 +3,53 @@
 \subsection{Rate of Convergence}
 \label{subsec:conv_rate_ell}
 First we would like to test the code we have written in \texttt{MATLAB} and try to replicate the convergence rates provided in section \ref{sec:elliptic_error_analysis}. 
-To do so we does
+The procedure of doing so can be listed in the following steps: \\
 
+\begin{stepscope}
+    \begin{step}[Domain]
+    We fix a domain $\Omega$. In our case $\Omega = (0,1)$ stays unchanged for all the experiments of this chapter.
+    \end{step}
 
+    \begin{step}[Exact Solution]
+        We decide a priori which exact solution we intend to approximate. To simplify calculations we choose one of the simple smooth solutions:
+        \begin{equation*}
+            u_1(x) = x^r, \qquad u_2(x) = e^{-x}\sin(x),
+        \end{equation*}
+        where $r$ corresponds to the polynomial degree of the finite element space. \\
+        $u_1$ is chosen to ensure the exactness of the method (since we approximate a polynomial of degree $r$ by a piecewise polynomial of degree $r$
+        the finite element approximation should be exact up to floating-point errors).
+    \end{step}
+
+    \begin{step}[Boundary Conditions]
+        We choose the type of boundary condition we would like to impose on each boundary. We have mainly focused on Dirichlet boundary conditions on both sides so far, so this is 
+        what we will consider. Let it be said, that the results for one Neumann and one Dirichlet (as mentioned in section \ref{sec:boundary_conditions_elliptic}) are very similar. \\
+        To actually impose the boundary condition we directly take the values of the previously fixed exact solution $u$ at the respective boundary points, meaning 
+        \begin{equation*}
+            g_{0,i} = u_i(0), \qquad g_{1,i} = u_i(1).
+        \end{equation*}
+    \end{step}
+    %
+    \begin{step}[Coefficient]
+        We fix a smooth coefficient, one of 
+        \begin{equation*}
+            c_1(x) = 1, \qquad c_2(x) = \sin(10x) + 2,
+        \end{equation*}
+        where having these two options allows us to first check if the method works for a homogeneous background material and then for the inhomogeneous case.
+        To ensure our exact solution still satisfies the original pde, we calculate the forcing term $f$ in (\ref{eq:elliptic_pde}) symbolically, i.e.\ 
+        $f_{i,j} = -(c_j \, u_i^{\prime})^{\prime} $.
+    \end{step}
+
+    \begin{step}[Mesh]
+        We choose one of the two following initial meshes: A uniform mesh
+        \begin{equation*}
+            \mathcal{M}_1 = \{0, \frac{1}{4}, \frac{1}{2}, \frac{3}{4}, 1\}
+        \end{equation*}
+        with initial meshsize $h = \frac{1}{4}$, and a non uniform mesh
+        \begin{equation*}
+            \mathcal{M}_2 = \{ \}
+        \end{equation*}
+    \end{step}
+\end{stepscope}
 
 
 To replicate the theoretical rate of convergence we first consider a sequence of uniform meshes. 

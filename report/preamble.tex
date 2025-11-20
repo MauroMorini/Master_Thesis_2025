@@ -56,3 +56,21 @@
   \par\nobreak
 }{\vspace{0.5em}}
 
+% ---------------------------------------------------------
+% step listing environment
+\newcounter{stepctr}
+
+\newenvironment{stepscope}{
+  \setcounter{stepctr}{0}
+}
+
+\newenvironment{step}[1][]{
+  \refstepcounter{stepctr}
+  \par\noindent\textbf{Step \thestepctr}
+  \if\relax\detokenize{#1}\relax
+    \textbf{.}%
+  \else
+    \ (\textit{#1})\textbf{.}%
+  \fi
+  \par\nobreak
+}{\vspace{1em}}
