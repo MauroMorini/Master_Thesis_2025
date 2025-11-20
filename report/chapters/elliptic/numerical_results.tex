@@ -2,11 +2,22 @@
 \section{Numerical Results}
 \subsection{Rate of Convergence}
 \label{subsec:conv_rate_ell}
+First we would like to test the code we have written in \texttt{MATLAB} and try to replicate the convergence rates provided in section \ref{sec:elliptic_error_analysis}. 
+To do so we does
+
+
+
+
 To replicate the theoretical rate of convergence we first consider a sequence of uniform meshes. 
-Let $h_l = 2^{-l}$ denote the global (uniform) meshsize and $\mathcal{T}_h^{(l)}$ denote
-the partitions of $\Omega$ for $l = 2,\ldots,9$. As an example we have $\mathcal{T}_h^{(2)} = \{(0, 0.25), (0.25, 0.5),(0.5, 0.75),(0.75, 1)\}$. 
-To begin we worked with the constant coefficient $c\equiv 1$. In this case choosing $\sigma = 10(r+1)^2$ was more than enough to guarantee positive definiteness of the 
+Let $h \in \{2^{-l}| \, l\in \{2,\ldots,9\} \}$ denote the global (uniform) meshsize and $\mathcal{T}_h$ denote
+the respective partition of $\Omega$. \\
+As an example for $h = 2$ we have 
+\begin{equation*}
+\mathcal{T}_h = \{(0, 0.25), (0.25, 0.5),(0.5, 0.75),(0.75, 1)\}.    
+\end{equation*}
+To begin we consider the constant coefficient $c\equiv 1$. In this case choosing $\sigma = 10(r+1)^2$ guarantees positive definiteness of the 
 system matrix.
+To 
 We tested our methods programmed in \texttt{MATLAB} using some very simple exact solutions $u \in C^1(\Omega)$, approximated them numerically finding some $u_h \in V_h^r(\mathcal{T}_h^{(l)})$ 
 (for an a priori fixed polynomial degree $r$) and calculated the $L^2$-norm
 \begin{equation}

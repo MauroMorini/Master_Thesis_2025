@@ -22,14 +22,16 @@ for cross reference.
 \section{Problem}
 \label{sec:elliptic_problem}
 We consider the following elliptic model problem:
-\begin{equation}
-	\label{eq:elliptic_pde}
-	-(c(x)u'(x))' = f(x) \qquad \forall x\in \Omega
-\end{equation}
-\begin{equation}
-	\label{eq:elliptic_pde_bc}
-	u(0) = g_0, u(1) = g_1
-\end{equation}
+\begin{subequations}
+	\begin{equation}
+		\label{eq:elliptic_pde}
+		-(c(x)u'(x))' = f(x) \qquad \forall x\in \Omega
+	\end{equation}
+	\begin{equation}
+		\label{eq:elliptic_pde_bc}
+		u(0) = g_0, u(1) = g_1
+	\end{equation}
+\end{subequations}
 where $\Omega = (0,1)$ is the domain, $g_0, g_1 \in \mathbb{R}$ are
 Dirichlet boundary conditions, $f \in L^2(\Omega)$ and $c \in C^1(\Omega)$
 satisfies:
