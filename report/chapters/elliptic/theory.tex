@@ -48,7 +48,7 @@ of (\ref{eq:discrete_var_form_elliptic}).
 \end{proof}
 
 \subsection{Trace Inequalities}
-Here we recall what is in the theory called \textit{trace inequalities}, which are inequalities bounding a boundary norm with a norm over the whole domain.
+We shall now recall inequalities bounding a boundary norm with a norm over the whole domain, commonly called \textit{trace inequalities}.
 In 1d this means estimating the absolute value of a function at a boundary node, by a norm over the whole interval, which simplifies the proofs a lot. 
 Still let it be said here, that these kind of inequalities hold in higher dimensions as well. General results can for example be found in Ern \cite{diPietro2012}. \\
 This subsection will contain two results, one for general $H^1$-functions and one for polynomials.
@@ -72,24 +72,24 @@ We start by considering the finite dimensional case, inspired by \cite{warburton
 	\begin{proofstep}[Setup]
 		We will make
 		use of the Legendre orthonormal basis of $\mathcal{P}^r(\hat{I})$:
-		Let $P_0,\ldots,P_r$ denote the Legegndre polynomials on  $\mathcal{P}^r(\hat{I})$.
+		Let $L_0,\ldots,L_r$ denote the Legegndre polynomials on  $\mathcal{P}^r(\hat{I})$.
 		Recall the following well known facts (see for example \cite{quarteroniNumericalMathematicSpringer2007}):
 		\begin{enumerate}
-			\item $\{P_0,\ldots,P_r\}$ form an orthogonal basis of $\mathcal{P}^r(\hat{I})$ under the
+			\item $\{L_0,\ldots,L_r\}$ form an orthogonal basis of $\mathcal{P}^r(\hat{I})$ under the
 			      $L^2(\hat{I})$ inner product. Meaning:
 			      \[
-				      \text{span}(P_0,\ldots,P_r) = \mathcal{P}^r(\hat{I}),\quad \int_{-1}^{1} P_i P_j \,\text{d}\xi =
+				      \text{span}(L_0,\ldots,L_r) = \mathcal{P}^r(\hat{I}),\quad \int_{-1}^{1} L_i L_j \,\text{d}\xi =
 				      \begin{cases}
 					      \frac{2}{2i + 1}, & \text{for } i=j     \\
 					      0,                & \text{for } i\neq j
 				      \end{cases}
 			      \]
-			\item $P_i(1) = 1, P_i(-1) = {(-1)}^i, \qquad \forall i = 0,\ldots,r$
+			\item $L_i(1) = 1, L_i(-1) = {(-1)}^i, \qquad \forall i = 0,\ldots,r$
 		\end{enumerate}
-		Let $\psi_i = \sqrt{\frac{(2i + 1)}{2}}P_i$ for $i=0,\ldots,r$ denote the normed
+		Let $\psi_i = \sqrt{\frac{(2i + 1)}{2}} L_i$ for $i=0,\ldots,r$ denote the normed
 		basis function. Clearly we now have
 		\[
-			\psi_i(-1) = {(-1)}^i\sqrt{\frac{2i+1}{2}}, \qquad \psi_i(1) = \sqrt{\frac{2i+1}{2}},
+			\psi_i(-1) = {(-1)}^i \sqrt{\frac{2i+1}{2}}, \qquad \psi_i(1) = \sqrt{\frac{2i+1}{2}},
 			\qquad \int_{-1}^{1}\psi_i \psi_j \text{d}\xi = \delta_{i,j}, \qquad \forall i = 0,\ldots,r
 		\]
 		where $\delta_{i,j} =
@@ -169,7 +169,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 	We define the \textbf{energy norm} on $V_h$ by
 	\begin{equation}
 		\label{def:energy_norm}
-		\|v\|_{\epsilon}^2 := \sum_{n=0}^{N} \int_{I_n} c(x)v'(x)^2\text{d}x + \sum_{n=0}^{N+1}{\normalfont\texttt{a}_n}[v(x_n)]^2
+		\|v\|_{\epsilon}^2 := \sum_{n=0}^{N} \int_{I_n} c(x)v'(x)^2\text{d}x + \sum_{n=0}^{N+1}{\normalfont\texttt{a}_n}\jump{v(x_n)}^2
 	\end{equation}
 	where {\normalfont\texttt{a}} denotes the penalization term in (\ref{def:penalization_function}).
 \end{definition}
@@ -181,21 +181,22 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 	Clearly we have $\|\lambda v\|_{\epsilon} =|\lambda|\, \|v\|_{\epsilon}$ for all $\lambda \in \mathbb{R}, v\in V_h$. \\ \\
 	By definition we have $\texttt{a}, c>0$ and by extension $\|v\|_{\epsilon} \geq 0$ for all
 	$v\in V_h$. Suppose now that $\|v\|_{\epsilon} = 0$ for some $v\in V_h$, then we must have $v|_{I_n} \equiv \text{const}$
-	and $[v(x_n)] = 0$ for all $n$. So $v$ must be constant on all elements and have a jump of zero at the element boundaries.
+	and $\jump{v(x_n)} = 0$ for all $n$. So $v$ must be constant on all elements and have a jump of zero at the element boundaries.
 	These two facts combined imply that $v$ is constant on all of $\Omega$. By the definition of the jump
 	at the boundary nodes of $\Omega$ it immediately follows that $v=0$. Clearly
 	$\|0\|_{\epsilon}=0$, therefore $\|\cdot\|_{\epsilon}$ is positive definite. \\ \\
-	Using $[v(x_n) + w(x_n)] = [v(x_n)] + [w(x_n)] \quad \forall v,w \in V_h, n = 0,\ldots,N+1$ we find
+	Using $ \jump{v(x_n) + w(x_n)} = \jump{v(x_n)} + \jump{w(x_n)} \quad \forall v,w \in V_h, n = 0,\ldots,N+1$ we find
 	\begin{align*}
 		\|v+w\|_{\epsilon} & \leq \Big(\sum_{n=0}^{N} (\|\sqrt{c}v'\|_{L^2(I_n)}+\|\sqrt{c}w'\|_{L^2(I_n)})^2 +
-		\sum_{n=0}^{N+1} (\sqrt{\texttt{a}_n}([v(x_n)] + [w(x_n)]))^2\Big)^{1/2}                       \\
+		\sum_{n=0}^{N+1} (\sqrt{\texttt{a}_n}(\jump{v(x_n)} + \jump{w(x_n)}))^2\Big)^{1/2}                       \\
 		          & \leq \|v\|_{\epsilon} + \|w\|_{\epsilon}
 	\end{align*}
 	where in the last inequality we have used the triangle inequality of the euclidian vector norm on $\mathbb{R}^{2N+3}$, with the vector given
 	as
 
 	\[
-		\textbf{v} = \big[\|\sqrt{c}v'\|_{L^2(I_0)},\ldots,\|\sqrt{c}v'\|_{L^2(I_N)}, \sqrt{\texttt{a}_0}[v(x_0)],\ldots,\sqrt{\texttt{a}_{N+1}}[v(x_{N+1})]\big]^T
+		\textbf{v} = \big[\|\sqrt{c}v'\|_{L^2(I_0)},\ldots,\|\sqrt{c}v'\|_{L^2(I_N)}, 
+		\sqrt{\texttt{a}_0}\jump{v(x_0)},\ldots,\sqrt{\texttt{a}_{N+1}} \jump{v(x_{N+1})}\big]^T
 	\]
 	this shows the triangle inequality for $\|\cdot\|_{\epsilon}$ and hence it is a norm.
 \end{proof}
@@ -216,16 +217,16 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		Let $w\in V_h$. Note that
 		\begin{equation}
 			\label{eq:coerc_thr_relation_bilin_form_with_norm}
-			b_h(w,w) = \|w\|_{\epsilon}^2 - 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]
+			b_h(w,w) = \|w\|_{\epsilon}^2 - 2\sum_{n=0}^{N+1}\avg{c(x_n)w'(x_n)}\jump{w(x_n)}
 		\end{equation}
-		To derive the coercivity of $b_h$ we will estimate the term $2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)]$
+		To derive the coercivity of $b_h$ we will estimate the term $2\sum_{n=0}^{N+1}\avg{c(x_n)w'(x_n)}\jump{w(x_n)}$
 		from above applying Lemma \ref{lemma:inv_ineq} and additional smaller tools:\\
 		Using Young's inequality: $2ab \leq a^2 + b^2, \forall a,b\in\mathbb{R}$, we estimate
 		\begin{align}
-			 & 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}[w(x_n)] = 2\sum_{n=0}^{N+1}\{c(x_n)w'(x_n)\}
-			\Big(\frac{\texttt{a}_n}{2}\Big)^{-1/2} \Big(\frac{\texttt{a}_n}{2}\Big)^{1/2} [w(x_n)]\nonumber \\
-			 & \leq 2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n}
-			+ \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \label{eq:2_coerc_thr_first_estimate}
+			 & 2\sum_{n=0}^{N+1}\avg{c(x_n)w'(x_n)}\jump{w(x_n)} = 2\sum_{n=0}^{N+1}\avg{c(x_n)w'(x_n)}
+			\Big(\frac{\texttt{a}_n}{2}\Big)^{-1/2} \Big(\frac{\texttt{a}_n}{2}\Big)^{1/2} \jump{w(x_n)}\nonumber \\
+			 & \leq 2\sum_{n=0}^{N+1} \frac{\avg{c(x_n)w'(x_n)}^2}{\texttt{a}_n}
+			+ \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n \jump{w(x_n)}^2 \label{eq:2_coerc_thr_first_estimate}
 		\end{align}
 		Recalling $\texttt{a}_n = \sigma \texttt{c}_n\texttt{h}_n^{-1}$ from (\ref{def:penalization_function}) and noting the relations
 		$\texttt{h}_n \leq h_n, \texttt{c}_n^{-1} \leq c(x_n^-)^{-1}, c(x_n^+)^{-1}$ we find
@@ -236,7 +237,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		applying this and the usefull inequality $(a+b)^2 \leq 2a^2 + 2b^2$ yields
 		\begin{align}
 			\label{eq:coerc_thr_second_estimate}
-			 & 2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n} \nonumber        \\
+			 & 2\sum_{n=0}^{N+1} \frac{\avg{c(x_n)w'(x_n)}^2}{\texttt{a}_n} \nonumber        \\
 			 & = 2\sum_{n=1}^{N} \frac{1}{4\texttt{a}_n}
 			\Big( c(x_n^-)w'(x_n^-) + c(x_n^+)w'(x_n^+) \Big)^2 + \frac{2}{\texttt{a}_0} \Big( c(x_0^+)w'(x_0^+) \Big)^2
 			+ \frac{2}{\texttt{a}_{N+1}} \Big( c(x_{N+1}^-)w'(x_{N+1}^-) \Big)^2 \nonumber \\
@@ -256,7 +257,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		inserting $1 = c_{\min}c_{\min}^{-1} \leq c(x)c_{\min}^{-1} \quad \forall x\in\Omega$ we find
 		\begin{equation}
 			\label{eq:coerc_thr_last_estimate}
-			2\sum_{n=0}^{N+1} \frac{\{c(x_n)w'(x_n)\}^2}{\texttt{a}_n} \leq
+			2\sum_{n=0}^{N+1} \frac{\avg{c(x_n)w'(x_n)}^2}{\texttt{a}_n} \leq
 			3C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
 		\end{equation}
 		for $\displaystyle C_{\sigma} := \frac{ (r+1)^2 c_{\max} }{\sigma c_{\min}} > 0$. \\ \\
@@ -264,8 +265,8 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		(\ref{eq:coerc_thr_last_estimate}) yields
 		\begin{align*}
 			b_h(w,w) & \geq \|w\|_{\epsilon}^2 - 3C_{\sigma} \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2
-			- \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber                                                                           \\
-			         & = (1 - 3C_{\sigma}) \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2 + \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n [w(x_n)]^2 \nonumber \\
+			- \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n \jump{w(x_n)}^2 \nonumber                                                                           \\
+			         & = (1 - 3C_{\sigma}) \sum_{n=0}^{N} \|\sqrt{c}w'\|_{L^2(I_n)}^2 + \frac{1}{2} \sum_{n=0}^{N+1} \texttt{a}_n \jump{w(x_n)}^2 \nonumber \\
 			         & \geq \frac{1}{2} \|w\|_{\epsilon}^2
 		\end{align*}
 		for $\sigma \geq \frac{6 (r+1)^2 c_{\max} }{c_{\min}}$, which proves the coercivity
@@ -278,9 +279,9 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		immediately get
 		\begin{align}
 			|b_h(u,v)| & \leq \sum_{n=0}^{N} \|\sqrt{c}u'\|_{L^2(I_n)} \|\sqrt{c}v'\|_{L^2(I_n)}
-			+  \sum_{n=0}^{N+1} \big| \{c(x_n)u'(x_n)\}[v(x_n)] \big| \nonumber                               \\
-			           & +\sum_{n=0}^{N+1} \big|\{c(x_n)v'(x_n)\}[u(x_n)]\big|
-			+\sum_{n=0}^{N+1} \texttt{a}_n \big|[u(x_n)][v(x_n)]\big| \nonumber                               \\
+			+  \sum_{n=0}^{N+1} \big| \avg{c(x_n)u'(x_n)}\jump{v(x_n)} \big| \nonumber                               \\
+			           & +\sum_{n=0}^{N+1} \big|\avg{c(x_n)v'(x_n)}\jump{u(x_n)}\big|
+			+\sum_{n=0}^{N+1} \texttt{a}_n \big|\jump{u(x_n)}\jump{v(x_n)} \big| \nonumber                               \\
 			           & =: T_{\text{ell}} + T_{\text{cons}}^{(u)} + T_{\text{cons}}^{(v)} + T_{\text{penal}}
 			\label{eq:cont_thr_estimate_elliptic_part}
 		\end{align}
@@ -292,30 +293,30 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		First rewrite
 		\begin{equation}
 			\label{eq:continuity_thr_consistency_term}
-			T_{\text{cons}}^{(u)} = \sum_{n=0}^{N+1} \big| \{c(x_n)u'(x_n)\} \texttt{a}_n^{-1/2}\texttt{a}_n^{1/2} [v(x_n)] \big|
+			T_{\text{cons}}^{(u)} = \sum_{n=0}^{N+1} \big| \avg{c(x_n)u'(x_n)} \texttt{a}_n^{-1/2}\texttt{a}_n^{1/2} \jump{v(x_n)} \big|
 		\end{equation}
 		Next again using the definition of $\texttt{a}$ and estimates as in Step 1 we find for interior faces $n = 1,\ldots,N$
 		\begin{equation}
-			\big|\{c(x_n)u'(x_n)\}\big|\texttt{a}_n^{-1/2}
+			\big|\avg{c(x_n)u'(x_n)}\big|\texttt{a}_n^{-1/2}
 			\leq \frac{1}{2} \sqrt{\frac{\texttt{h}_n}{\sigma}} \sqrt{c_{\max}}
 			\left( |u'(x_n^-)| + |u'(x_n^+)| \right) \nonumber
 		\end{equation}
 		and for the boundary faces
 		\begin{equation}
-			\big|\{c(x_0)u'(x_0)\}\big|\texttt{a}_0^{-1/2}
+			\big|\avg{c(x_0)u'(x_0)}\big|\texttt{a}_0^{-1/2}
 			\leq \sqrt{\frac{\texttt{h}_0}{\sigma}} \sqrt{c_{\max}}
 			|u'(x_0^+)|,
-			\quad \big|\{c(x_{N+1})u'(x_{N+1})\}\big|\texttt{a}_{N+1}^{-1/2}
+			\quad \big|\avg{c(x_{N+1})u'(x_{N+1})}\big|\texttt{a}_{N+1}^{-1/2}
 			\leq \sqrt{\frac{\texttt{h}_{N}}{\sigma}} \sqrt{c_{\max}}
 			|u'(x_{N+1}^-)| \nonumber
 		\end{equation}
 		Applying Lemma (\ref{lemma:inv_ineq}) yields for
 		$\displaystyle \beta_n(u) := \sqrt{C_{\sigma}} \|\sqrt{c}u'\|_{L^2(I_{n})}, n=0,\ldots,N$
 		\begin{align*}
-			 & \big|\{c(x_n)u'(x_n)\}\big|\texttt{a}_n^{-1/2} \leq \frac{\beta_{n-1}(u)}{2}
+			 & \big|\avg{c(x_n)u'(x_n)}\big|\texttt{a}_n^{-1/2} \leq \frac{\beta_{n-1}(u)}{2}
 			+ \frac{\beta_n(u)}{2}  \quad \text{for } n=1,\ldots,N                          \\
-			 & \big|\{c(x_0)u'(x_0)\}\big|\texttt{a}_0^{-1/2} \leq \beta_0(u)               \\
-			 & \big|\{c(x_{N+1})u'(x_{N+1})\}\big|\texttt{a}_{N+1}^{-1/2} \leq \beta_{N}(u) \\
+			 & \big|\avg{c(x_0)u'(x_0)}\big|\texttt{a}_0^{-1/2} \leq \beta_0(u)               \\
+			 & \big|\avg{c(x_{N+1})u'(x_{N+1})}\big|\texttt{a}_{N+1}^{-1/2} \leq \beta_{N}(u) \\
 		\end{align*}
 		which we can now plug back into (\ref{eq:continuity_thr_consistency_term}) to get
 		\begin{align}
@@ -323,7 +324,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 			\leq \beta_0(u)\gamma_0(v) + \beta_{N}(u)\gamma_{N+1}(v)
 			 & + \sum_{n=1}^{N} \frac{\beta_{n-1}(u)}{2} \gamma_{n} (v)+ \sum_{n=1}^{N} \frac{\beta_{n}(u)}{2} \gamma_n(v)
 		\end{align}
-		for $\displaystyle \gamma_n(v) := \sqrt{\texttt{a}_n}\big|[v(x_n)]\big| \, \forall n=0,\ldots,N+1$.
+		for $\displaystyle \gamma_n(v) := \sqrt{\texttt{a}_n}\big|\jump{v(x_n)}\big| \, \forall n=0,\ldots,N+1$.
 		By furthermore denoting $ \alpha_n(u):= \|\sqrt{c}u'\|_{L^2(I_n)}$
 		we can represent
 
@@ -344,8 +345,8 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 		\begin{align*}
 			 & T_{\text{ell}} + T_{\text{cons}}^{(u)} + T_{\text{cons}}^{(v)} + T_{\text{penal}} \leq \textbf{u}^T \textbf{v}
 			\leq |\textbf{u}|\, |\textbf{v}|                                                                                                          \\
-			 & \leq \Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}u'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n [u(x_n)]^2\Big)^{1/2}
-			\Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}v'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n [v(x_n)]^2\Big)^{1/2}         \\
+			 & \leq \Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}u'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n \jump{u(x_n)}^2\Big)^{1/2}
+			\Big( \sum_{n=0}^{N}(1+\frac{5}{4}C_{\sigma}) \|\sqrt{c}v'\|_{L^2(I_n)}^2 + 3 \sum_{n=0}^{N+1} \texttt{a}_n \jump{v(x_n)}^2\Big)^{1/2}         \\
 			 & \leq C_{\text{cont}}\|u\|_{\epsilon} \|v\|_{\epsilon}
 		\end{align*}
 		where $\displaystyle C_{\text{cont}} := (3+\frac{5}{4}C_{\sigma})$. This last estimate together with
@@ -356,7 +357,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 % Extension of the Bilinear form -----------------------------------------------------------------------------------------------------------------------------------------
 \section{Extension of the Bilinear Form}
 To simplify the theory we will continue to assume the exact solution to be in $H^2(\Omega)$. 
-When we intend to extend the bilinear form from $V_h$ to a bigger space which contains the exact solution we run into the problem, that $V_h \not \subset H^1(\Omega)$, 
+When we intend to extend the bilinear form from $V_h$ to a bigger space, which contains the exact solution, we run into the problem, that $V_h \not \subset H^1(\Omega)$, 
 by extension we also have $V_h \not \subset H^2(\Omega)$. So in contrast to continuous FEM we have to use a bigger space allowing for discontinuities and including both 
 $V_h$ and $H^2(\Omega)$. \\
 A very common approach (see for example \cite{georgoulis2011Springer}) is to choose a vector space sum 
@@ -381,8 +382,8 @@ Now we extend the bilinear form $b_h$ and the linear functional $\ell_h$ from $V
 	where
 	\begin{align*}
 		b(u,v) & = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
-		-\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
-		+\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]                                     \\
+		-\sum_{n=0}^{N+1} \avg{c(x_n)u'(x_n)} \jump{v(x_n)} + \avg{c(x_n)v'(x_n)} \jump{u(x_n)}
+		+\sum_{n=0}^{N+1} \texttt{a}_n \jump{u(x_n)} \jump{v(x_n)}                                     \\
 		\ell(v)  & = (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v'(x_{N+1}^-) + g_0c(x_0^+)v'(x_0^+)
 		+ \texttt{a}_{N+1}g_1v(x_{N+1}^-) + \texttt{a}_0 g_0v(x_{0}^+)
 	\end{align*}
@@ -434,11 +435,11 @@ formulation of the problem.
 		\end{equation}
 		since $u,v$ are continuous we have 
 		\begin{equation*}
-		[u(x_n)] = [v(x_n)] = 0 \qquad  \forall n \in \{1,\ldots,N\}	
+		\jump{u(x_n)} = \jump{v(x_n)} = 0 \qquad  \forall n \in \{1,\ldots,N\}	
 		\end{equation*}
 		and $v \in C_c^{\infty}(\Omega)$ implies 
 		\begin{equation*}
-		[v(x_0)] = [v(x_{N+1})] = \{c(x_0)v^{\prime}(x_0)\} = \{c(x_{N+1})v^{\prime}(x_{N+1})\} = 0	
+		\jump{v(x_0)} = \jump{v(x_{N+1})} = \avg{c(x_0)v^{\prime}(x_0)} = \avg{c(x_{N+1})v^{\prime}(x_{N+1})} = 0	
 		\end{equation*}
 		therefore (\ref{eq:proof_consistency_ell_var_form_1}) becomes
 		\begin{equation}
@@ -484,6 +485,7 @@ formulation of the problem.
 \end{proof}
 
 \section{Error Analysis}
+\label{sec:elliptic_error_analysis}
 In this section we analyze the error between the Galerkin approximation resulting from the discrete SIPG formulation and an exact solution. 
 We will focus on the error in the energy norm $\| \cdot \|_{h}$ but also mention the resulting error measured in the $L^2$-norm.
 \\ \\
@@ -599,7 +601,7 @@ $n=0,\ldots,N_h$.
 			\label{eq:proof_triangle_ineq_energy_conv_elliptic}
 			\| u - u_h \|_{\epsilon} \leq \|u - \mathcal{I}_h u \|_{\epsilon} + \|\mathcal{I}_h u - u_h \|_{\epsilon}.
 		\end{equation}
-		By the construction of the interpolant we know that $[ (u- \mathcal{I}_h u)(x_n)] = 0$ for all $n\in \{0,\ldots,N_h+1\}$, so the first term of 
+		By the construction of the interpolant we know that $\jump{(u- \mathcal{I}_h u)(x_n)} = 0$ for all $n\in \{0,\ldots,N_h+1\}$, so the first term of 
 		(\ref{eq:proof_triangle_ineq_energy_conv_elliptic}) becomes
 		\begin{align}
 			\|u - \mathcal{I}_h u \|_{\epsilon} &\leq \|\sqrt{c}(u - \mathcal{I}_h u)' \|_{L^2(\Omega)} \leq \sqrt{c_{\max}} \Big( \sum_{n=0}^{N_h} |u - \mathcal{I}_h u|_{H^1(I_n)}^2 \Big)^{1/2} \nonumber \\
@@ -616,9 +618,9 @@ $n=0,\ldots,N_h$.
 		\begin{align*}
 			C_{\text{coer}} \|e_h\|_{h}^2 &\leq b(e_h, e_h) = b(u - \mathcal{I}_h u, e_h) \\
 			&= \Big| \underbrace{\sum_{n=0}^{N_h} \int_{I_n} c \,(u - \mathcal{I}_h u)' \, e_h' \text{ d} x }_{=: T_1}
-			- \underbrace{\sum_{n=0}^{N_h + 1} \{c(x_n) (u - \mathcal{I}_h u)'(x_n) \} [e_h(x_n)]}_{=: T_2}  \\
-			&- \sum_{n=0}^{N_h + 1} \{c(x_n) e_h^{\prime}(x_n)\}\underbrace{[(u - \mathcal{I}_h u)(x_n)]}_{=0} 
-			+ \sum_{n=0}^{N_h + 1} \texttt{a}_n \underbrace{[(u - \mathcal{I}_h u)(x_n)]}_{=0} [e_h(x_n)] \Big| \\
+			- \underbrace{\sum_{n=0}^{N_h + 1} \avg{c(x_n) (u - \mathcal{I}_h u)'(x_n) } \jump{e_h(x_n)}}_{=: T_2}  \\
+			&- \sum_{n=0}^{N_h + 1} \avg{c(x_n) e_h^{\prime}(x_n)}\underbrace{\jump{(u - \mathcal{I}_h u)(x_n)}}_{=0} 
+			+ \sum_{n=0}^{N_h + 1} \texttt{a}_n \underbrace{\jump{(u - \mathcal{I}_h u)(x_n)}}_{=0} \jump{e_h(x_n)} \Big| \\
 			& = | T_1 - T_2 |. 
 		\end{align*}
 		We first estimate $|T_1| $, using Cauchy-Schwarz and Young's inequality: $ ab \leq \frac{a^2}{2 \varepsilon} + \frac{b^2 \varepsilon}{2}$, for $a,b \in \mathbb{R}, \varepsilon > 0$, 
@@ -636,10 +638,10 @@ $n=0,\ldots,N_h$.
 		\end{equation}
 		To estimate $T_2$ we make again use of Young's inequality with $\displaystyle \varepsilon = \frac{\texttt{a}_n}{2}C_{\text{coer}}$ and find
 		\begin{align*}
-			|T_2| &= \Big|\sum_{n=0}^{N_h+1} \{c(x_n)(u-\mathcal{I}_n u)'(x_n)\}[e_h(x_n)] \Big| 
-			\leq \Big|\sum_{n=0}^{N_h+1} \frac{\{c(x_n)(u-\mathcal{I}_n u)'(x_n)\}^2}{\texttt{a}_n \, C_{\text{coer}} } \Big|
-			+ \frac{C_{\text{coer}}}{4} \sum_{n=0}^{N_h+1} \texttt{a}_n [e_h(x_n)]^2 \\
-			& \leq \Big|\sum_{n=0}^{N_h+1} \frac{\{c(x_n)(u-\mathcal{I}_n u)'(x_n)\}^2}{\texttt{a}_n \, C_{\text{coer}} } \Big|
+			|T_2| &= \Big|\sum_{n=0}^{N_h+1} \avg{c(x_n)(u-\mathcal{I}_n u)'(x_n)}\jump{e_h(x_n)} \Big| 
+			\leq \Big|\sum_{n=0}^{N_h+1} \frac{\avg{c(x_n)(u-\mathcal{I}_n u)'(x_n)}^2}{\texttt{a}_n \, C_{\text{coer}} } \Big|
+			+ \frac{C_{\text{coer}}}{4} \sum_{n=0}^{N_h+1} \texttt{a}_n \jump{e_h(x_n)}^2 \\
+			& \leq \Big|\sum_{n=0}^{N_h+1} \frac{\avg{c(x_n)(u-\mathcal{I}_n u)'(x_n)}^2}{\texttt{a}_n \, C_{\text{coer}} } \Big|
 			+ \frac{C_{\text{coer}}}{4} \|e_h\|_{\epsilon}^2.
 		\end{align*}
 		Fix $n \in \{1,\ldots,N_h\} $, then $x_n$ is an interior face node and shared boundary of the elements $I_{n-1}, I_n$. Using the continuous trace inequality 
@@ -657,7 +659,7 @@ $n=0,\ldots,N_h$.
 		for the lower element. Recall that $\displaystyle \texttt{a}_n = \frac{\sigma \, \max(c(x_n^+), c(x_n^-))}{\min(h_{n-1}, h_{n})}$ (see \ref{def:penalization_function}), using this 
 		and the estimates above we find 
 		\begin{align*}
-			\frac{\{c(x_n)(u - \mathcal{I}_h u)'(x_n)\}^2}{\texttt{a}_n C_{\text{coer}}}
+			\frac{\avg{c(x_n)(u - \mathcal{I}_h u)'(x_n)}^2}{\texttt{a}_n C_{\text{coer}}}
 			&= \frac{c(x_n)^2 \min(h_{n-1}, h_n)}{\sigma C_{\text{coer}}\, \max(c(x_n^+), c(x_n^-))} \frac{| (u-\mathcal{I}_h u)'(x_n^-) + (u-\mathcal{I}_h u)'(x_n^+) |^2}{4}  \\
 			&\leq \frac{c(x_n)}{\sigma C_{\text{coer}}} \frac{\min(h_{n-1}, h_{n})}{2}\Big( |(u-\mathcal{I}_h u)'(x_n^-)|^2 + |(u-\mathcal{I}_h u)'(x_n^+)|^2 \Big) \\
 			& \leq \frac{c(x_n)}{\sigma C_{\text{coer}}} \frac{\min(h_{n-1}, h_{n})}{2}\Big( 4 h_{n-1}^{2r-1} \, |u|_{H^{r+1}(I_{n-1})}^2 + 4 h_{n}^{2r-1} \, |u|_{H^{r+1}(I_{n})}^2\Big) \\
@@ -665,7 +667,7 @@ $n=0,\ldots,N_h$.
 		\end{align*}
 		Similarly for the boundary nodes, i.e.\@ $n \in \{0, N_h+1\}$ we find 
 		\begin{equation*}
-			\frac{\{c(x_{n})(u - \mathcal{I}_h u)'(x_{n})\}^2}{\texttt{a}_{n} C_{\text{coer}}} 
+			\frac{\avg{c(x_{n})(u - \mathcal{I}_h u)'(x_{n})}^2}{\texttt{a}_{n} C_{\text{coer}}} 
 			\leq \frac{4 c_{\max}}{\sigma C_{\text{coer}}} h^{2r} |u|^2_{H^{r+1}(I_{n})}.
 		\end{equation*}
 		This gives us now the tools to complete the estimate of $|T_2|$, we find
@@ -736,19 +738,19 @@ continuous FEM.
 		\begin{align*}
 			b(e, \varphi - \mathcal{I}_h^1 \varphi) 
 			& = \sum_{n=0}^{N_h} \int_{I_n} c \, e' (\varphi - \mathcal{I}_h^1 \varphi)' \text{ d}x 
-			- \sum_{n=0}^{N_h + 1} \{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) \}[e(x_n)] \\
-			&- \sum_{n=0}^{N_h + 1} \{ c(x_n) e'(x_n)\}\underbrace{[(\varphi - \mathcal{I}_h^1 \varphi)(x_n)]}_{=0} 
-			+ \sum_{n=0}^{N_h + 1} \texttt{a}_n [e(x_n)]\underbrace{[(\varphi - \mathcal{I}_h^1 \varphi)(x_n)]}_{=0} \\
+			- \sum_{n=0}^{N_h + 1} \avg{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) }\jump{e(x_n)} \\
+			&- \sum_{n=0}^{N_h + 1} \avg{ c(x_n) e'(x_n)}\underbrace{\jump{(\varphi - \mathcal{I}_h^1 \varphi)(x_n)}}_{=0} 
+			+ \sum_{n=0}^{N_h + 1} \texttt{a}_n \jump{e(x_n)} \underbrace{\jump{(\varphi - \mathcal{I}_h^1 \varphi)(x_n)}}_{=0} \\
 			& \leq \sqrt{c_{\max}} \Big(\sum_{n=0}^{N_h} \int_{I_n}  \abs{(\varphi - \mathcal{I}_h^1 \varphi)'}^2 \text{d}x \Big)^{1/2}
 			\underbrace{\Big(\sum_{n=0}^{N_h} \int_{I_n} c \abs{e'}^2 \text{d}x \Big)^{1/2}}_{\leq \norm{e}_{\epsilon}} \\
-			&+ \Big(\sum_{n=0}^{N_h + 1} \frac{{\{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) \}}^2}{\texttt{a}_n} \Big)^{1/2} 
-			\underbrace{\Big(\sum_{n=0}^{N_h + 1} \texttt{a}_n [e(x_n)]^2 \Big)^{1/2}}_{\leq \norm{e}_{\epsilon}}.
+			&+ \Big(\sum_{n=0}^{N_h + 1} \frac{{\avg{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) }}^2}{\texttt{a}_n} \Big)^{1/2} 
+			\underbrace{\Big(\sum_{n=0}^{N_h + 1} \texttt{a}_n \jump{e(x_n)}^2 \Big)^{1/2}}_{\leq \norm{e}_{\epsilon}}.
 		\end{align*}
 		We know from theorem \ref{thr:elliptic_energy_convergence} that $\norm{e}_{\epsilon} \leq C_{\epsilon} h^r |u|_{H^{r+1}(\Omega)}$,
 		and from the proof that 
 		\begin{enumerate}
 			\item $ \displaystyle \abs{\varphi - \mathcal{I}_h^1 \varphi}_{H^1(\Omega)}^2 \leq h^2 \abs{\varphi}_{H^2(\Omega)}^2 \qquad \forall n \in \countset{0}{N_h} $,
-			\item $\displaystyle \frac{{\{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) \}}^2}{\texttt{a}_n} 
+			\item $\displaystyle \frac{{\avg{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) }}^2}{\texttt{a}_n} 
 				\leq \gamma_n \frac{c_{\max}}{\sigma} h^2 \, \Big( \abs{\varphi}_{H^2(I_{n-1})}^2 + \abs{\varphi}_{H^2(I_{n})}^2 \Big) \qquad \forall n \in \countset{0}{N_h+1}$,
 		\end{enumerate}
 		where $\gamma_n = 2$ for $n \in \countset{1}{N_h}$ and $\gamma_n = 4$ for $n \in \{0, N_h+ 1\}$. Putting all of the above together we find

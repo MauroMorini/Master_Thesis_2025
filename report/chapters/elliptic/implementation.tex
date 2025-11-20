@@ -1,15 +1,15 @@
 %---Matrix-Vector System---------------------------------------------------------
 \section{Matrix-Vector System}
 \label{sec:matrix_vect_syst}
-We will now in derive the fully discrete Matrix-Vector system given by
-the variational form (\ref{eq:discrete_var_form_elliptic}). To do so let
+We will now transform the variational form (\ref{eq:discrete_var_form_elliptic}) into Matrix-Vector system form. 
+To do so let
 $r \in \mathbb{N}$ denote the polynomial degree and consequently the element degree of freedom.
 Note that in this thesis we will only consider global polynomial degrees, meaning one set polynomial degree for all elements.
 Next let $\{\Phi_0,\ldots,\Phi_M\}$ be a basis of $V_h$, where $M = \dim(V_h)$.
 We can represent the sought Galerkin approximation as $u_h = \sum_{j=0}^{M} \alpha_j \Phi_j\in V_h$ for coefficients
 $\alpha_j \in \mathbb{R}$. Then (\ref{eq:discrete_var_form_elliptic}) is equivalent to:
 \begin{equation*}
-	\sum_{j=0}^{M} \alpha_j b_h(\Phi_j, \Phi_i) = \ell_h(\Phi_i) \qquad \forall i=0,\ldots,M
+	\sum_{j=0}^{M} \alpha_j b_h(\Phi_j, \Phi_i) = \ell_h(\Phi_i) \qquad \forall i=0,\ldots,M,
 \end{equation*}
 which corresponds to the system:
 \begin{equation}
@@ -24,38 +24,14 @@ for $ \textbf{B} \in \mathbb{R}^{M\times M}, [\textbf{B}]_{i,j} = b_h(\Phi_j, \P
 \section{Basis of Finite Element Space}
 \label{sec:ell_basis}
 There are many ways of choosing basis functions for finite element spaces. In this thesis we soley focus on elementwise nodal Lagrangian basis functions, although there are alternatives
-which are just as valid, like the modal Legendre basis.
-When choosing basis nodes for a lagrangian basis we have a couple of choices to make. \\ \\
-1. \textit{Should the quadrature nodes coincide with the basis nodes?} \\
-Having the quadrature nodes coincide with the basis nodes simplifies the calculations, because by the property of a Lagrangian basis the values of the basis functions at the quadrature nodes,
-i.e the basis nodes coincide with the Kroneker delta. So a value matrix composed of each value at the quadrature nodes for each basis function (per element) is just
-the identity matrix. Specifically we have: \\
-Let $\xi_0,\ldots,\xi_r$ be the basis- and quadrature nodes and let $ \widehat{\phi}_0,\ldots,\widehat{\phi}_r$ be the Lagrangian basis, then 
-\begin{equation*}
-	\widehat{\phi}_i(\xi_j) = \delta_{i,j} := 
-	\begin{cases}
-		1	&,\text{ for }i=j \\
-		0  &,\text{ for }i\neq j
-	\end{cases}
-\end{equation*}
-therefore $\textbf{I} = \textbf{L}$ where $\textbf{I}$ is the identity and $ [\textbf{L}]_{i,j} = [\widehat{\phi}_i(\xi_j)] $ the basis shape-function value-matrix.
-This reduces the computational cost, since there is no need to actually evaluate/interpolate the polynomials at the quadrature nodes. 
-The clear downside is that we couple the exactness of the quadrature to the polynomial degree of the basis function. If for example we fix a polynomial degree $r \in \mathbb{N}$.
-The Gauss-Lobatto quadrature with $r+1$ nodes is exact for polynomials of degree $2r-1$. When computing the mass matrix we have to calculate an 
-integral of the form $ \int_I \Phi_j \Phi_i \text{d}x $ where $I \in \mathcal{T}_h$ is a element and $\Phi_i \vert_I, \Phi_j \vert_I \in \mathcal{P}^r(I)$ are basis functions.
-This means $ \Phi_j \cdot \Phi_i \in  \mathcal{P}^{2r}$ and therefore we introduce an error. \\
-% TODO: elaborate on error and remark that the convergence rate is not influenced after testing it
-
-\noindent 2. \textit{Should there be basis nodes on the element boundaries?} \\
-In contrast to continuous FEM we do not need to impose continuity over the element boundaries, so we have the option of allowing 
-the nodes to be exclusively in the interior of the elements. This allows us to use Gauss-Legendre quadrature nodes in 1d for example, 
-which is exact for polynomials of degree $2r+1$ for $r+1$ quadrature nodes. This would remedy the issue of approximating the mass matrix inexactly as described before when 
-choosing the same quadrature nodes as basis nodes. The downside here is that we sill require boundary values to incorporate boundary conditions and calculating 
-the penalty, consistency and symmetry terms (see matrices $\textbf{B}_{\text{cons}}, \textbf{B}_{\text{penal}} $ in section \ref{sec:stiff_assembly}), 
-so the boundary values have to be interpolated. \\ 
-
+which might be just as valid depending on the goal one pursues, like for example a modal Legendre basis.
+Having decided to work with a Lagrange nodal basis means we need to decide on the placing of the nodes. In principle for a desired polynomial degree $r$ we 
+could decide any $r+1$ points per elements. Since we restrict ourselves to a single global polynomial degree (i.e.\ no p-adaptivity) 
+it makes sense to choose the same type of placement for all elements since this will allow us to calculate the actual function values on a single reference element (see below). \\
+Here in contrast to continuous FEM, DG provides additional liberty, since there are no shared nodes over element faces we actually could decide to place the basis nodes purely inside of the element.
+\\ \\
 In this thesis we will not try to justify the choice of basis function too much and use Gauss-Lobatto quadrature nodes as basis nodes.
-This is a commonly used nodal basis in continuous 1d-FEM and we will also use it for our DG method. In Appendix A.2.3 of \cite{diPietro2012} the \textit{Fekete points}, which 
+This is a commonly used nodal basis in continuous FEM and we will also use it for our DG method. In Appendix A.2.3 of \cite{diPietro2012} the \textit{Fekete points}, which 
 in 1d coincide with the Gauss-Lobatto points, are recommended 
 with the argument that this nodal basis yields a mass matrix with an optimal condition number. 
 For more detailed information on choosing basis functions and alternative approaches see for example
@@ -100,7 +76,7 @@ as a last step we extend the basis functions to the whole domain $\Omega$ by zer
 for $n=0,\ldots,N$ and $i=0,\ldots,r$. Clearly we have $\text{span}( \widehat{\phi}_0, \ldots, \widehat{\phi}_r) = \mathcal{P}^r(\hat{I})$
 and by extension $\text{span}(\Phi_0^0,\ldots,\Phi_r^N) = V_h^r(\mathcal{T}_h)$. It is essential
 that our basis has only local support, meaning the basis functions are zero on most of the domain. This is the key property which
-allows the final matrices to be sparse. Choosing basis functions with global support, the computational cost would be unfeasible for
+allows the final matrices to be sparse. Choosing basis functions with global support, would lead to an unfeasible computational cost for
 small mesh sizes. \\
 By having chosen a Lagrangian nodal basis the mesh nodes exactly coincide with the Gauss-Lobatto nodes on each
 element.
@@ -114,6 +90,30 @@ and returns the globally assigned node index $T(n,i)$. $T$ corresponds to the
 \textit{connectivity matrix}. In the simplest case we have the global index ordered from left to right and get
 $T(n,i) = nr + i$.
 
+\section{Quadrature Rule}
+\label{sec:quadrature_rule}
+To discuss the assembly of the components of the system (\ref{eq:fully_discrete_dg_system_elliptic}) in detail we will require a tool to approximate the integrals appearing in it, i.e.\ 
+we need to choose a quadrature rule. The quadrature rule should primarily be as accurate as possible for the least amount of nodes necessary. So immediately one thinks of the Gauss-Legendre
+quadrature rule, which for $r+1$ quadrature nodes, is exact for polynomials of degree $2r+1$. In fact Gauss-Legendre is often the preferred choice due to it's high accuracy. A downside
+of Gauss-Legendre is that it does not include element boundary nodes. We do require the values of our basis functions at the boundary nodes for the consistency, symmetry and penalty terms in 
+(\ref{eq:discrete_var_form_elliptic}), as well as the values of $c$ at the element faces. All these values can be preloaded at the desired quadrature nodes, which makes it simpler to use
+a quadrature rule with nodes at the element boundary. This is why we choose the Gauss-Lobatto quadrature rule despite it's lower accuracy of being exact for for polynomials of degree $2r-1$ 
+with $r+1$ quadrature nodes. \\
+We could still use Gauss-Legendre and interpolate the element boundary values. Suppose we chose $r+1$ Gauss-Legendre quadrature nodes per element, then we require the element boundary values as well,
+so after all we need to preload the values of the basis functions and the coefficient $c$ at $r+3$ nodes per element (the quadrature nodes plus the boundary nodes). 
+If instead we choose $r+2$ Gauss-Lobatto quadrature nodes we achieve the same accuracy but use a node less.  \\
+An additional benefit of using Gauss-Lobatto quadrature nodes is that now the mesh nodes as well as the quadrature nodes are of the same type. This simplifies the program architecture and allows 
+for the possibility of using \textit{mass-lumping}, meaning we can let the basis nodes and the quadrature nodes coincide when assembling the mass matrix 
+\begin{equation*}
+	[\mathbf{M}]_{i,j} = (\Phi_j, \Phi_i)_{L^2(\Omega)}.
+\end{equation*} 
+When we use $r+1$ Gauss-Lobatto nodes to approximate the integral $\int_{\Omega} \Phi_j \Phi_i \text{ d}x$ we introduce an error, since $ \Phi_j \Phi_i \in \mathcal{P}^{2r}$, but the resulting 
+mass-lumped mass matrix is diagonal, which is a crucial benefit in explicit time-marching schemes with continuous FEM spacial discretization. We compare the error created by using the inexact 
+$r+1$ node Gauss-Lobatto quadrature rule for $\mathcal{P}^r$-elements with a higher order Gauss-Lobatto quadrature rule experimentally in \ref{sec:elliptic_numerical_experiments}, but we can already 
+say that due to the decoupled element structure DG provides, the mass matrix is already block-diagonal and mass lumping provides no real benefit. \\ \\
+All of this being said the choice of the Gauss-Lobatto quadrature rule is in our case mainly preferential and not the focus of this thesis.  
+
+
 %---Matrix Assembly-------------------------------------------------------------------
 \section{Stiffness Matrix Assembly}
 \label{sec:stiff_assembly}
@@ -123,8 +123,8 @@ the bilinear form $b_h$ into different components
 
 \begin{align*}
 	a_h(u,v)                & := \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x                              \\
-	b_h^{\text{cons}}(u,v)  & := \sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)] \\
-	b_h^{\text{penal}}(u,v) & := \sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]                          \\
+	b_h^{\text{cons}}(u,v)  & := \sum_{n=0}^{N+1} \avg{c(x_n)u'(x_n)}\jump{v(x_n)} + \avg{c(x_n)v'(x_n)}\jump{u(x_n)} \\
+	b_h^{\text{penal}}(u,v) & := \sum_{n=0}^{N+1} \texttt{a}_n \jump{u(x_n)} \jump{v(x_n)}                          \\
 \end{align*}
 
 Let $\displaystyle u_h = \sum_{m=0}^{N} \sum_{j=0}^{r} \alpha_j^m \Phi_j^m \in V_h$ denote
@@ -152,7 +152,7 @@ where $T$ is given by (\ref{def:local_to_global_map})
 
 \subsection{Assembly of A}
 $\textbf{A}$ is assembled similarly to the standard stiffness matrix in continuous finite element. The main difference is that there is no overlap in the elementwise contributions.
-Each set of local (element) basis functions only contributes to the integrals over said element.
+Each set of local (element) basis functions only contributes to the integrals over said element. 
 We can rewrite $\textbf{A} = \sum_{s=0}^{N} \textbf{A}^{(s)}$, where
 $[\textbf{A}^{(s)}]_{T(n,i),T(m,j)} = \int_{I_s} c \,(\Phi_j^m)' (\Phi_i^n)' \, \text{d}x$.
 Now since we have $\text{supp}(\Phi_i^n)\subset I_n$ the only non-zero entries of $\textbf{A}^{(s)} $ are the ones where both $n=m=s$. Pulling back the integral
@@ -162,8 +162,8 @@ to the reference element using the chain rule and the substitution $F_s^{-1}(x) 
 	\frac{2}{h_s} \int_{\hat{I}} c(F_s(\xi)) \, \widehat{\phi}_j^{\, \prime}(\xi) \widehat{\phi}_i^{\, \prime}(\xi) \, \text{d}\xi
 \end{equation*}
 This integral now only depends on the reference shape functions, the element length $h_s$
-and the values of the coefficient $c$. Using the Gauss-Lobatto quadrature rule we can approximate the integral
-only requiring the values of $c$ at the nodes, whilst having the values of $\phi, \phi'$ preloaded.
+and the values of the coefficient $c$. Using a higher order Gauss-Lobatto quadrature rule we can approximate the integral
+only requiring the values of $c$ at the quadrature nodes, whilst having the values of $\phi, \phi'$ preloaded.
 The total assembly of $\textbf{A}$ can therefore be achieved by calculating a local contribution matrix
 $\widehat{\textbf{A}}^{(s)} \in \mathbb{R}^{(r+1)\times (r+1)}$ for each element $I_s$ and adding it into $\textbf{A}$.
 \begin{example}
@@ -182,7 +182,8 @@ $\widehat{\textbf{A}}^{(s)} \in \mathbb{R}^{(r+1)\times (r+1)}$ for each element
 As before we rewrite $\textbf{B}_{\text{cons}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{cons}}^{(s)} $, where
 
 \begin{equation*}
-	[\textbf{B}_{\text{cons}}^{(s)}]_{T(n,i),T(m,j)} = \{c(x_s) \Phi_j^{m \, \prime} (x_s)\}[\Phi_i^n(x_s)] + \{c(x_s)\Phi_i^{n\, \prime} (x_s)\}[\Phi_j^m(x_s)]
+	[\textbf{B}_{\text{cons}}^{(s)}]_{T(n,i),T(m,j)} = \avg{c(x_s) \Phi_j^{m \, \prime} (x_s)}\jump{\Phi_i^n(x_s)} + 
+	\avg{c(x_s)\Phi_i^{n\, \prime} (x_s)}\jump{\Phi_j^m(x_s)}
 \end{equation*}
 
 \subsubsection{Interior Faces}
@@ -268,7 +269,7 @@ with
 \subsection{Assembly of B penalty part}
 Again we rewrite $\textbf{B}_{\text{penal}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{penal}}^{(s)}$, where
 \begin{equation*}
-	[\textbf{B}_{\text{penal}}^{(s)}]_{T(n,i), T(m,j)} = { \texttt{a}_s} [\Phi_j^m(x_s)] [\Phi_i^n(x_s)]
+	[\textbf{B}_{\text{penal}}^{(s)}]_{T(n,i), T(m,j)} = { \texttt{a}_s} \jump{\Phi_j^m(x_s)} \jump{\Phi_i^n(x_s)}
 \end{equation*}
 We proceed analogously to \ref{subsec:assembly_cons}.
 \subsubsection{Interior Faces}
@@ -342,14 +343,14 @@ So the local contribution matrices $ \widehat{\textbf{B}}_{\text{penal}}^{(s)} \
 	\end{equation*}
 \end{example}
 
-\subsection{System Vector Assembly}
+\section{System Vector Assembly}
 We divide assembling the vector \textbf{l} in (\ref{eq:fully_discrete_dg_system_elliptic}) into two parts.
 \begin{equation*}
 	\textbf{l} = \textbf{l}_{\text{load}} + \textbf{l}_{\text{bc}}
 \end{equation*}
 First we recall the assembly of the load vector $\textbf{l}_{\text{load}}$, i.e. the vector containing the contributions of the forcing term $f$
 and secondly we will describe how to add the Dirichlet boundary condition contributions ($\textbf{l}_{\text{bc}}$).
-\subsubsection{Load Vector}
+\subsection{Load Vector}
 The assembly of the load vector is completely analogous to the continuous finite element case.
 Using the local support of $\Phi_i^n$ we can rewrite
 
@@ -368,7 +369,7 @@ which can be characterized by the local contribution vector $\widehat{\textbf{l}
 	[\widehat{\textbf{l}}_{\text{load}}^{\,(s)}]_{i}
 	= \frac{h_s}{2} \int_{-1}^{1} f(F_s(\xi))\widehat{\phi}_i(\xi)\text{d}\xi
 \end{equation*}
-In practice we approximate the integral using the Gauss-Lobatto quadrature rule.
+In practice we approximate the integral using a higher order Gauss-Lobatto quadrature rule.
 
 \begin{example}
 	For $f$ piecewise constant (i.e. $f|_{I_s} \equiv f_s \in \mathbb{R} \quad \forall s=0,\ldots,N$) with $\mathcal{P}^1$-elements $(r=1)$ we have
@@ -381,7 +382,7 @@ In practice we approximate the integral using the Gauss-Lobatto quadrature rule.
 	\end{equation*}
 \end{example}
 
-\subsubsection{Dirichlet Boundary Condition Vector}
+\subsection{Dirichlet Boundary Condition Vector}
 We have
 
 \begin{equation*}
@@ -400,3 +401,36 @@ where
 	[\widehat{\textbf{l}}_{\text{bc}}^{\,(0)}]_{i} = \frac{g_0}{h_0} c(x_{0}^-) \widehat{\phi}_i(-1) + \texttt{a}_{0}g_0\widehat{\phi}_i(-1), \qquad
 	[\widehat{\textbf{l}}_{\text{bc}}^{\,(N+1)}]_{i} = -\frac{g_1}{h_N} c(x_{N+1}^-) \widehat{\phi}_i(1) + \texttt{a}_{N+1}g_1\widehat{\phi}_i(1)
 \end{equation*}
+
+
+\section{Mass Matrix Assembly}
+Although the mass matrix has not yet appeared in the discrete formulation as presented in (\ref{eq:fully_discrete_dg_system_elliptic}) due to the absence
+of a mass term in the elliptic pde as presented in (\ref{eq:elliptic_pde}), we will require it soon and hence quickly review it's assembly here.
+\\ 
+The mass matrix is defined as 
+\begin{equation*}
+	[\mathbf{M}]_{T(n,i), T(m,j)} = (\Phi_j^m, \Phi_i^n)_{L^2(\Omega)} = \sum_{s = 0}^{N} \int_{I_s} \Phi_j^m \Phi_i^n \text{ d}x.
+\end{equation*}
+So we can rewrite $\mathbf{M} = \sum_{s=0}^N \mathbf{M}^{(s)}$, where 
+\begin{equation*}
+	[\mathbf{M}^{(s)}]_{T(n,i), T(m,j)} = \int_{I_s}  \Phi_j^m \Phi_i^n \text{ d}x.
+\end{equation*}  
+Similarly to before the entries of $\mathbf{M}^{(s)}$ are only non-zero if $m = n = s$. In that case we pull the integral back to the reference element aby substitution
+and find 
+\begin{equation*}
+	\int_{I_s}  \Phi_j^m \Phi_i^n \text{ d}x = \frac{h_s}{2} \int_{-1}^{1} \widehat{\phi}_j \widehat{\phi}_i \text{ d}x.
+\end{equation*}
+The assembly of $\mathbf{M}$ corresponds therefore to summing up local contribution matrices $ {\widehat{\mathbf{M}}}^{(s)} \in \R ^{(r+1) \times (r+1)}$.
+In fact since the elements are decoupled due to the discontinuity of the basis functions, the resulting matrix is a block-diagonal matrix where each block corresponds to the local
+contribution matrix $ \widehat{\mathbf{M}}^{(s)}$
+
+\begin{example}
+	For $\mathcal{P}^1$-elements $(r=1)$ we have
+	\begin{equation*}
+		\widehat{\textbf{M}}^{(s)} = \frac{h_s}{6}
+		\begin{bmatrix}
+			2  & 1 \\
+			1 & 2
+		\end{bmatrix}.
+	\end{equation*}
+\end{example}

@@ -22,14 +22,16 @@ for cross reference.
 \section{Problem}
 \label{sec:elliptic_problem}
 We consider the following elliptic model problem:
-\begin{equation}
-	\label{eq:elliptic_pde}
-	-(c(x)u'(x))' = f(x) \qquad \forall x\in \Omega
-\end{equation}
-\begin{equation}
-	\label{eq:elliptic_pde_bc}
-	u(0) = g_0, u(1) = g_1
-\end{equation}
+\begin{subequations}
+	\begin{equation}
+		\label{eq:elliptic_pde}
+		-(c(x)u'(x))' = f(x) \qquad \forall x\in \Omega
+	\end{equation}
+	\begin{equation}
+		\label{eq:elliptic_pde_bc}
+		u(0) = g_0, u(1) = g_1
+	\end{equation}
+\end{subequations}
 where $\Omega = (0,1)$ is the domain, $g_0, g_1 \in \mathbb{R}$ are
 Dirichlet boundary conditions, $f \in L^2(\Omega)$ and $c \in C^1(\Omega)$
 satisfies:
@@ -63,14 +65,14 @@ can conclude higher regularity of the weak solution, namely $u \in H^2(\Omega)$.
 \label{sec:discretization_elliptic}
 We will now discretize the domain $\Omega$, note that the notation will persist throughout this thesis. 
 Let $0=x_0 < \cdots < x_{N+1} = 1$ be the mesh faces, $I_n = (x_n, x_{n+1})$ for $n = 0,\ldots,N$ be the elements and $\mathcal{T}_h = \{I_n\}_{n=0}^N$ a partition
-of $\Omega$ for some fixed $N\in \mathbb{N}$.
+of $\Omega$ for some fixed $N\in \mathbb{N}$. Sometimes we will write $N_h$ to emphasize the dependency on $h$. 
 We denote the element length by $h_n = x_{n+1} - x_{n}$ for $n=0,\ldots,N$ and the global meshsize by
 $h = \max_{n} h_n$.
 Next we define the discontinuous finite element space
 \begin{tcolorbox}[mythmstyle]
 	\begin{equation}
 		\label{def:discontinuous_finite_element_space}
-		V_h^r(\mathcal{T}_h) = \{v \in L^2(\Omega) |\, v|_{I_n} \in \mathcal{P}^r(I_n) \}
+		V_h^r(\mathcal{T}_h) = \{v \in L^2(\Omega) |\, v|_{I_n} \in \mathcal{P}^r(I_n) \},
 	\end{equation}
 \end{tcolorbox}
 where $\mathcal{P}^r(I_n)$ denotes the space of polynomials $p:I_n \to \mathbb{R}$ of degree $r$
@@ -90,20 +92,21 @@ To proceed we will require the following trace operators:
 	Let $v:\Omega \to \mathbb{R}$ be piecewise continuous and let $n \in
 		\{1,\ldots,N\}$
 	\begin{enumerate}[label=\textnormal{(\roman*)}]
-		\item We denote $v(x_n^+) := \lim_{x \searrow x_n} v(x), v(x_n^-) := \lim_{x \nearrow x_n} v(x)$
+		\item We denote 
+				\[v(x_n^+) := \lim_{x \searrow x_n} v(x), \quad v(x_n^-) := \lim_{x \nearrow x_n} v(x)\]
 		      the limit from above/below.
 		\item We define the \textbf{jump} at $x_n$ as
 		      \[
-			      [v(x_n)]:= v(x_n^-) - v(x_n^+)
+			      \jump{v(x_n)}:= v(x_n^-) - v(x_n^+)
 		      \]
 		      and the \textbf{average} at $x_n$ as
 		      \[
-			      \{v(x_n)\}:= \frac{v(x_n^+) + v(x_n^-)}{2}
+			      \avg{v(x_n)}:= \frac{v(x_n^+) + v(x_n^-)}{2},
 		      \]
 		      furthermore by convention we set:
 		      \[
-			      [v(x_0)] := -v(x_0^+),\quad [v(x_{N+1})] := v(x_{N+1}^-),\quad
-			      \{v(x_0)\}:=v(x_0^+),\quad \{v(x_{N+1})\}:= v(x_{N+1}^-)
+			      \jump{v(x_0)} := -v(x_0^+),\quad \jump{v(x_{N+1})} := v(x_{N+1}^-),\quad
+			      \avg{v(x_0)}:=v(x_0^+),\quad \avg{v(x_{N+1})}:= v(x_{N+1}^-).
 		      \]
 	\end{enumerate}
 \end{definition}
@@ -120,37 +123,37 @@ and integrate by parts locally
 \begin{equation*}
 	\int_{x_n}^{x_{n+1}} fv\, \text{d}x = -\int_{x_n}^{x_{n+1}} (cu')'v\, \text{d}x
 	= \int_{x_n}^{x_{n+1}} cu'v'\, \text{d}x
-	-  cu'v\Big|_{x_n}^{x_{n+1}} \qquad \forall n=0,\ldots,N
+	-  cu'v\Big|_{x_n}^{x_{n+1}} \qquad \forall n \in \{0,\ldots,N\},
 \end{equation*}
 then sum over all elements
 \begin{equation}
 	\label{eq:elliptic_sipg_var_form_incomplete}
 	(f,v)_{L^2(\Omega)} = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
-	-\sum_{n=0}^{N+1} [c(x_n)u'(x_n)v(x_n)]
+	-\sum_{n=0}^{N+1} \jump{c(x_n)u'(x_n)v(x_n)},
 \end{equation}
 where we have used that $\sum_{n=0}^N  w \Big|_{x_n}^{x_{n+1}} = w(x_{N+1}^-) -
-	w(x_{N}^+) + w(x_{N}^-) - \cdots - w(x_1^+) + w(x_1^-) - w(x_0^+) = \sum_{n=0}^{N+1} [w(x_n)]$ for any piece-wise continuous function $w$.
+	w(x_{N}^+) + w(x_{N}^-) - \cdots - w(x_1^+) + w(x_1^-) - w(x_0^+) = \sum_{n=0}^{N+1} \jump{w(x_n)}$ for any piece-wise continuous function $w$.
 \\
-By our construction are $c, u'$ continuous on $\Omega$, this means
+By our construction $c, u'$ are continuous on $\Omega$, this means
 \begin{equation}
 	\label{eq:id_1_cu_jump_zero}
-	[c(x_n)u'(x_n)v(x_n)] = c(x_n)u'(x_n)[v(x_n)] = \{c(x_n)u'(x_n)\}[v(x_n)] \qquad \forall n=0,\ldots,N+1
+	\jump{c(x_n)u'(x_n)v(x_n)} = c(x_n)u'(x_n)\jump{v(x_n)} = \avg{c(x_n)u'(x_n)}\jump{v(x_n)} \qquad \forall n \in \{0,\ldots,N+1\},
 \end{equation}
 and
 \begin{equation}
 	\label{eq:id_2_u_jump_zero}
-	[u(x_n)] = 0 \qquad \forall n=1,\ldots,N
+	\jump{u(x_n)} = 0 \qquad \forall n \in \{1,\ldots,N\}.
 \end{equation}
 To derive the final variational form we will now have to add two additional terms
 to (\ref{eq:elliptic_sipg_var_form_incomplete}): \\
 \textbf{Step 1.} Firstly we need to symmetrize our currently non-symmetrical right hand side
 which will correspond to the SIPG bilinear form. To do so
-we add the symmetry term $-\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[u(x_n)]$ on both sides of
+we add the symmetry term $-\sum_{n=0}^{N+1} \avg{c(x_n)v'(x_n)}\jump{u(x_n)}$ on both sides of
 (\ref{eq:elliptic_sipg_var_form_incomplete}) so we get
 \begin{align*}
 	  & (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v'(x_{N+1}^-) + g_0c(x_0^+)v'(x_0^+) \\
 	= & \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
-	-\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
+	-\sum_{n=0}^{N+1} \avg{c(x_n)u'(x_n)}\jump{v(x_n)} + \avg{c(x_n)v'(x_n)}\jump{u(x_n)},
 \end{align*}
 where on the left hand side of the equation we have applied (\ref{eq:id_2_u_jump_zero})
 for the interior node contributions of the sum (which therefore vanish), and the boundary condition (\ref{eq:elliptic_pde_bc})
@@ -158,8 +161,8 @@ ensuring the left hand side to be soley dependent on $v$.\\
 \textbf{Step 2.} The bilinear form we seek to create will (for now) be defined on $V_h\times V_h$
 meaning it will intake discontinuous functions. In particular the numerical
 solution will be a discontinuous function wheras the exact solution is continuous.
-To counterweigh this discrepancy we need to integrate a penalization mechanism, seeking to
-minimize discontinuous behaviors. Technically speaking this penalization term
+To counterweigh this discrepancy we need to introduce a penalization mechanism, to
+minimize discontinuous behavior. Technically speaking this penalization term
 will guarantee coercivity of the bilinear form (see section \ref{sec:existence_uniqueness_elliptic_discrete_problem}). \\
 Let $\sigma > 0$ constant, we define:
 \begin{equation*}
@@ -179,7 +182,7 @@ with this we define our penalization parameter
 \begin{tcolorbox}[mythmstyle]
 	\begin{equation}
 		\label{def:penalization_function}
-		\texttt{a}_n := \frac{\sigma \texttt{c}_n}{\texttt{h}_n} > 0 \qquad \forall n=0\ldots,N+1
+		\texttt{a}_n := \frac{\sigma \texttt{c}_n}{\texttt{h}_n} > 0 \qquad \forall n \in \{0\ldots,N+1\}.
 	\end{equation}
 \end{tcolorbox}
 Similarly to Step 1 we can now add the penalty term $\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]$
@@ -189,67 +192,82 @@ on both sides of (\ref{eq:elliptic_sipg_var_form_incomplete}) and get the final
 	Find $u_h \in V_h$ such that:
 	\begin{equation}
 		\label{eq:discrete_var_form_elliptic}
-		b_h(u_h, v) = \ell_h(v), \qquad \forall v\in V_h
+		b_h(u_h, v) = \ell_h(v), \qquad \forall v\in V_h,
 	\end{equation}
 	where
 	\begin{align*}
 		b_h(u,v) & = \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
-		-\sum_{n=0}^{N+1} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
-		+\sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]                                     \\
+		-\sum_{n=0}^{N+1} \avg{c(x_n)u'(x_n)}\jump{v(x_n)} + \avg{c(x_n)v'(x_n)}\jump{u(x_n)}
+		+\sum_{n=0}^{N+1} \texttt{a}_n\jump{u(x_n)}\jump{v(x_n)},                                     \\
 		\ell_h(v)  & = (f,v)_{L^2(\Omega)}-g_1c(x_{N+1}^-)v'(x_{N+1}^-) + g_0c(x_0^+)v'(x_0^+)
 		+ \texttt{a}_{N+1}g_1v(x_{N+1}^-) + \texttt{a}_0 g_0v(x_{0}^+)
 	\end{align*}
 	for $u,v\in V_h$.
 \end{tcolorbox}
 
+\begin{remark}
+	In higher dimensions ($d \in \{2,3\}$) there are no point values appearing in the variational formulation, instead each point value evaluation
+	becomes an integral over an element face. Since in practice higher dimensional problems are more interesting we quickly show how the variational formulation
+	would look like in arbitrary dimensions. \\ 
+	Let $\mathcal{F}_h$ denote the set of all faces of the partition of a domain $\Omega \in \R^d$ and $\mathcal{T}_h$ denote the set of all elements. The 
+	bilinear form and the linear form become
+	\begin{align*}
+		b_h(u,v) & = \sum_{K \in \mathcal{T}_h} \int_{K} c \nabla u\cdot \nabla v\, \text{d}x
+		-\sum_{F \in \mathcal{F}_h} \int_{F}\avg{c\nabla u}\cdot \jump{v} + \avg{c \nabla v}\cdot \jump{u} \text{ dS}
+		+\sum_{F \in \mathcal{F}_h} \int_{F} {\normalfont \texttt{a}}\jump{u}\jump{v} \text{ dS},                                     \\
+		\ell_h(v)  & = (f,v)_{L^2(\Omega)} - \sum_{F \in \mathcal{F}_h \cap \partial \Omega}\int_{F} \jump{g} \cdot \avg{c\nabla v} \text{ dS}
+		+ \sum_{F \in \mathcal{F}_h \cap \partial \Omega}\int_{F} {\normalfont \texttt{a}} \jump{g} \jump{v} \text{ dS}.
+	\end{align*}
+\end{remark}
+
 %---Boundary Conditions----------------------------------------------------------
 \section{Boundary Conditions}
 \label{sec:boundary_conditions_elliptic}
-By adding the terms $-\sum_{n=0}^{N+1} \{c(x_n)v'(x_n)\}[u(x_n)], \sum_{n=0}^{N+1} \texttt{a}_n[u(x_n)][v(x_n)]$ on both sides
+By adding the terms $-\sum_{n=0}^{N+1} \avg{c(x_n)v'(x_n)}\jump{u(x_n)}, \sum_{n=0}^{N+1} \texttt{a}_n\jump{u(x_n)}\jump{v(x_n)}$ on both sides
 of (\ref{eq:elliptic_sipg_var_form_incomplete}) we \textit{weakly} imposed the Dirichlet
 boundary conditions into the variational form. This stands in contrast to how boundary
 conditions are usually imposed in continuous FEM. Indeed one could also impose them strongly,
 meaning we could define
 \begin{equation*}
-	V_h^r(\mathcal{T}_h) = \{v \in L^2(\Omega) |\, v|_{I_n} \in \mathcal{P}^r(I_n), v(x_0)=g_0, v(x_{N+1})=g_1 \}
+	V_h^r(\mathcal{T}_h) = \{v \in L^2(\Omega) |\, v|_{I_n} \in \mathcal{P}^r(I_n), v(x_0)=g_0, v(x_{N+1})=g_1 \},
 \end{equation*}
 but this soley as a side note, we will continue to work with purely weakly imposed
 boundary conditions.  \\ \\
 
-One could alternatively desire to implement \textit{Neumann} boundary conditions, this slightly changes the variational formulation.
+One could alternatively desire to impose \textit{Neumann} boundary conditions weakly, this slightly changes the variational formulation.
 We illustrate the idea on the following example boundary condition. A solution
 $u$ should satisfy:
 \[
-	u(0) = g_{0}, u'(1)\cdot n_1 = g_{1}
+	u(0) = g_{0}, \quad u'(1)\cdot n_1 = g_{1},
 \]
 where again $g_0, g_1 \in \mathbb{R}$ are the boundary values and $n_1$ denotes the outward normal
 of the domain at the upper boundary. In 1d we trivially have $n_1 = 1, n_0 = -1$, where $n_0$ denotes the outward
-normal at the lower boundary.
+normal at the lower boundary. Note that we need at least one Dirichlet boundary condition, else there exists no unique solution.
 
 Now recall the initial incomplete formulation (\ref{eq:elliptic_sipg_var_form_incomplete}). First we take the
-Neumann boundary contribution $\{c(x_{N+1})u'(x_{N+1})\}[v(x_{N+1})]$ to the other side of the equation. We get
+Neumann boundary contribution $\avg{c(x_{N+1})u'(x_{N+1})}\jump{v(x_{N+1})} $ to the other side of the equation. We get
 \[
 	\sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
-	-\sum_{n=0}^{N} \{c(x_n)u'(x_n)\}[v(x_n)] = (f,v)_{L^2(\Omega)}
+	-\sum_{n=0}^{N} \avg{c(x_n)u'(x_n)}\jump{v(x_n)} = (f,v)_{L^2(\Omega)}
 	+ g_1c(x_{N+1}^-)v'(x_{N+1}^-)
 \]
-We have used $\{c(x_{N+1})u'(x_{N+1})\}[v(x_{N+1})] = c(x_{N+1}^-)u'(x_{N+1}^-)v(x_{N+1}^-)\cdot n_1 = g_1 c(x_{N+1}^-)v(x_{N+1}^-)$
+We have used $\avg{c(x_{N+1})u'(x_{N+1})}\jump{v(x_{N+1})} = c(x_{N+1}^-)u'(x_{N+1}^-)v(x_{N+1}^-)\cdot n_1 = g_1 c(x_{N+1}^-)v(x_{N+1}^-)$.
 
 From here on
 we proceed similarly as in the Dirichlet case. The main difference is that we always ommit the boundary face with the Neumann
 boundary condition. \\
 We add the symmetry and penalty terms
 \[
-	-\sum_{n=0}^{N} \{c(x_n)v'(x_n)\}[u(x_n)]
-	+\sum_{n=0}^{N} \texttt{a}_n[u(x_n)][v(x_n)]
+	-\sum_{n=0}^{N} \avg{c(x_n)v'(x_n)}\jump{u(x_n)}
+	+\sum_{n=0}^{N} \texttt{a}_n \jump{u(x_n)}\avg{v(x_n)}
 \]
 to both sides, using again that the real solution has zero jump on the interior faces and
 applying the boundary conditions we finally derive the variational form
 
 \begin{align*}
 	 & \sum_{n=0}^N \int_{I_n} cu'v'\, \text{d}x
-	-\sum_{n=0}^{N} \{c(x_n)u'(x_n)\}[v(x_n)] + \{c(x_n)v'(x_n)\}[u(x_n)]
-	+\sum_{n=0}^{N} \texttt{a}_n[u(x_n)][v(x_n)]                                \\
+	-\sum_{n=0}^{N} \avg{c(x_n)u'(x_n)}\jump{v(x_n)} + \avg{c(x_n)v'(x_n)}\jump{u(x_n)}
+	+\sum_{n=0}^{N} \texttt{a}_n \jump{u(x_n)}\jump{v(x_n)}                                \\
 	 & = (f,v)_{L^2(\Omega)} + g_0c(x_0^+)v'(x_0^+) + \texttt{a}_0 g_0v(x_{0}^+)
 	+ g_1c(x_{N+1}^-)v(x_{N+1}^-)
 \end{align*}
