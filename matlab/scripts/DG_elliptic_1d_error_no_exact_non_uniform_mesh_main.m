@@ -7,9 +7,9 @@ import mesh.*
 import fem1d.*
 
 % Settings
-c_handle_idx = 1;
+c_handle_idx = 2;
 u_exact_handle_idx = 10;
-dof = 5;
+dof = 2;
 sigma = 10*dof^2;
 num_refinement_iterations = 10;
 overwrite_functions_bool = false;

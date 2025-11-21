@@ -20,9 +20,9 @@ loglog(meshsizes, meshsizes.^(dof_plot-1), '--','LineWidth', line_width);
 hold on
 grid on;
 loglog(meshsizes, meshsizes.^(dof_plot), '--', 'LineWidth', line_width);
-loglog(meshsizes, errors(1,:),'x-' ,'LineWidth', line_width);
+loglog(meshsizes, errors(1,:),'^-' ,'LineWidth', line_width);
 loglog(meshsizes, errors(2,:),'o-' ,'LineWidth', line_width);
-loglog(meshsizes, errors(3,:), '^-','LineWidth', line_width);
+loglog(meshsizes, errors(3,:), 'x-','LineWidth', line_width);
 hold off
 xlabel('Step Size (H)');
 ylabel('Error');

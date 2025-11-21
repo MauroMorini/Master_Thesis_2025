@@ -12,6 +12,7 @@ classdef Errors1D < handle
         h1_error
         energy_error = NaN
         sigma = NaN
+        additional_quadrature_dof = 1;
     end
 
     methods
@@ -36,14 +37,10 @@ classdef Errors1D < handle
             obj.c_fun = c_fun;
         end
 
-        function obj = generate_quadrature_mesh(obj, additional_quadrature_dof)
+        function obj = generate_quadrature_mesh(obj)
             % creates quadrature mesh with more nodes than original mesh
-            arguments (Input)
-                obj
-                additional_quadrature_dof = 1;
-            end
             obj.quadrature_mesh = copy(obj.mesh);
-            obj.quadrature_mesh.dof = obj.quadrature_mesh.dof + additional_quadrature_dof;
+            obj.quadrature_mesh.dof = obj.quadrature_mesh.dof + obj.additional_quadrature_dof;
             obj.quadrature_mesh.updatePet();
         end
 

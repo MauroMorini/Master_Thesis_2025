@@ -1,4 +1,4 @@
-function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma)
+function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma, with_mass)
     % general symmetric interior penalty solver for elliptic problems
     % of the form -(cu')' = f 
     %
@@ -8,6 +8,7 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
         f_vals                          % (num_el, num_quad) vector with values of load at quadrature nodes
         c_vals                          % (num_el, num_quad) vector with values of c at quadrature nodes (can coincide with nodes, but doesn't have to)
         sigma double                    % scalar penalty constant 
+        with_mass = false;              % for the second elliptic case where we have a mass term
     end
     arguments (Output)
         uh                              % (num_nodes, 1) numerical solution
@@ -23,7 +24,9 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
 
     % collect system matrices
     A = fem1d.stiffnessMatrix1D(nodes, elements, c_vals);
-    M = fem1d.massMatrix1D(nodes, elements, ones(size(c_vals)));
+    if with_mass
+        M = fem1d.massMatrix1D(nodes, elements, ones(size(c_vals)));
+    end
     B_flux_int = dg1d.interiorFluxMatrix1D(nodes, elements, c_vals);
     B_flux_bound = dg1d.boundaryFluxMatrix1D(nodes, elements, c_vals);
     B_penalty_int = dg1d.interiorPenaltyMatrix1D(nodes, elements, c_vals, sigma);
@@ -48,13 +51,19 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
     neumann_vector(elements(lower_boundary_element_idx,:)) = neumann_vector(elements(lower_boundary_element_idx,:))*neumann_bc_switch(1);
     neumann_vector(elements(upper_boundary_element_idx,:)) = neumann_vector(elements(upper_boundary_element_idx,:))*neumann_bc_switch(2);
 
-    system_matrix = A - B_flux_bound - B_flux_int + B_penalty_int + B_penalty_bound + M;
+    system_matrix = A - B_flux_bound - B_flux_int + B_penalty_int + B_penalty_bound;
+    if with_mass
+        system_matrix = system_matrix + M;
+    end
     system_vector = load_vector + dirichlet_vector + neumann_vector;
 
     % rescale system 
     scaling_factor = max(diag(system_matrix));
     system_matrix = system_matrix/scaling_factor;
     system_vector = system_vector/scaling_factor;
+
+    uh = system_matrix\system_vector;
+    return;
 
     % solve system using pcg
     tol = Mesh.h_max^Mesh.dof;
@@ -72,5 +81,4 @@ function [uh, system_matrix] = sip_1d_elliptic_solver(Mesh, boundary_cond, f_val
         warning("iterative solver has failed to converge normal mldivide is used")
         uh = system_matrix\system_vector;
     end
-    % uh = system_matrix\system_vector;
 end

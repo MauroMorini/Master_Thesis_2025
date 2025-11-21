@@ -13,7 +13,7 @@ The procedure of doing so can be listed in the following steps: \\
     \begin{step}[Exact Solution]
         We decide a priori which exact solution we intend to approximate. To simplify calculations we choose one of the simple smooth solutions:
         \begin{equation*}
-            u_1(x) = x^r, \qquad u_2(x) = e^{-x}\sin(x),
+            u_1(x) = x^r, \qquad u_2(x) = e^{-x}\sin(5x),
         \end{equation*}
         where $r$ corresponds to the polynomial degree of the finite element space. \\
         $u_1$ is chosen to ensure the exactness of the method (since we approximate a polynomial of degree $r$ by a piecewise polynomial of degree $r$
@@ -32,7 +32,7 @@ The procedure of doing so can be listed in the following steps: \\
     \begin{step}[Coefficient]
         We fix a smooth coefficient, one of 
         \begin{equation*}
-            c_1(x) = 1, \qquad c_2(x) = \sin(10x) + 2,
+            c_1(x) = 1, \qquad c_2(x) = \sin(x) + 2,
         \end{equation*}
         where having these two options allows us to first check if the method works for a homogeneous background material and then for the inhomogeneous case.
         To ensure our exact solution still satisfies the original pde, we calculate the forcing term $f$ in (\ref{eq:elliptic_pde}) symbolically, i.e.\ 
@@ -40,65 +40,61 @@ The procedure of doing so can be listed in the following steps: \\
     \end{step}
 
     \begin{step}[Mesh]
-        We choose one of the two following initial meshes: A uniform mesh
+        We choose an initial mesh, i.e.\ an initial partition of the domain $\Omega$. For our purpose we only present the uniform mesh
         \begin{equation*}
-            \mathcal{M}_1 = \{0, \frac{1}{4}, \frac{1}{2}, \frac{3}{4}, 1\}
+           \mathcal{T}_h^{(0)} = \{(0, 0.25), (0.25, 0.5),(0.5, 0.75),(0.75, 1)\}, 
         \end{equation*}
-        with initial meshsize $h = \frac{1}{4}$, and a non uniform mesh
-        \begin{equation*}
-            \mathcal{M}_2 = \{ \}
-        \end{equation*}
+        with initial meshsize $h = \frac{1}{4}$, but the results do not vary for any kind of initial mesh. In addition to the initial mesh we decide on a number of refinement cycles. Refining each
+        element of the initial mesh by dividing it into two new elements and repeating this process for the number of refinement cycles fixed yields a sequence of nested meshes. 
+    \end{step}
+
+    \begin{step}[Numerical Approximation]
+        Here we only present the case for $r \in \{1,2\}$, meaning for $\mathcal{P}^1$-, $\mathcal{P}^2$-elements, 
+        but the expected convergence rates can be recovered for an arbitrary polynomial degree
+        $r$. For $r>6$ there is barely a convergence rate to be made out anymore since after only a couple of refinements the error flattens out and even starts to grow slightly. 
+        This happens due to the high condition number of the resulting stiffness matrix $\mathbf{B}$ and the high number of global degrees of freedom (basis nodes). \\
+        We also fix a big enough penalization parameter $\sigma = 10(r+1)^2$ to ensure coercivity. \\ \\
+        On each successive mesh $\mathcal{T}_h^{(l)}$ we find the numerical solution $ u_h^{(l)}$ by solving the system (\ref{eq:fully_discrete_dg_system_elliptic}).
+    \end{step}
+
+    \begin{step}[Error Computation]
+        We are interested in 
+        \begin{enumerate}
+            \item the $L^2$-error
+                \begin{equation*}
+                    \|u - u_h\|_{L^2(\Omega)} = \Big( \int_{\Omega} |u(x) - u_h(x)|^2 \text{d} x \Big)^{1/2} = \Big( \sum_{n=0}^{N}\int_{I_n} |u(x) - u_h(x)|^2 \text{d} x \Big)^{1/2};
+                \end{equation*}
+            \item the broken $H^1$-error
+                \begin{equation*}
+                    \|u - u_h\|_{H^1(\mathcal{T}_h )} = \Big( \sum_{n=0}^{N}\int_{I_n} |u^{\prime}(x) - u_h^{\prime}(x)|^2 \text{d} x \Big)^{1/2};
+                \end{equation*}
+            \item and finally the error in the energy norm 
+                \begin{equation*}
+                    \|u - u_h\|_{\epsilon} = \Big( \sum_{n=0}^{N} \int_{I_n} c(x)\abs{u^{\prime}(x) - u_h^{\prime}(x)}^2\text{d}x + 
+                    \sum_{n=0}^{N+1}{\normalfont \texttt{a}_n}\jump{u(x_n) - u_h(x_n)}^2 \Big)^{1/2}.
+                \end{equation*}
+        \end{enumerate}
+        We compute for each numerical solution $ u_h^{(l)} $ all three named errors and plot them in a plot where both axes are logarithmically scaled.
     \end{step}
 \end{stepscope}
 
-
-To replicate the theoretical rate of convergence we first consider a sequence of uniform meshes. 
-Let $h \in \{2^{-l}| \, l\in \{2,\ldots,9\} \}$ denote the global (uniform) meshsize and $\mathcal{T}_h$ denote
-the respective partition of $\Omega$. \\
-As an example for $h = 2$ we have 
-\begin{equation*}
-\mathcal{T}_h = \{(0, 0.25), (0.25, 0.5),(0.5, 0.75),(0.75, 1)\}.    
-\end{equation*}
-To begin we consider the constant coefficient $c\equiv 1$. In this case choosing $\sigma = 10(r+1)^2$ guarantees positive definiteness of the 
-system matrix.
-To 
-We tested our methods programmed in \texttt{MATLAB} using some very simple exact solutions $u \in C^1(\Omega)$, approximated them numerically finding some $u_h \in V_h^r(\mathcal{T}_h^{(l)})$ 
-(for an a priori fixed polynomial degree $r$) and calculated the $L^2$-norm
-\begin{equation}
-	\|u - u_h\|_{L^2(\Omega)} = \Big( \int_{\Omega} |u(x) - u_h(x)|^2 \text{d} x \Big)^{1/2} = \Big( \sum_{n=0}^{N_l}\int_{I_n} |u(x) - u_h(x)|^2 \text{d} x \Big)^{1/2} \nonumber
-\end{equation}
-and the broken $H^1$-norm
-
-\begin{equation}
-	\|u - u_h\|_{H^1(\mathcal{T}_h^{(l)} )} = \Big( \sum_{n=0}^{N_l}\int_{I_n} |u^{\prime}(x) - u_h^{\prime}(x)|^2 \text{d} x \Big)^{1/2}. \nonumber
-\end{equation}
-Note that even though $u_h$ is not in $H^1(\Omega)$ and we can therefore not calculate the normal $H^1$-norm, we do have 
-
-\begin{equation}
-	u, u_h \in H^1(\mathcal{T}_h^{(l)}) = \{v \in L^2(\Omega) | v|_{I_n} \in  H^1(I_n) \text{ for } n = 0,\ldots,N_l\} \nonumber
-\end{equation}
-so taking the broken Sobolev norm makes sense also for $V_h$ functions.
-
-Firstly to ensure the exactness of the method we chose
-the exact solution $u(x) = x^r$ and approximated it using $\mathcal{P}^r$ elements. As expected we got a minimal floating-point error of around $10^{-15}$
-in both $L^2$-, and $H^1(\mathcal{T}^{(l)}_h)$-norms, slightly increasing for increasing $l$ due to the growing condition number of the system matrix.
-This indicates exactness of the method.
-
-Next we considered the exact solution $u(x) = e^{-x} \sin(x)$, we observed the with the theory conforming convergence rates 
-$\mathcal{O}(h^r), \mathcal{O}(h^{r+1})$, in the $H^1(\mathcal{T}_h)$- and $L^2$-norm respectively for $\mathcal{P}^r$-elements. As visible in figures 
-\ref{fig:elliptic_uniform_mesh_error_p1}, \ref{fig:elliptic_uniform_mesh_error_p2}
+First to ensure exactness we consider the polynomial exact solution $u_1$ with the constant coefficient $c_1$, as expected 
+all three errors display minimal floating-point values of around $10^{-15}$, 
+slightly increasing with each further refinement due to the growing condition number of the system matrix. 
+When considering $u_1$ with the non-trivial coefficient $c_2$ we do now get real decreasing error rates due to the introduced quadrature error when
+assembling the stiffness matrix and the load vector. 
 
 \begin{figure}[h!]
     \centering
     
-    \begin{minipage}[t]{0.48\textwidth}
+    \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_elliptic_uniform_mesh_exact_sol_errors_P1.jpg}
         \caption{Errors of SIPG for $P^1$-elements}
         \label{fig:elliptic_uniform_mesh_error_p1}
     \end{minipage}
     \hfill
-    \begin{minipage}[t]{0.48\textwidth}
+    \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_elliptic_uniform_mesh_exact_sol_errors_P2.jpg}
         \caption{Errors of SIPG for $P^2$-elements}
@@ -106,59 +102,70 @@ $\mathcal{O}(h^r), \mathcal{O}(h^{r+1})$, in the $H^1(\mathcal{T}_h)$- and $L^2$
     \end{minipage}
 \end{figure}
 
-We plotted the numerical solution for $\mathcal{P}^1, \mathcal{P}^2$-elements in the figures 
-\ref{fig:elliptic_uniform_mesh_sol_p1}, \ref{fig:elliptic_uniform_mesh_sol_p2} respectively on the partition $\mathcal{T}_h^{(3)}$, i.e. for 
-8 elements with meshsize $h = \frac{1}{8}$. By eye the solution seems continuous, this is due to the high penalization parameter 
-$\sigma = 10(r+1)^2$. In fact the solution is not continuous and the boundary conditions are not exact either, the error is just not noticeable
-by eye. 
+In the figures \ref{fig:elliptic_uniform_mesh_error_p1}, \ref{fig:elliptic_uniform_mesh_error_p2} we observe the expected convergence rates of 
+$ \mathcal{O}(h^r)$ in the broken $H^1$- and energy norm as well as $ \mathcal{O}(h^{r+1})$ in the $L^2$-norm for the exact solution
+$u_2(x) = e^{-x}\sin(5x)$ and the coefficient $c_2(x) = \sin(x) + 2$. We note that the error in the energy norm and the error in the broken $H^1$-norm behave equivalently.
+Furthermore we observe that the error in the case of $P^2$-elements flattens out and starts to grow again 
+after crossing the threshold of $10^{-10} $, which as mentioned before is to be expected. In fact an error of $10^{-10}$ is way smaller than one 
+hopes to achieve in reality using standard computational tools. \\ 
+If instead we choose the constant coefficient $c_1(x) = 1$, the picture is the same. \\ \\
 
 \begin{figure}[h!]
     \centering
     
-    \begin{minipage}[t]{0.48\textwidth}
+    \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_elliptic_num_sol_p1.jpg}
-        \caption{numerical SIPG-approximation for $P^1$-elements}
+        \caption{high penalty SIPG-approximation for $P^1$-elements}
         \label{fig:elliptic_uniform_mesh_sol_p1}
     \end{minipage}
     \hfill
-    \begin{minipage}[t]{0.48\textwidth}
+    \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_elliptic_num_sol_p2.jpg}
-        \caption{numerical SIPG-approximation for $P^2$-elements}
+        \caption{high penalty SIPG-approximation for $P^2$-elements}
         \label{fig:elliptic_uniform_mesh_sol_p2}
     \end{minipage}
 \end{figure}
 
-If we reduce the penalization parameter enough such that the bilinear form 
-is no longer coercive we can observe the jumps growing and the discontinuity becomes apparent as is visible in figures 
-\ref{fig:elliptic_uniform_mesh_sol_p1_non_coercive}, \ref{fig:elliptic_uniform_mesh_sol_p2_non_coercive} where we have set $\sigma = 1.1$. 
-Maybe interesting to observe is the effect of enforcing boundary conditions weakly. Clearly here the Dirichlet boundary condition $u(0) = 0$ is 
-not fulfilled by the numerical solutions, which would be the case for strongly enforced boundary conditions. \\
+\subsection{Visualization of the SIPG Solution}
+Now we visualize the numerical solution approximating $u_2$ on the uniform mesh $\mathcal{T}_h^{(1)}$ (after one global refinement cycle) and play with the penalization
+parameter $ \sigma $. If we penalize the jumps heavily by using the generously chosen $\sigma = 10(r+1)^2$ we can not observe any discontinuity in the numerical solution
+by eye (see figures \ref{fig:elliptic_uniform_mesh_sol_p1} and \ref{fig:elliptic_uniform_mesh_sol_p2}). Also the boundary conditions seem to be exact, as they would be in the case of 
+continuous FEM, of course this is not the case as we will see shortly.
+The circles in the figures \ref{fig:elliptic_uniform_mesh_sol_p1} and \ref{fig:elliptic_uniform_mesh_sol_p2} denote the face nodes of the elements in $\mathcal{T}_h^{(1)}$ (meaning the element boudnary points), 
+in between each of those face nodes the numerical solution is a polynomial of degree $r$, which when comparing $r=1$ and $r=2$ as done here, becomes apparent. \\
 
 \begin{figure}[h!]
     \centering
     
-    \begin{minipage}[t]{0.48\textwidth}
+    \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_elliptic_num_sol_non_coercive_p1.jpg}
-        \caption{numerical SIPG-approximation for $P^1$-elements with small penalty}
+        \caption{non-coercive SIPG-approximation for $P^1$-elements}
         \label{fig:elliptic_uniform_mesh_sol_p1_non_coercive}
     \end{minipage}
     \hfill
-    \begin{minipage}[t]{0.48\textwidth}
+    \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_elliptic_num_sol_non_coercive_p2.jpg}
-        \caption{numerical SIPG-approximation for $P^2$-elements with small penalty}
+        \caption{non-coercive SIPG-approximation for $P^2$-elements}
         \label{fig:elliptic_uniform_mesh_sol_p2_non_coercive}
     \end{minipage}
 \end{figure}
 
-We repeated the tests above using a non constant yet still smooth coefficient $c(x) = \sin(10x) + 2$. We observed the same convergence rates but slightly higher
-errors overall. This was to be expected since for a non-constant $c$ we introduce a quadrature error. 
-We also observed the same convergence rates when we repeated all the experiments with a sequence of (nested) non-uniform meshes.
 
-\subsection{Influence of Quadrature Rule on the Convergence Rate}
+If we relax the penalty by reducing the penalization parameter enough such that the bilinear form 
+is no longer coercive, we can observe the jumps growing. If we look at the figures
+\ref{fig:elliptic_uniform_mesh_sol_p1_non_coercive}, \ref{fig:elliptic_uniform_mesh_sol_p2_non_coercive}, where we have set $\sigma = 1.1$, the discontinuities become apparent.
+The bilinear form loosing it's coercivity means that the system we solve in (\ref{eq:fully_discrete_dg_system_elliptic}) is not invertible anymore and 
+we end up solving a least squares problem. Here we have chosen extreme edge examples of $\sigma$ on purpose to illustrate the effect of modulating the penalization parameter and to visually show
+the discontinuity of a DG-solution.
+Maybe interesting to observe is the effect of enforcing boundary conditions weakly. Clearly here the Dirichlet boundary condition $u(0) = 0$ is 
+not fulfilled by the numerical solutions, which would be the case for strongly enforced boundary conditions. \\
+
+
+\subsection{Influence of the Quadrature Rule on the Convergence Rate}
 \label{sec:elliptic_numerical_experiments}
 As noted in section \ref{sec:quadrature_rule} by using $r+1$ Gauss-Lobatto nodes (in the context of $\mathcal{P}^r$-elements) as quadrature nodes and basis nodes at the same time
 introduces an error when assembling the mass matrix of the system. In this subsection we experimentally compare the results of using $r+1$ Gauss-Lobatto quadrature nodes
@@ -168,28 +175,28 @@ as specified in section \ref{sec:ell_basis} and approximate all integrals first 
 First we have to consider a slightly different elliptical problem, which requires a mass matrix. 
 \begin{equation}
 	\label{eq:elliptic_pde_with:mass}
-	-(c(x)u'(x))' + u(x) = f(x) \qquad \forall x\in \Omega \nonumber
+	-(c(x)u'(x))' + u(x) = f(x) \qquad \forall x\in \Omega \nonumber,
 \end{equation}
 \begin{equation}
 	\label{eq:elliptic_pde_bc_with_mass}
-	u(0) = g_0, u(1) = g_1 \nonumber
+	u(0) = g_0, u(1) = g_1 \nonumber,
 \end{equation}
 We can apply the exact same tools as in the derivation of the variational formulation in section \ref{sec:elliptic_var_form} and get the discrete SIPG variational formulation. \\
 Find $u_h \in V_h$ such that:
 \begin{equation}
 	\label{eq:discrete_var_form_elliptic_with_mass}
-	b_h(u_h, v) + (u_h, v)_{L^2(\Omega)} = \ell_h(v), \qquad \forall v\in V_h 
+	b_h(u_h, v) + (u_h, v)_{L^2(\Omega)} = \ell_h(v), \qquad \forall v\in V_h,
 \end{equation}
 Now analogously to section \ref{sec:matrix_vect_syst} we write $u_h = \sum_{m=0}^{N} \sum_{j=0}^r \alpha_j^m \Phi_j^m \in V_h$ and find that (\ref{eq:discrete_var_form_elliptic_with_mass})
 is equivalent to \\
 \begin{equation*}
-	\sum_{m=0}^{N} \sum_{j=0}^r \alpha_j^m \Big(b_h(\Phi_j^m, \Phi_i^n) + (\Phi_j^m, \Phi_i^n)_{L^2(\Omega)}\Big) = \ell_h(\Phi_i^n) \qquad \forall i \in \{0,\ldots,r\}, \{n = 0,\ldots,N\}
+	\sum_{m=0}^{N} \sum_{j=0}^r \alpha_j^m \Big(b_h(\Phi_j^m, \Phi_i^n) + (\Phi_j^m, \Phi_i^n)_{L^2(\Omega)}\Big) = \ell_h(\Phi_i^n) \qquad \forall i \in \{0,\ldots,r\}, n \in \{0,\ldots,N\},
 \end{equation*}
 which in turn is equivalent to the Matrix-Vector system
 
 \begin{equation}
 	\label{eq:elliptic_matrix_vect_system_with_mass}
-	\Big( \textbf{B} + \textbf{M} \Big) \textbf{u} = \textbf{l}
+	\Big( \textbf{B} + \textbf{M} \Big) \textbf{u} = \textbf{l},
 \end{equation}
 where as before 
 $ [\textbf{B}]_{T(n,i), T(m,j)} = b_h(\Phi_j^m, \Phi_i^n),
@@ -197,20 +204,20 @@ $ [\textbf{B}]_{T(n,i), T(m,j)} = b_h(\Phi_j^m, \Phi_i^n),
 	[\textbf{l}]_{T(n,i)} = \ell_h(\Phi_i^n)$ and furthermore
 $ [\textbf{M}]_{T(n,i), T(m,j)} = (\Phi_j^m, \Phi_i^n)_{L^2(\Omega)}$.
 \\ \\
-Next we considered the same setting as described in subsection \ref{subsec:conv_rate_ell} and tested the convergence rates for $\mathcal{P}^1,\mathcal{P}^2$-elements,
-where we chose the exact solution $u(x) = e^{-x}\sin(x)$ and $c(x) = \sin(10x) + 2$.
+We now consider a similar setting as described in subsection \ref{subsec:conv_rate_ell} and test the convergence rates for $\mathcal{P}^1,\mathcal{P}^2$-elements,
+where we choose the exact solution $u_2(x) = e^{-x}\sin(5x)$ and the strongly oscillating coefficient $c_3(x) = \sin(20x) + 2$. 
+We distinguish the following two methods of calculating numerical solutions.
 
 \begin{figure}[h!]
     \centering
-    
-    \begin{minipage}[t]{0.48\textwidth}
+    \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_error_elliptic_with_and_without_quad_p1.jpg}
         \caption{Comparison of convergence rates of higher order vs lower order quadrature for $\mathcal{P}^1$-elements}
         \label{fig:elliptic_with_and_without_quad_conv_rates_p1}
     \end{minipage}
     \hfill
-    \begin{minipage}[t]{0.48\textwidth}
+    \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_error_elliptic_with_and_without_quad_p2.jpg}
         \caption{Comparison of convergence rates of higher order vs lower order quadrature for $\mathcal{P}^2$-elements}
@@ -218,20 +225,48 @@ where we chose the exact solution $u(x) = e^{-x}\sin(x)$ and $c(x) = \sin(10x) +
     \end{minipage}
 \end{figure}
 
-\subsubsection*{Method A: "Error Quad"}
-This method corresponds to exactly doing what we have been doing before. We assembled the matrices of the system (\ref{eq:elliptic_matrix_vect_system_with_mass})
-as described in section \ref{sec:stiff_assembly} and approximated the integrals appearing in the entries of \textbf{A}, \textbf{M}, \textbf{l} 
-using the $r+1$ node Gauss-Lobatto quadrature rule, where $r \in \{1,2\}$, meaning the quadrature nodes coincide with the basis nodes.
-We calculated the $L^2, H^1(\mathcal{T}_h)$-error between the numerical solution and the exact solution on all meshes and called it \texttt{L2 quad}, \texttt{H1 quad}
-respectively.
+\subsubsection*{Method A: "Low Order"}
+We assemble the matrices of the system (\ref{eq:elliptic_matrix_vect_system_with_mass})
+as described in section \ref{sec:stiff_assembly} and approximate the integrals appearing in the entries of \textbf{A}, \textbf{M}, \textbf{l} 
+using the (lower order) $r+1$ node Gauss-Lobatto quadrature rule, where $r \in \{1,2\}$, meaning the quadrature nodes coincide with the basis nodes
+and the mass matrix is mass-lumped, hence the name.
+We calculate the $L^2$-, $H^1(\mathcal{T}_h)$- and energy error between the numerical solution and the exact solution on all meshes.
 
-\subsubsection*{Method B: "Error Exact"}
-For this method we assembled the matrices \textbf{A}, \textbf{M}, \textbf{l} for the system 
-(\ref{eq:elliptic_matrix_vect_system_with_mass}) using $r+2$ Gauss-Lobatto quadrature nodes. This quadrature is exact for polynomials of order $2r+1$,
-meaning the entries of the mass matrix \textbf{M} are calculated exactly. Next we solved the system yielding the numerical solution and in turn
-calculated the $L^2, H^1(\mathcal{T}_h)$-errors on all meshes and called it \texttt{L2 exact}, \texttt{H1 exact}
-respectively. 
+\subsubsection*{Method B: "High Order"}
+We assemble the matrices of the system (\ref{eq:elliptic_matrix_vect_system_with_mass})
+as described in section \ref{sec:stiff_assembly} and approximate the integrals appearing in the entries of \textbf{A}, \textbf{M}, \textbf{l} 
+using the (higher order) $r+2$ node Gauss-Lobatto quadrature rule, where $r \in \{1,2\}$, meaning the mass matrix is calculated exactly.
+We calculate the $L^2$-, $H^1(\mathcal{T}_h)$- and energy error between the numerical solution and the exact solution on all meshes.
 \\ \\
-In the figures \ref{fig:elliptic_with_and_without_quad_conv_rates_p1}, \ref{fig:elliptic_with_and_without_quad_conv_rates_p2} we compared 
-the error rates of Method A and B and observed no significant difference but a slight downward shift of \texttt{L2 exact} on a logarithmic scale 
-in comparison to \texttt{L2 quad}.
+It turns out that there is only a very slight difference in accuracy, plotting the convergence rates of both methods into the same plot 
+does not yield a very informative picture as is visible in figures 
+\ref{fig:elliptic_with_and_without_quad_conv_rates_p1}, \ref{fig:elliptic_with_and_without_quad_conv_rates_p2}. 
+Instead since we expect the error resulting from Method B to be smaller than the error from Method A, we subtract
+Error B from Error A and plot this difference into a loglog plot, see figures 
+\ref{fig:elliptic_with_and_without_quad_error_difference_p1}, \ref{fig:elliptic_with_and_without_quad_error_difference_p2}.
+
+\begin{figure}[h!]
+    \centering
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_error_elliptic_with_and_without_quad_error_difference_p1.jpg}
+        \caption{Lower order error minus higher order error for $\mathcal{P}^1$-elements}
+        \label{fig:elliptic_with_and_without_quad_error_difference_p1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_error_elliptic_with_and_without_quad_error_difference_p2.jpg}
+        \caption{{Lower order error minus higher order error for $\mathcal{P}^2$-elements}}
+        \label{fig:elliptic_with_and_without_quad_error_difference_p2}
+    \end{minipage}
+\end{figure}
+
+We observe that the convergence rate is not affected by using a mass lumping strategy. Clearly we only gain a slight bit of accuracy by employing a 
+higher order quadrature rule. This speaks for using mass lumping when needed. On the other hand since we already have a block-diagonal mass matrix 
+in DG there is really no benefit to using mass lumping, we simply sacrifice accuracy. In a more realistic application we might be more interested
+in accuracy than convergence rates and especially if the forcing term $f$ or the coefficient $c$ rapidly change in a certain part of the domain,  
+loosing out on accuracy might be unnecessary. In practice it is the norm to use a higher order quadrature rule if possible.
+
+\subsection{Modeling an Inhomogeneous Membrane}
+To round off this chapter we now present a small intuitive example.
