@@ -102,7 +102,7 @@ assembling the stiffness matrix and the load vector.
     \end{minipage}
 \end{figure}
 
-In the figures \ref{fig:elliptic_uniform_mesh_error_p1}, \ref{fig:elliptic_uniform_mesh_error_p2} we observe the expected convergence rates of 
+In the Figures \ref{fig:elliptic_uniform_mesh_error_p1}, \ref{fig:elliptic_uniform_mesh_error_p2} we observe the expected convergence rates of 
 $ \mathcal{O}(h^r)$ in the broken $H^1$- and energy norm as well as $ \mathcal{O}(h^{r+1})$ in the $L^2$-norm for the exact solution
 $u_2(x) = e^{-x}\sin(5x)$ and the coefficient $c_2(x) = \sin(x) + 2$. We note that the error in the energy norm and the error in the broken $H^1$-norm behave equivalently.
 Furthermore we observe that the error in the case of $P^2$-elements flattens out and starts to grow again 
@@ -239,10 +239,10 @@ using the (higher order) $r+2$ node Gauss-Lobatto quadrature rule, where $r \in 
 We calculate the $L^2$-, $H^1(\mathcal{T}_h)$- and energy error between the numerical solution and the exact solution on all meshes.
 \\ \\
 It turns out that there is only a very slight difference in accuracy, plotting the convergence rates of both methods into the same plot 
-does not yield a very informative picture as is visible in figures 
+does not yield a very informative picture as is visible in Figures 
 \ref{fig:elliptic_with_and_without_quad_conv_rates_p1}, \ref{fig:elliptic_with_and_without_quad_conv_rates_p2}. 
 Instead since we expect the error resulting from Method B to be smaller than the error from Method A, we subtract
-Error B from Error A and plot this difference into a loglog plot, see figures 
+Error B from Error A and plot this difference into a loglog plot, see Figures 
 \ref{fig:elliptic_with_and_without_quad_error_difference_p1}, \ref{fig:elliptic_with_and_without_quad_error_difference_p2}.
 
 \begin{figure}[h!]
@@ -269,4 +269,47 @@ in accuracy than convergence rates and especially if the forcing term $f$ or the
 loosing out on accuracy might be unnecessary. In practice it is the norm to use a higher order quadrature rule if possible.
 
 \subsection{Modeling an Inhomogeneous Membrane}
-To round off this chapter we now present a small intuitive example.
+To round off this chapter we now present a small intuitive example of the pde (\ref{eq:elliptic_pde})-(\ref{eq:elliptic_pde_bc}). This subsection is inspired by the step-5 tutorial program
+of the \texttt{deal.II} \footnote{www.dealii.org} website. \\
+Imagine a thin one dimensional membrane of a certain homogeneous material being spanned over the domain $\Omega = (0,1)$, such that the left end is fixed at the point $x = 0$ to a height of $y = 0$ 
+and the right end is fixed at the point $x = 1$ to a height of $y = 0$. Since the membrane is in a relaxed state and pinned to a fixed height at both ends the picture we get is just a flat membrane.
+We can describe the vertical displacement of the membrane by a function $u : \Omega \to \R$. This function is harmonic with zero Dirichlet boundary conditions in the relaxed state, so 
+the displacement satisfies $u \equiv 0$. \\ \\
+Now we can introduce a constant force $f \equiv 1$ on  $\Omega$ pushing the membrane up. The displacement of the membrane is now a solution of the Poisson equation 
+\begin{equation*}
+    -u^{\prime \prime} = f \qquad  \text{in } \Omega,
+\end{equation*} 
+\begin{equation*}
+    u(0) = u(1) = 0.
+\end{equation*}
+As a final modification we allow for an inhomogeneous stiffness of the membrane, for example by letting its thickness vary over $\Omega$. The stiffness is described by 
+the coefficient 
+\begin{equation*}
+    c(x) = 
+        \begin{cases}
+            1, & x \in \left[0, 0.3 \right) \cup \left(0.7, 1\right] \\
+            20, & x \in [0.3, 0.7]
+        \end{cases}
+\end{equation*} 
+so that the membrane is twenty times thicker in the center region than closer to the boundary. Now the displacement $u$ is a solution of the problem 
+(\ref{eq:elliptic_pde})-(\ref{eq:elliptic_pde_bc}) with $g_0 = g_1 = 0$ and $f \equiv 1$. \\ \\
+We discretize the domain into a non equidistant partition, where we allow for smaller elements in the region of higher stiffness around $[0.3, 0.7]$.
+We simulate the displacement $u$ with $\mathcal{P}^2$-elements using the SIPG variational form. 
+
+\begin{figure}[h!]
+    \centering
+    \begin{minipage}[t]{0.3\textwidth}
+        \vspace{0pt}
+        In Figure \ref{fig:elliptic_simulation_inhomogeneous_membrane} we observe the characteristic shape of a pressurized membrane corresponging to a solution of the Poisson equation. The 
+        inhomogeneity in the center, where the membrane displays higher stiffness, barely deforms in response to the pressure introduced by $f$, this yields a flattened plateau in 
+        the interval $[0.3, 0.7]$.
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.6\textwidth}
+        \vspace{0pt}
+        \centering
+        \includegraphics[width=\linewidth]{figures/ellitpic_simulation_inhomogeneous_membrane.jpg}
+        \caption{Displacement of inhomogeneous membrane with $\mathcal{P}^2$-elements}
+        \label{fig:elliptic_simulation_inhomogeneous_membrane}
+    \end{minipage}
+\end{figure}

@@ -339,3 +339,50 @@ xlabel('meshsize h');
 ylabel('error');
 legend("L2","H1","energy")
 grid on
+
+%% Modeling an Inhomogeneous Membrane
+% here we now model a problem only knowing the external forces and not the exact solution on just one 
+% well chosen mesh and plot the result
+
+% Settings
+dof = 3;                % dof = r+1 the polynomial degree (for P1 elements do dof = 2)
+sigma = 10*dof^2;       % penalization parameter sigma 
+
+
+% additional settings
+resonators_matrix = [0.3, 0.7];
+boundary_nodes = [0, 1];
+h_background = 0.2;
+h_res = h_background/5;
+
+% functions
+c_handle = @(x) 1*(x < resonators_matrix(1) | x > resonators_matrix(2)) + ...
+                20*(x>= resonators_matrix(1) & x <= resonators_matrix(2));
+f_handle = @(x) ones(size(x));
+
+boundary_cond = struct("values", [0, 0], "lower_boundary_type", "dirichlet", "upper_boundary_type", "dirichlet");
+
+% mesh
+waveguide = mesh.MeshIntervalDG1d(boundary_nodes, [2*h_background,h_res/10]);
+waveguide.dof = dof;
+waveguide.buildResonatorMesh(resonators_matrix, [h_background, h_res]);
+waveguide.updatePet();
+
+% solve problem
+quad_mesh = copy(waveguide);
+quad_mesh.dof = quad_mesh.dof + 1;
+quad_mesh.updatePet();
+[quad_nodes, ~, quad_elements] = quad_mesh.getPet();
+eval_nodes = quad_nodes(quad_elements);
+eval_nodes(:, 1) = eval_nodes(:, 1) + 1e-14;
+eval_nodes(:, end) = eval_nodes(:, end) - 1e-14;
+c_vals = c_handle(eval_nodes);
+f_vals = f_handle(eval_nodes);
+
+% solve system
+uh = dg1d.sip_1d_elliptic_solver(waveguide, boundary_cond, f_vals, c_vals, sigma);
+
+% plot solution
+f = figure;
+waveguide.plotDGsol(uh, f);
+grid on;
