@@ -20,15 +20,6 @@ The procedure of doing so can be listed in the following steps: \\
         the finite element approximation should be exact up to floating-point errors).
     \end{step}
 
-    \begin{step}[Boundary Conditions]
-        We choose the type of boundary condition we would like to impose on each boundary. We have mainly focused on Dirichlet boundary conditions on both sides so far, so this is 
-        what we will consider. Let it be said, that the results for one Neumann and one Dirichlet (as mentioned in section \ref{sec:boundary_conditions_elliptic}) are very similar. \\
-        To actually impose the boundary condition we directly take the values of the previously fixed exact solution $u$ at the respective boundary points, meaning 
-        \begin{equation*}
-            g_{0,i} = u_i(0), \qquad g_{1,i} = u_i(1).
-        \end{equation*}
-    \end{step}
-    %
     \begin{step}[Coefficient]
         We fix a smooth coefficient, one of 
         \begin{equation*}
@@ -39,8 +30,17 @@ The procedure of doing so can be listed in the following steps: \\
         $f_{i,j} = -(c_j \, u_i^{\prime})^{\prime} $.
     \end{step}
 
+    \begin{step}[Boundary Conditions]
+        We choose the type of boundary condition we would like to impose on each boundary. We have mainly focused on Dirichlet boundary conditions on both sides so far, so this is 
+        what we will consider. Let it be said, that the results for one Neumann and one Dirichlet (as mentioned in section \ref{sec:boundary_conditions_elliptic}) are very similar. \\
+        To actually impose the boundary condition we directly take the values of the previously fixed exact solution $u$ at the respective boundary points, meaning 
+        \begin{equation*}
+            g_{0,i} = u_i(0), \qquad g_{1,i} = u_i(1).
+        \end{equation*}
+    \end{step}
+
     \begin{step}[Mesh]
-        We choose an initial mesh, i.e.\ an initial partition of the domain $\Omega$. For our purpose we only present the uniform mesh
+        We choose an initial mesh, i.e.\ an initial partition of the domain $\Omega$. For our purpose we only present the equidistant mesh
         \begin{equation*}
            \mathcal{T}_h^{(0)} = \{(0, 0.25), (0.25, 0.5),(0.5, 0.75),(0.75, 1)\}, 
         \end{equation*}

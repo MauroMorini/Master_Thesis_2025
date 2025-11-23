@@ -145,7 +145,7 @@ classdef PDEData < handle
             c_cell = {  struct("c_sym", x*0+1, "type", "time-independent");
                         struct("c_sym", (sin(x) + 2)*(cos(t)+2), "type", "brute-force");
                         struct("c_sym", (sin(x) + 2), "type", "time-independent");
-                        struct("c_sym", (sin(1*t) + 2), "type", "brute-force");
+                        struct("c_sym", (sin(1*t) + 2), "type", "piecewise-const-coefficient-in-space");          % 
             };
             c_sym = c_cell{index}.c_sym;
             type = c_cell{index}.type;
@@ -154,8 +154,8 @@ classdef PDEData < handle
         function u_sym = generateSmoothExactSol(index)
             syms x t
             u_cell = {  exp(-(x-t+2)^2);
-                        exp(-2*pi*(x-t+2)^2);
                         sin((x - t) - pi);
+                        exp(-2*pi*(x-t+2)^2);
                         sin(2*pi*(x - t) - pi);
                         };
             u_sym = u_cell{index};

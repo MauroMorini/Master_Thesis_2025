@@ -1,6 +1,6 @@
 % This is the main script of chapter 1 numerical results. It is subdivided
 % into sections just like the Numerical Results section in chapter 1.
-% The sections are selfcontained and can be ran individually, therefore
+% The sections are self-contained and can be ran individually, therefore
 % they also share a lot of repeating code.
 clc; clear; close all;
 
@@ -12,7 +12,7 @@ clc; clear; close all;
 c_index = 2;            % index of the coefficient c choose int 1-3
 u_exact_handle_idx = 2; % index of the exact sol u choose int 1-10
 is_resonator = false;   % choose if initial mesh is uniform or not
-dof = 3;                % dof = r+1 the polynomial degree (for P1 elements do dof = 2)
+dof = 2;                % dof = r+1 the polynomial degree (for P1 elements do dof = 2)
 sigma = 10*dof^2;       % penalization parameter sigma 
 
 % additional settings 
@@ -69,11 +69,9 @@ waveguide.updatePet();
 
 for i = 1:num_ref
     if i > 1
-        waveguide.refineAll(2);
+        waveguide.refineAll(refine_factor);
         waveguide.updatePet();
     end
-
-    [nodes, ~, elements] = waveguide.getPet();
 
     % set values from handles
     quad_mesh = copy(waveguide);
@@ -107,7 +105,6 @@ loglog(meshsizes, errors(1,:),'^-' ,'LineWidth', line_width);
 loglog(meshsizes, errors(2,:),'o-' ,'LineWidth', line_width);
 loglog(meshsizes, errors(3,:), 'x-','LineWidth', line_width);
 hold off
-colormap winter;
 xlabel('meshsize h');
 ylabel('error');
 legend("h^"+(dof_plot-1), "h^"+(dof_plot), "L2", "H1", "energy")
@@ -322,11 +319,10 @@ loglog(meshsizes, errors_exact(2,:),'o-' ,'LineWidth', line_width);
 loglog(meshsizes, errors_mass_lump(3,:), 'x-','LineWidth', line_width);
 loglog(meshsizes, errors_exact(3,:), 'x-','LineWidth', line_width);
 hold off
-colormap winter;
 xlabel('meshsize h');
 ylabel('error');
 legend("L2 mass lump", "L2 exact","H1 mass lump", "H1 exact","energy mass lump", "energy exact")
-title("Convergence of Errors for P^"+(dof-1)+ "elements");
+title("Error rates with higher and lower quadrature rule for P^"+(dof-1)+ "elements");
 grid on
 
 figure;
@@ -338,6 +334,7 @@ hold off
 xlabel('meshsize h');
 ylabel('error');
 legend("L2","H1","energy")
+title("Comparison of error rates, lower quad error - higher quad error for P^"+(dof-1)+ "elements")
 grid on
 
 %% Modeling an Inhomogeneous Membrane

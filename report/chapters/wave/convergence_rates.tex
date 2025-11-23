@@ -1,4 +1,90 @@
 \section{Reproducing Convergence Rates}
+To reproduce the expected convergence rates and therein check the validity of our implementation we follow a similar sequence of steps as already presented in section \ref{subsec:conv_rate_ell}.  
+
+\begin{stepscope}
+    \begin{step}[Domain]
+    We fix the domain $\Omega = (0,10)$, an extended version for better visualization, and set the final time to $T = 10$. 
+    \end{step}
+
+    \begin{step}[Exact Solution]
+        We decide to approximate the smooth exact solutions 
+        \begin{equation*}
+            u_1(x,t) = e^{-(x-t+2)^2} ,\qquad u_2(x,t) = \sin(x-t - \pi) \nonumber.
+        \end{equation*}
+    \end{step}
+    
+    \begin{step}[Coefficient]
+        We fix the smooth coefficients 
+        \begin{equation*}
+            c_1(x,t) = 1, \quad c_2(x,t) = (\sin(x) + 2)(\cos(t) + 2), \quad c_3(x,t) = \sin(x) + 2, \quad c_4(x,t) = \sin(t) + 2.
+        \end{equation*}
+        To ensure our exact solution still satisfies the original pde, we calculate the forcing term $f$ in (\ref{eq:elliptic_pde}) symbolically, i.e.\ 
+        $f_{i,j} = \partial_t^2 u_i - \partial_x(c_j \partial_x u_i)$.
+    \end{step}
+
+    \begin{step}[Boundary Conditions]
+        As done in the last chapter we focus on reproducing the convergence rates for Dirichlet boundary conditions on both sides, meaning we directly take the values provided by 
+        the exact solution $u$ we start with as boundary conditions, meaning 
+        \begin{equation*}
+            g(x,t) = u(x,t) \qquad \forall(x,t) \in \{0,10\} \times [0,T].
+        \end{equation*}
+        In the case of the coefficient $c_1$ we observe that the solution $u \in \{u_1, u_2\}$ satisfies the absorbing boundary condition exactly. When imposing the absorbing
+        boundary condition at the upper boundary and a Dirichlet boundary condition ($g(0,t) = u(0,t)$), or a Neumann boundary condition ($g(0,t) = -u_x(0,t)$) at the lower boundary
+        we observe the exact same expected convergence rates as in the double Dirichlet case.
+    \end{step}
+
+    \begin{step}[Mesh]
+        We choose an initial equidistant mesh of meshsize $h = 1$
+        \begin{equation*}
+           \mathcal{T}_h^{(0)} = \{(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9), (9, 10) \}, 
+        \end{equation*}
+        but the results do not vary for any kind of initial mesh. We fix a number of refinement cycles and obtain a sequence of nested meshes by refining every element each cycle.
+        We fix a stepsize scaling factor $\gamma > 0$, such that $\Delta t = \gamma h$ on each of the nested meshes. We have found that $ \gamma  = \frac{1}{50r} $ ensures stability 
+        for all chosen coefficients in the case of the equidistant mesh. 
+    \end{step}
+
+    \begin{step}[Numerical Approximation]
+        Again we only consider $\mathcal{P}^1$- and  $\mathcal{P}^2$-elements, so $r\in \{1,2\}$, 
+        and fix a sufficiently large penalization parameter $\sigma = 10(r+1)^2$ to ensure coercivity. We calculate the numerical solution at each timestep using the time-marching scheme 
+        (\ref{eq:wave_fully_discrete_system}). Due to the time-dependent bilinear and linear forms we now have to reassemble the stiffness matrix 
+        $\mathbf{B}(t)$ and the load vector $\mathbf{l}(t)$ at each timestep anew. This is 
+        very costly, especially for growing global degrees of freedom (decreasing meshsize). Luckily for $c_1, c_3, c_4$ we do not in fact have to reassemble everything only for
+        $c_2$ we are forced to brute force the iteration.
+        In the case of $c \in \{c_1, c_3\}$ the coefficient is not time-dependent at all and therefore neither are the entries of the stiffness matrix, so it holds that 
+        \begin{equation*}
+            \mathbf{B}(t) = \mathbf{B}(0) \qquad \forall t \in [0, T].
+        \end{equation*}
+        The load vector 
+        On each successive mesh $\mathcal{T}_h^{(l)}$ we find the numerical solution $ u_h^{(l)}$ by solving the system (\ref{eq:fully_discrete_dg_system_elliptic}).
+    \end{step}
+
+    \begin{step}[Error Computation]
+        We are interested in 
+        \begin{enumerate}
+            \item the $L^2$-error
+                \begin{equation*}
+                    \|u - u_h\|_{L^2(\Omega)} = \Big( \int_{\Omega} |u(x) - u_h(x)|^2 \text{d} x \Big)^{1/2} = \Big( \sum_{n=0}^{N}\int_{I_n} |u(x) - u_h(x)|^2 \text{d} x \Big)^{1/2};
+                \end{equation*}
+            \item the broken $H^1$-error
+                \begin{equation*}
+                    \|u - u_h\|_{H^1(\mathcal{T}_h )} = \Big( \sum_{n=0}^{N}\int_{I_n} |u^{\prime}(x) - u_h^{\prime}(x)|^2 \text{d} x \Big)^{1/2};
+                \end{equation*}
+            \item and finally the error in the energy norm 
+                \begin{equation*}
+                    \|u - u_h\|_{\epsilon} = \Big( \sum_{n=0}^{N} \int_{I_n} c(x)\abs{u^{\prime}(x) - u_h^{\prime}(x)}^2\text{d}x + 
+                    \sum_{n=0}^{N+1}{\normalfont \texttt{a}_n}\jump{u(x_n) - u_h(x_n)}^2 \Big)^{1/2}.
+                \end{equation*}
+        \end{enumerate}
+        We compute for each numerical solution $ u_h^{(l)} $ all three named errors and plot them in a plot where both axes are logarithmically scaled.
+    \end{step}
+\end{stepscope}
+
+
+
+
+
+\newpage
+
 To test our code we reproduced the expected convergence rates for smooth solutions and coefficients.
 We chose the waveguide $\Omega = (0,10)$ as domain and fixed the endtime $T = 10$. Next we defined two exact solutions
 \begin{equation}

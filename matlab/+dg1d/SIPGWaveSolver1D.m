@@ -150,8 +150,8 @@ classdef SIPGWaveSolver1D < handle
             [~, ~, elements] = obj.initial_mesh.getPet();
             c_vals_loc = [obj.wave_speed_cell{2}(lower_boundary_element_idx,1), obj.wave_speed_cell{1}(lower_boundary_element_idx,1);
                               obj.wave_speed_cell{2}(upper_boundary_element_idx,1), obj.wave_speed_cell{1}(upper_boundary_element_idx,1)];
-            system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:)) = system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:))/c_vals_loc(1,1);
-            system_struct.B_bound(elements(upper_boundary_element_idx,:), elements(upper_boundary_element_idx,:)) = system_struct.B_bound(elements(upper_boundary_element_idx,:), elements(upper_boundary_element_idx,:))/c_vals_loc(2,1);
+            system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:)) = system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:))/c_vals_loc(1,2);
+            system_struct.B_bound(elements(upper_boundary_element_idx,:), elements(upper_boundary_element_idx,:)) = system_struct.B_bound(elements(upper_boundary_element_idx,:), elements(upper_boundary_element_idx,:))/c_vals_loc(2,2);
             
             % rebuild sparse matrices
             n = size(obj.initial_mesh.nodes,1);
@@ -417,8 +417,8 @@ classdef SIPGWaveSolver1D < handle
             [~, ~, elements] = obj.initial_mesh.getPet();
             c_vals_loc = [obj.wave_speed_cell{2}(lower_boundary_element_idx,1), obj.wave_speed_cell{1}(lower_boundary_element_idx,1);
                               obj.wave_speed_cell{2}(upper_boundary_element_idx,1), obj.wave_speed_cell{1}(upper_boundary_element_idx,1)];
-            system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:)) = system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:))*c_vals_loc(1,2);
-            system_struct.B_bound(elements(upper_boundary_element_idx,:), elements(upper_boundary_element_idx,:)) = system_struct.B_bound(elements(upper_boundary_element_idx,:), elements(upper_boundary_element_idx,:))*c_vals_loc(2,2);
+            system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:)) = system_struct.B_bound(elements(lower_boundary_element_idx,:), elements(lower_boundary_element_idx,:))*c_vals_loc(1,1);
+            system_struct.B_bound(elements(upper_boundary_element_idx,:), elements(upper_boundary_element_idx,:)) = system_struct.B_bound(elements(upper_boundary_element_idx,:), elements(upper_boundary_element_idx,:))*c_vals_loc(2,1);
             
             % rebuild sparse matrices
             n = size(obj.initial_mesh.nodes,1);
@@ -427,6 +427,14 @@ classdef SIPGWaveSolver1D < handle
             system_struct.B_penalty_int = sparse(B_penalty_rows, B_penalty_cols, B_penalty_vals, n, n);
             
             system_struct.B = system_struct.A - system_struct.B_flux_int + system_struct.B_penalty_int + system_struct.B_bound;
+
+            % DEBUG
+            % system_struct_debug = obj.assemble_matrices_at_time(current_time);
+            % errors = [norm(full(system_struct_debug.A - system_struct.A));
+            %           norm(full(system_struct_debug.B_bound - system_struct.B_bound));
+            %           norm(full(system_struct_debug.B_flux_int - system_struct.B_flux_int));
+            %           norm(full(system_struct_debug.B_penalty_int - system_struct.B_penalty_int));];
+            % s = 1;
         end
 
         function x = solve_system(obj, A, b)
