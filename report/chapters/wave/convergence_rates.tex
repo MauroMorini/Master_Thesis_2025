@@ -1,4 +1,7 @@
-\section{Reproducing Convergence Rates}
+\section{Numerical Results}
+
+\subsection{Rate of Convergence}
+\label{subsec:conv_rate_wave}
 To reproduce the expected convergence rates and therein check the validity of our implementation we follow a similar sequence of steps as already presented in section \ref{subsec:conv_rate_ell}.  
 
 \begin{stepscope}
@@ -22,12 +25,21 @@ To reproduce the expected convergence rates and therein check the validity of ou
         $f_{i,j} = \partial_t^2 u_i - \partial_x(c_j \partial_x u_i)$.
     \end{step}
 
-    \begin{step}[Boundary Conditions]
-        As done in the last chapter we focus on reproducing the convergence rates for Dirichlet boundary conditions on both sides, meaning we directly take the values provided by 
+    \begin{step}[Boundary and Initial Conditions]
+        As done in the last chapter we focus on reproducing the convergence rates for Dirichlet boundary conditions on both sides, we directly take the values provided by 
         the exact solution $u$ we start with as boundary conditions, meaning 
         \begin{equation*}
             g(x,t) = u(x,t) \qquad \forall(x,t) \in \{0,10\} \times [0,T].
         \end{equation*}
+        We do the same thing for the initial conditions and in total for $i \in \{1,2\}$ and $j \in \{1,2,3,4\} $ we solve the pde: \\
+        Find $u \in C^2([0,T];H^2(\Omega))$ such that 
+        \begin{subequations}
+            \begin{align*}
+                u_{tt} - (c_j u_x)_x &= \partial_t^2 u_i - \partial_x (c_j \partial_x u_i)  &&\text{in } \Omega \times [0,T], \\
+                u(0,\cdot) = u_i(0, \cdot), \quad u(10,\cdot) &= u_i(10,\cdot)  &&\text{in } [0, T], \\
+                u(\cdot, 0) = u_i(\cdot, 0), \quad u_t(\cdot, 0) &= \partial_t u_i(\cdot, 0)  &&\text{in } \Omega.
+            \end{align*}
+        \end{subequations}
         In the case of the coefficient $c_1$ we observe that the solution $u \in \{u_1, u_2\}$ satisfies the absorbing boundary condition exactly. When imposing the absorbing
         boundary condition at the upper boundary and a Dirichlet boundary condition ($g(0,t) = u(0,t)$), or a Neumann boundary condition ($g(0,t) = -u_x(0,t)$) at the lower boundary
         we observe the exact same expected convergence rates as in the double Dirichlet case.
@@ -54,69 +66,78 @@ To reproduce the expected convergence rates and therein check the validity of ou
         \begin{equation*}
             \mathbf{B}(t) = \mathbf{B}(0) \qquad \forall t \in [0, T].
         \end{equation*}
-        The load vector 
-        On each successive mesh $\mathcal{T}_h^{(l)}$ we find the numerical solution $ u_h^{(l)}$ by solving the system (\ref{eq:fully_discrete_dg_system_elliptic}).
+        The majority of the load vector depending on the source term $f$ can also be tested for time-independency, this occurs for example in the case $c = c_1$. In such a case 
+        the whole system, aside from the boundary conditions, can be reused every timestep. Since the majority of computation time is required to assemble the system, reusing as much as possible 
+        provides a substantial benefit.
     \end{step}
 
     \begin{step}[Error Computation]
-        We are interested in 
+        We consider the error between the exact and numerical solution at the endtime $T$, specifically we consider
         \begin{enumerate}
-            \item the $L^2$-error
-                \begin{equation*}
-                    \|u - u_h\|_{L^2(\Omega)} = \Big( \int_{\Omega} |u(x) - u_h(x)|^2 \text{d} x \Big)^{1/2} = \Big( \sum_{n=0}^{N}\int_{I_n} |u(x) - u_h(x)|^2 \text{d} x \Big)^{1/2};
-                \end{equation*}
-            \item the broken $H^1$-error
-                \begin{equation*}
-                    \|u - u_h\|_{H^1(\mathcal{T}_h )} = \Big( \sum_{n=0}^{N}\int_{I_n} |u^{\prime}(x) - u_h^{\prime}(x)|^2 \text{d} x \Big)^{1/2};
-                \end{equation*}
-            \item and finally the error in the energy norm 
-                \begin{equation*}
-                    \|u - u_h\|_{\epsilon} = \Big( \sum_{n=0}^{N} \int_{I_n} c(x)\abs{u^{\prime}(x) - u_h^{\prime}(x)}^2\text{d}x + 
-                    \sum_{n=0}^{N+1}{\normalfont \texttt{a}_n}\jump{u(x_n) - u_h(x_n)}^2 \Big)^{1/2}.
-                \end{equation*}
+            \item The $L^2$-error $\displaystyle \|u(T) - u_h(T)\|_{L^2(\Omega)}$;
+            \item The broken $H^1$-error $\displaystyle \|u(T) - u_h(T)\|_{H^1(\mathcal{T}_h )}$;
+            \item The error in the energy norm $\displaystyle \|u(T) - u_h(T)\|_{\epsilon}$.
         \end{enumerate}
-        We compute for each numerical solution $ u_h^{(l)} $ all three named errors and plot them in a plot where both axes are logarithmically scaled.
+        We compute all these errors for both exact solutions $u_1, u_2$ on each mesh in the sequence of nested (equidistant) meshes.
     \end{step}
 \end{stepscope}
 
+\begin{figure}[h!]
+    \centering
+    
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_uniform_mesh_exact_sol_errors_P1.jpg}
+        \caption{Errors of SIPG in space and leapfrog in time for $P^1$-elements}
+        \label{fig:wave_uniform_mesh_error_p1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_uniform_mesh_exact_sol_errors_P2.jpg}
+        \caption{Errors of SIPG in space and leapfrog in time for $P^2$-elements}
+        \label{fig:wave_uniform_mesh_error_p2}
+    \end{minipage}
+\end{figure}
+
+The results vary only slightly for different permutations of parameters. In Figures 
+\ref{fig:wave_uniform_mesh_error_p1}, \ref{fig:wave_uniform_mesh_error_p2} we show the errors computed for the exact solution $u_2$ and the constant coefficient $c_1$ 
+for both $\mathcal{P}^1$- and $\mathcal{P}^2$-elements. We observe a considerable gain in accuracy by employing $\mathcal{P}^2$-elements over $\mathcal{P}^1$-elements. 
+It seems that we gain an order of convergence when upgrading to $\mathcal{P}^2$-elements. This is indeed the case in the broken $H^1$-norm and energy norm, but since 
+leapfrog limits the error to behave like $\mathcal{O}(\Delta t^2)$ and we coupled $\Delta t = \gamma h$ we expect that for $h \to 0$ even the $L^2$-error curve
+will flatten and behave like $\mathcal{O}(h^2)$.  
+% TODO: put detailed explanation why O(h^3) is an illusion and reference to theory part
 
 
+\subsection{Visualization of the SIPG-leapfrog Solution}
+In Figures \ref{fig:uniform_mesh_wave_sol_1_p1}-\ref{fig:uniform_mesh_wave_sol_2_p2} 
+we visualize the numerical solutions created in \ref{subsec:conv_rate_wave} at the final time $T = 10$ on the once refined mesh
+$\mathcal{T}_h^{(1)}$. Clearly the choice of the coefficient $c$ does not influence the picture since we artificially modify the pde to output the desired exact solution. 
 
-
-\newpage
-
-To test our code we reproduced the expected convergence rates for smooth solutions and coefficients.
-We chose the waveguide $\Omega = (0,10)$ as domain and fixed the endtime $T = 10$. Next we defined two exact solutions
-\begin{equation}
-    u_1(x,t) = e^{-(x-t+2)^2} ,\qquad u_2(x,t) = \sin(x-t - \pi) \nonumber
-\end{equation}
-and the coefficients
-\begin{equation*}
-    c_1(x,t) = 1, \quad c_2(x,t) = (\sin(x) + 2)(\cos(t) + 2), \quad c_3(x,t) = \sin(x) + 2, \quad c_4(x,t) = \sin(t) + 2.
-\end{equation*}
-We imposed Dirichlet boundary conditions on both boundary points based 
-on the exact solution and calculated the required forcing term $f_{i,j} = \partial_t^2 u_i - \partial_x(c_j \partial_x u_i)$ such that the chosen 
-exact solution $u_i$ solves the problem. In total for $i \in \{1,2\}$ and $j \in \{1,2,3,4\} $ we solved the pde: \\ \\
-Find $u \in C^2([0,T];H^2(\Omega))$ such that 
-\begin{subequations}
-    \begin{equation}
-        u_{tt} - (c_j u_x)_x = \partial_t^2 u_i - \partial_x (c_j \partial_x u_i) \qquad \text{in } \Omega \times [0,T],
-    \end{equation}
-    \begin{equation}
-        u(0,\cdot) = u_i(0, \cdot), \quad u(10,\cdot) = u_i(10,\cdot) \qquad \text{in } [0, T],
-    \end{equation}
-    \begin{equation}
-        u(\cdot, 0) = u_i(\cdot, 0), \quad u_t(\cdot, 0) = \partial_t u_i(\cdot, 0) \qquad \text{in } \Omega.
-    \end{equation}
-
-\end{subequations}
-
-We considered a sequence of uniform meshes of meshsize $h \in  \{1, \frac{1}{2}, \frac{1}{4}, \frac{1}{8}, \frac{1}{16}, \frac{1}{32}\}$. 
-For each mesh we fixed the stepsize $\Delta t = \frac{h}{100(r+1)}$, where $r \in \{1,2\}$ is the polynomial degree of the finite element space.
-We calculated the numerical solution $u_h$ for all timesteps using leapfrog in time and SIPG in space as presented in (\ref{eq:wave_fully_discrete_system}).
-We calculated the $L^2$-error, the broken $H^1$-error and the error in the energy norm between the exact solution $u_i$ and the numerical solution $u_h$ at 
-the final time $T$, meaning we considered the quantities
-\begin{equation}
-    \| u_i(\cdot, T) - u_h(\cdot, T) \|_{L^2(\Omega)}, \quad \| u_i(\cdot, T) - u_h(\cdot, T) \|_{H^1(\mathcal{T}_h)}, 
-    \quad \| u_i(\cdot, T) - u_h(\cdot, T) \|_{h}. \nonumber
-\end{equation}
+\begin{figure}[h!]
+    \centering
+    
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_num_sol_1_p1.jpg}
+        \caption{$u_1$ with $P^1$-elements}
+        \label{fig:uniform_mesh_wave_sol_1_p1}
+        \vspace{10pt}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_num_sol_2_p1.jpg}
+        \caption{$u_2$ with $P^1$-elements}
+        \label{fig:uniform_mesh_wave_sol_2_p1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_num_sol_1_p2.jpg}
+        \caption{$u_1$ with $P^2$-elements}
+        \label{fig:uniform_mesh_wave_sol_1_p2}
+        \vspace{10pt}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_num_sol_2_p2.jpg}
+        \caption{$u_2$ with $P^2$-elements}
+        \label{fig:uniform_mesh_wave_sol_2_p2}
+    \end{minipage}
+\end{figure}

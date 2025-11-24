@@ -216,6 +216,9 @@ classdef SIPGWaveSolver1D < handle
             obj.wave_speed_cell = {c_vals_temp, c_vals_temp};
 
             system_struct = obj.assemble_matrices_at_time(t0);
+
+            f_values = obj.pde_data.rhs_fun(nodes_quad(elements_quad), t0);
+            system_struct.load_vector = fem1d.loadVector1D(obj.initial_mesh.nodes, obj.initial_mesh.elements, f_values);
             
             obj.initial_matrix_struct = system_struct;
 
@@ -316,8 +319,12 @@ classdef SIPGWaveSolver1D < handle
             system_struct.time = current_time;
             
             % collect load vector
-            f_values = obj.pde_data.rhs_fun(obj.quadrature_mesh.nodes(obj.quadrature_mesh.elements), current_time);
-            system_struct.load_vector = fem1d.loadVector1D(obj.initial_mesh.nodes, obj.initial_mesh.elements, f_values);
+            if obj.pde_data.rhs_is_time_independent
+                system_struct.load_vector = obj.initial_matrix_struct.load_vector;
+            else
+                f_values = obj.pde_data.rhs_fun(obj.quadrature_mesh.nodes(obj.quadrature_mesh.elements), current_time);
+                system_struct.load_vector = fem1d.loadVector1D(obj.initial_mesh.nodes, obj.initial_mesh.elements, f_values);
+            end
             
             % boundary conditions
             system_struct = obj.impose_boundary_conditions(system_struct);

@@ -16,7 +16,8 @@ classdef PDEData < handle
         grad_u_exact_fun                                % @(x,t) spacial derivative function handle of exact solution
         has_exact_solution logical                      % true if u_exact_fun and grad_u_exact_fun are initialized 
         wave_speed_type = "brute-force"                 % helps deciding matrix update scheme
-        wave_speed_is_continuous = true;                
+        wave_speed_is_continuous = true;        
+        rhs_is_time_independent = false;
     end 
 
     methods
@@ -89,6 +90,9 @@ classdef PDEData < handle
             pde_data.grad_u_exact_fun = grad_u_exact_fun;
             pde_data.has_exact_solution = has_exact_solution;
             pde_data.wave_speed_type = wave_speed_type;
+            if ~has(rhs_sym, t)
+                pde_data.rhs_is_time_independent = true; 
+            end
         end
 
         function [pde_data, resonator_matrix] = generate_pde_data_with_resonators(u_exact_index, wave_speed_index)

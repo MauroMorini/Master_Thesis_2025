@@ -13,16 +13,17 @@ clc; clear; close all;
 % Settings
 c_index = 1;            % coefficient index choose int 1-4
 u_exact_index = 2;      % exact solution index choose int 1-2
-dof = 3;                % number of basis nodes per element, r = dof-1, P1 elements are dof = 2 
+dof = 2;                % number of basis nodes per element, r = dof-1, P1 elements are dof = 2 
 
 
 % additional Settings
 final_time = 10;        % T = 10 endtime
 is_resonator = false;
-dt_scaling_factor = 0.5/2;
-num_ref = 9;
-initial_meshsize = 2;
+dt_scaling_factor = 1;
+num_ref = 5;            % <= 5 for fast performance, <= 9 in general
+initial_meshsize = 1;
 refine_factor = 2;
+plot_time = 10;         % describes the time at which the solution is plotted
 
 
 % initialization
@@ -54,6 +55,7 @@ for i = 1:num_ref
     meshsizes(i) = waveguide.h_max;
 end
 
+% plot errors
 dof_plot = dof;
 line_width = 2;
 figure;
@@ -72,3 +74,53 @@ grid on;
 cr = fem1d.Errors1D.interpolate_convergence_rates(meshsizes, errors);
 fprintf('Interpolated Convergence Rates ------------- \nl2: %g,  h1: %g,  energy: %g \n\n', cr(2,1),cr(2,2),cr(2,3));
 
+%% Plot numerical approximation of exact solution
+
+% Settings
+c_index = 1;            % coefficient index choose int 1-4
+u_exact_index = 1;      % exact solution index choose int 1-2
+dof = 2;                % number of basis nodes per element, r = dof-1, P1 elements are dof = 2 
+plot_time = 10;         % describes the time at which the solution is plotted (can also be a vector)
+
+
+% additional Settings
+final_time = 10;        % T = 10 endtime
+is_resonator = false;
+dt_scaling_factor = 1;
+num_ref = 2;            % number of refinement cycles (1 means just the initial mesh)             
+initial_meshsize = 1;
+refine_factor = 2;
+
+% initialization
+errors = zeros(2, num_ref);
+meshsizes = zeros(1, num_ref);
+pde_data = fem1d.PDEData.generate_smooth_pde_data(u_exact_index, c_index);
+pde_data.final_time = final_time;
+waveguide = mesh.MeshIntervalDG1d(pde_data.boundary_points, [2*initial_meshsize, initial_meshsize/50]);
+waveguide.createUniformMesh(initial_meshsize);
+if is_resonator
+    waveguide.buildResonatorMesh([4, 4.5; 8.5, 9], [initial_meshsize, initial_meshsize/5]);
+end
+waveguide.dof = dof;
+waveguide.updatePet();
+
+% refine mesh to desired level
+for i = 1:num_ref
+    if i > 1
+        waveguide.refineAll(refine_factor);
+        waveguide.updatePet();
+    end
+end
+
+% approximate solution
+sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
+if ~is_resonator
+    sipg_solver.dt = waveguide.h_min*dt_scaling_factor/(dof-1);
+end
+sipg_solver.run();
+
+% plot solution
+wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
+wave_postprocessor.plot_solutions(plot_time);
+grid on;
+ylim([-1.1, 1.1])

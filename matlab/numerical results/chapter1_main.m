@@ -122,7 +122,7 @@ c_index = 2;            % index of the coefficient c choose int 1-3
 u_exact_handle_idx = 2; % index of the exact sol u choose int 1-10
 is_resonator = false;   % choose if initial mesh is uniform or not
 dof = 3;                % dof = r+1 the polynomial degree (for P1 elements do dof = 2)
-sigma = 1.1;       % penalization parameter sigma 
+sigma = 10*dof^2;       % penalization parameter sigma 
 num_ref = 1;            % number of refinement cycles before plotting
 
 % additional settings 
