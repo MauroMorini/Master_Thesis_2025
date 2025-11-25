@@ -14,11 +14,11 @@ exact solutions are given and simulate the behavior of waves propagating through
 
 % Problem ----------------------------------------------------------------------------------------------------------------------------------------------------
 \section{Problem}
-Let $\Omega = (0,1)$ be the domain (waveguide) and let $T > 0$ be the endtime. The 1d wave equation with a time-dependent coefficient is given by 
+Let $\Omega = (0,L)$ be the domain (waveguide) for some $L>0$ and let $T > 0$ be the endtime. The 1d wave equation with a time-dependent coefficient is given by 
 \begin{subequations} \label{eq:strong_form_wave}
     \begin{align}
         u_{tt}(x,t) - (c(x,t)u_x(x,t))_x &= f(x,t)  &&\forall (x,t) \in \Omega \times \left(0, T \right], \\
-        u(0, t) = g_{0}(t), \quad u(1, t) &= g_{1}(t) &&\forall t \in [0,T], \\
+        u(0, t) = g_{0}(t), \quad u(L, t) &= g_{L}(t) &&\forall t \in [0,T], \\
         u(x,0) = u_0(x), \quad u_t(x, 0) &= v_0(x) &&\forall x \in  \Omega. 
     \end{align}
 \end{subequations}
@@ -52,11 +52,11 @@ It is well known that the problem (\ref{eq:weak_form_wave}) is well posed (see s
 \end{equation*}
 which ensures the validity of the initial conditions (\ref{eq:weak_form_wave}b). \\
 We can furthermore deduce existence and uniqueness of the weak problem for inhomogeneous Dirichlet boundary conditions, if they are sufficiently regular. Suppose 
-for example $g_0 = g(0, \cdot), g_1 = g(1, \cdot)$ for some $g \in C^2([0,T]; H^2(\Omega))$. We can write $u = w + g$, where $w \in C^1([0,T]; L^2(\Omega)) \cap C([0,T];H_0^1(\Omega))$ 
+for example $g_0 = g(0, \cdot), g_L = g(L, \cdot)$ for some $g \in C^2([0,T]; H^2(\Omega))$. We can write $u = w + g$, where $w \in C^1([0,T]; L^2(\Omega)) \cap C([0,T];H_0^1(\Omega))$ 
 is the unique (weak) solution of 
 \begin{align*}
     w_{tt} - (c w_x)_x &= f - g_{tt} + (c g_x)_x   &&\text{in } \Omega \times \left(0,T\right],\\
-    w(0,\cdot) = w(1,\cdot) &= 0 && \text{in } [0,T], \\
+    w(0,\cdot) = w(L,\cdot) &= 0 && \text{in } [0,T], \\
     w(\cdot, 0) = u_0 - g(\cdot, 0), \quad w_t(\cdot, 0) &= v_0 - g_t(\cdot, 0) && \text{in } \Omega.
 \end{align*}
 With this we can conclude the problem to be well-posed and continue with the discretization procedure.
@@ -84,8 +84,8 @@ where
     b_h(u,v;t) & = \sum_{n=0}^N \int_{I_n} c(x,t)u_x(x,t)v_x(x)\, \text{d}x
 		-\sum_{n=0}^{N+1} \avg{c(x_n,t)u_x(x_n, t)}\jump{v(x_n)} + \avg{c(x_n,t)v_x(x_n)}\jump{u(x_n,t)} \\
 		& + \sum_{n=0}^{N+1} \texttt{a}_n(t)\jump{u(x_n,t)}\jump{v(x_n)},                                   \\
-		\ell_h(v;t)  & = (f(t),v)_{L^2(\Omega)}-g_1(t)c(x_{N+1}^-,t)v_x(x_{N+1}^-) + g_0(t)c(x_0^+,t)v_x(x_0^+) \\
-		&+ \texttt{a}_{N+1}(t)g_1(t)v(x_{N+1}^-) + \texttt{a}_0(t) g_0(t) v(x_{0}^+).
+		\ell_h(v;t)  & = (f(t),v)_{L^2(\Omega)}-g_L(t)c(x_{N+1}^-,t)v_x(x_{N+1}^-) + g_0(t)c(x_0^+,t)v_x(x_0^+) \\
+		&+ \texttt{a}_{N+1}(t)g_L(t)v(x_{N+1}^-) + \texttt{a}_0(t) g_0(t) v(x_{0}^+).
 \end{align*}
 \end{tcolorbox}
 Recall $\mathcal{I}_h : C(\overline{\Omega}) \to V_h$ denotes the interpolation operator (\ref{def:interpolation_operator}) (one could also use $L^2$-projection). 

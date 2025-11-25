@@ -3,41 +3,56 @@
 When simulating a wave a classical example of a domain on which to do so is a \textit{wave guide}, a rectangular domain through which the 
 wave is propagated. Since we restrict ourselves to the 1d case in this thesis, trivially every domain interval we can choose corresponds to 
 a sort of waveguide. We are interested in simulating a wave propagating through this waveguide. 
-Lets say we want to send a wave through the waveguide from left to right. We can achieve that by imposing 
+Lets say we want to send a wave through the waveguide from left to right. We can achieve this by imposing 
 a corresponding Dirichlet or Neumann boundary condition at the point of entry. A question arises: \\ \\
 \textit{What boundary condition should be imposed at the upper boundary?} \\ \\
 The answer may differ depending on the purpose of the simulation. The problem with using a simple Dirichlet or Neumann boundary condition at the upper boundary
 as well is that the incident wave is directly influenced and modified by the upper boundary condition. 
 Lets say we impose a Dirichlet boundary condition at the lower boundary and a homogeneous Neumann boundary condition at the upper boundary
 \begin{equation*}
-    u(0) = \sin(x-t),  \qquad u_x(1) = 0,
+    u(0, t) = \sin(x-t),  \qquad u_x(L,t) = 0,
 \end{equation*}  
 then the upper boundary will reflect the full wave back. This clearly pollutes the incident wave and if we wanted to observe how the the incident wave changes 
 by passing through an inhomogeneous medium, the reflected wave would overshadow any slight modulation stemming from variations in the material.
-In reality in this context we are interested in simulating the problem on an unbounded domain. We would like the wave to just propagate through the upper boundary
-and not return. 
+In reality in this context it would be more interesting to simulate the problem on an unbounded domain. We would like the wave to just propagate through the upper boundary
+and not return. We could achieve this by choosing a very large domain, large enough such that the incident wave never reaches the upper boundary for $t \in [0,T]$.
+Clearly this is a suboptimal, since we increase computaional load needlessly, the majority of the simulated wave would be uninteresting. 
+In practice it is more convenient to choose an artifical boundary.
 To simulate an artificial boundary of this kind we need to impose artificial boundary conditions, these are often called \textit{absorbing-, transparent-,} or 
-\textit{non-reflecting} boundary conditions. \\ \\
-We impose the first order absorbing boundary condition 
+\textit{non-reflecting} boundary conditions. \\
+Suppose
+\begin{equation*}
+    \text{supp}(f),\text{supp}(c) \subset \Omega \times [0,T],
+\end{equation*}
+i.e.\ the artificial boundary has been chosen sufficiently far away from the origin, such that the wave outside 
+of the domain travels at a constant speed $\sqrt{c} = 1$ with no forcing. \\
+Secondly assume that no waves are returning from outside of the domain, meaning all the waves outside 
+the domain travel soley towards infinity.
+By d'Alembert we find that the solution outside the domain is of the form
+\begin{equation*}
+    u(x,t) = \psi(x-t) \qquad \text{for }x > L, t \in [0,T],
+\end{equation*}
+where $\psi \in C^1((L,\infty))$ only depends on the incident wave.
+This yields the (exact) first order absorbing boundary condition 
 \begin{equation}
     \label{eq:absorbing_bc}
-    \frac{\partial u}{\partial t} +  \sqrt{c} \frac{\partial u}{\partial n} = 0
+    u_t + u_x = 0
 \end{equation}
 at the upper boundary (exit of the waveguide), which corresponds to 
 \begin{equation*}
-    u_t(1, \cdot) + \sqrt{c(1,\cdot)} u_x(1,\cdot) = 0 \qquad \text{in } [0, T].
+    u_t(L, \cdot) + u_x(L,\cdot) = 0 \qquad \text{in } [0, T].
 \end{equation*}
 
 To implement this boundary condition into our time-marching scheme we have to first treat the bilinear form $b$ at the upper boundary as if we were to implement 
 a Neumann boundary condition (see section \ref{sec:boundary_conditions_elliptic}), meaning after integrating by parts and summing over all elements we don't introduce
 the symmetry and penalty terms at the corresponding node $x_{N+1}$, instead we apply the absorbing boundary condition and get
 \begin{equation*}
-    -\avg{c(x_{N+1},t) \partial_x u_h(x_{N+1},t)}\jump{v(x_{N+1})} = \avg{\sqrt{c(x_{N+1},t)} \partial_t u_h(x_{N+1},t) } \jump{v(x_{N+1})}.
+    -\avg{\underbrace{c(x_{N+1},t)}_{=1} \partial_x u_h(x_{N+1},t)}\jump{v(x_{N+1})} = \avg{ \partial_t u_h(x_{N+1},t) } \jump{v(x_{N+1})}.
 \end{equation*}
 
 the semi-discrete scheme (\ref{eq:wave_semidiscrete_var_form}) turns into
 \begin{equation*}
-    (\partial_{t}^2 u_h(t), v)_{L^2(\Omega)} + b_h(u_h,v;t) + \avg{\sqrt{c(x_{N+1},t)} \partial_t u_h(x_{N+1},t) } \jump{v(x_{N+1})} = \ell_h (v;t) 
+    (\partial_{t}^2 u_h(t), v)_{L^2(\Omega)} + b_h(u_h,v;t) + \avg{\partial_t u_h(x_{N+1},t) } \jump{v(x_{N+1})} = \ell_h (v;t) 
     \qquad \forall v \in V_h, t \in [0,T],
 \end{equation*}
 where 
@@ -53,7 +68,7 @@ And the semi-discrete matrix-vector system becomes
 \begin{equation*}
      \textbf{M} \ddot{\mathbf{u}}(t) + \mathbf{B}(t)\mathbf{u}(t) + \mathbf{R}(t)\dot{\mathbf{u}}(t) = \mathbf{l}(t) \qquad \forall t \in  [0,T],
 \end{equation*}
-where $[\mathbf{R}(t)]_{i,j} = \avg{\sqrt{c(x_{N+1},t)} \Phi_j(x_{N+1},t) } \jump{\Phi_i(x_{N+1})} $ is a matrix where the only non-zero entry is the one at the bottom right corner
+where $[\mathbf{R}(t)]_{i,j} = \avg{\Phi_j(x_{N+1},t) } \jump{\Phi_i(x_{N+1})} $ is a matrix where the only non-zero entry is the one at the bottom right corner
 where $i = j = \text{dim}(V_h)$ and $\Phi_i$ the basis centered at $x_{N+1}$ is.
 \\ \\
 From here on we can use a (second order) centered finite difference to approximate  
@@ -130,7 +145,12 @@ then we require
     \{y_0,\ldots,y_{M+1}\} \subset \{x_0,\ldots,x_{N+1}\}.
 \end{equation*} 
 
-
+Recall that in the assembly of the stiffness matrix (see \ref{sec:stiff_assembly}) we had 
+\begin{equation*}
+    \mathbf{B} = \mathbf{A} - \mathbf{B}_{\text{cons}} + \mathbf{B}_{\text{penal}}.
+\end{equation*}
+We update all three matrices separately. \\
+We start by updating $\mathbf{A}$, which proves to be the simplest case.
 
 \newpage
 Let $ R_1,\ldots, R_M \subset \Omega $ be closed, pairwise disjoint intervals for some $M \in \N$ and denote 
