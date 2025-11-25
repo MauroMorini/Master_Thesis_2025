@@ -5,7 +5,7 @@ plot_images = true;
 
 % settings
 filename_index = 310;
-plot_times = 10;
+plot_times = 3;
 
 % read file
 filepath = "data/matlab/wave/hdf5/";

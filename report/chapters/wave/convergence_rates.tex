@@ -66,8 +66,8 @@ To reproduce the expected convergence rates and therein check the validity of ou
         \begin{equation*}
             \mathbf{B}(t) = \mathbf{B}(0) \qquad \forall t \in [0, T].
         \end{equation*}
-        The majority of the load vector depending on the source term $f$ can also be tested for time-independency, this occurs for example in the case $c = c_1$. In such a case 
-        the whole system, aside from the boundary conditions, can be reused every timestep. Since the majority of computation time is required to assemble the system, reusing as much as possible 
+        The majority of the load vector depending on the source term $f$ can also be tested for time-independency. If for example $c = c_1$, 
+        the whole system, aside from the boundary conditions, can be reused in every timestep. Since the majority of computation time is required to assemble the system, reusing as much as possible 
         provides a substantial benefit.
     \end{step}
 

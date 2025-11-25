@@ -73,3 +73,90 @@ the semi-discrete scheme we have just derived we can define
     \frac{\Delta t^2}{2}\mathbf{M}^{-1}( \mathbf{l}_0 - \mathbf{B}_0 \mathbf{u}_0 - \mathbf{R}_0 \mathbf{v}_0).
 \end{equation*}  
 
+
+\section{Updating the Stiffness Matrix}
+By definition the bilinear form $b_h$ and by extension the stiffness matrix $\mathbf{B}(t)$ are time dependent. A priori this means that the matrix $\mathbf{B}_m$ has to be completely reassembled
+in each timestep $t_m = m\Delta t$. This is very costly, in fact the assembly of the stiffness matrix is by far the most expensive operation and the source of the heaviest computational load.
+Luckily there is room for optimization. We note that the time-dependency solely comes from the coefficient $c$ in the bilinear form $b_h$, therefore if the coefficient satisfies 
+certain conditions we can simplify the assembly of $\mathbf{B}_m$.
+\subsubsection{Time-Independent Coefficient}
+If $c$ is in fact only a function of space and not of time, meaning $c(x,t) = c(x,0)$ for all $t \in [0,T]$, then we don't have to update the stiffness matrix at all since
+\begin{equation*}
+    \mathbf{B}_m = \mathbf{B}_0 \qquad \forall m.
+\end{equation*}
+
+\subsubsection{Space-Independent Coefficient}
+Similarly we can also consider the case of spatially independent coefficients. If $c(x,t) = c(0, t)$ for all $x \in \Omega, t \in [0,T]$ then we can write $c(0,t) = c(t)$ and  
+\begin{align*}
+    b_h(\Phi_j, \Phi_i;t) = c(t)\Big( 
+        \sum_{n=0}^N \int_{I_n} \Phi_i^{\prime} \Phi_j^{\prime}\, \text{d}x
+        -\sum_{n=0}^{N+1} \avg{ \Phi_j^{\prime}(x_n) }\jump{\Phi_i(x_n)} + \avg{ \Phi_i^{\prime}(x_n) }\jump{ \Phi_j(x_n) } 
+        + \sum_{n=0}^{N+1} \frac{\sigma}{\texttt{h}_n} \jump{ \Phi_j(x_n) }\jump{\Phi_j(x_n)}
+        \Big).
+\end{align*}
+We can therefore write 
+\begin{equation}
+    \mathbf{B}_m = \frac{c(t)}{c(0)} \mathbf{B}_0,        \nonumber
+\end{equation}
+
+which allows for a fast vectorized update.
+
+\subsubsection{Piecewise Constant Coefficient}
+Following a similar logic as in the space-independent case we can consider a coefficient $c$ which is piecewise constant in space and arbitrary in time.
+Let $y_1,\ldots,y_{M} \in \Omega$ and $y_0 = 0$ denote the lower boundary and $y_{M+1} = 1$ the upper boundary of $\Omega$.
+Define the open intervals
+\begin{equation*}
+    R_i := (y_i, y_{i+1}) \qquad \text{for } i \in \{0,\ldots,M\}
+\end{equation*}
+and the in space piecewise constant coefficient 
+\begin{equation*}
+    c(x,t) := 
+    \begin{cases}
+        \rho_0(t) & \text{for } x \in R_0 \\
+        \rho_1(t) & \text{for } x \in R_1 \\
+        \vdots \\
+        \rho_M(t) & \text{for } x \in R_M
+    \end{cases},
+\end{equation*}
+where $t \in [0,T]$ and 
+\begin{equation*}
+    c_{\min} \leq \rho_i(t) \leq c_{\max} \qquad \forall i \in \{0,\ldots,M\}, t \in [0,T].
+\end{equation*}
+The update method could work in this fashion for any type functions $\rho_i$, but we will only consider  $\rho_i \in C^{\infty}$.
+Now to properly model the discontinuous coefficient using the DG-FEM we require that the mesh is chosen in such a way that the discontinuities never occur inside an element but rather 
+only at the boundary. If $\mathcal{T}_h = \{I_n\}_{n=0}^N$ denotes the partition of $\Omega$, where $I_n = (x_n, x_{n+1})$ are the elements defined by the face nodes $0 = x_0,\ldots,x_{N+1}=1$,
+then we require 
+\begin{equation*}
+    \{y_0,\ldots,y_{M+1}\} \subset \{x_0,\ldots,x_{N+1}\}.
+\end{equation*} 
+
+
+
+\newpage
+Let $ R_1,\ldots, R_M \subset \Omega $ be closed, pairwise disjoint intervals for some $M \in \N$ and denote 
+\begin{equation*}
+     R_0 := \Omega \setminus \bigcup_{i = 1}^{M} R_i
+\end{equation*} 
+the background medium.
+Define the piecewise constant coefficient in space as 
+\begin{equation*}
+    c(x,t) := 
+    \begin{cases}
+        \rho_0(t) & \text{for } x \in R_0 \\
+        \rho_1(t) & \text{for } x \in R_1 \\
+        \vdots \\
+        \rho_M(t) & \text{for } x \in R_M
+    \end{cases},
+\end{equation*}
+where $t \in [0,T]$ and 
+\begin{equation*}
+    c_{\min} \leq \rho_i(t) \leq c_{\max} \qquad \forall i \in \{0,\ldots,M\}, t \in [0,T].
+\end{equation*}
+The update method could work in this fashion for any type functions $\rho_i$, but we will only consider  $\rho_i \in C^{\infty}$.
+We will only require this specific setup where the resonators $R_i$ for $i \in \{1,\ldots,M\}$ are closed, pairwise disjoint intervals, it is not hard to see
+how the entire procedure can be generalized 
+Recall that in the assembly of the stiffness matrix (see \ref{sec:stiff_assembly}) we had 
+\begin{equation*}
+    \mathbf{B} = \mathbf{A} - \mathbf{B}_{\text{cons}} + \mathbf{B}_{\text{penal}}.
+\end{equation*}
+We will update all three matrices separately. 
