@@ -147,10 +147,18 @@ then we require
 
 Recall that in the assembly of the stiffness matrix (see \ref{sec:stiff_assembly}) we had 
 \begin{equation*}
-    \mathbf{B} = \mathbf{A} - \mathbf{B}_{\text{cons}} + \mathbf{B}_{\text{penal}}.
+    \mathbf{B}(t) = \mathbf{A}(t) - \mathbf{B}_{\text{cons}}(t) + \mathbf{B}_{\text{penal}}(t).
 \end{equation*}
-We update all three matrices separately. \\
-We start by updating $\mathbf{A}$, which proves to be the simplest case.
+We update all three matrices separately.
+We start by updating $\mathbf{A}$, which proves to be the simplest case. \\
+We were able to characterize the assembly of each of the sub-matrices by using local contribution matrices
+for each element (in the case of $\mathbf{A}$) or for each face node (in the case of $\mathbf{B}_{\text{cons}}, \mathbf{B}_{\text{penal}}$).
+Fix a subdomain index $ m\in \{0,\ldots,M\} $ and let $n\in \{0,\ldots,N\} $ such that $I_n \subset R_m$ is an element contained in the subdomain. 
+The local contribution matrix of $\mathbf{A}$ for the element $I_n$ was given by 
+\begin{equation*}
+    [\widehat{\mathbf{A}}^{(n)}(t)]_{i,j} = \frac{2}{h_s} \int_{-1}^1 c(F_s(\xi),t) \, \widehat{\phi}_j^{\, \prime}(\xi) \widehat{\phi}_i^{\, \prime}(\xi) \, \text{d}\xi
+    = \frac{2\rho_{m}(t)}{h_s} \int_{-1}^1 \, \widehat{\phi}_j^{\, \prime}(\xi) \widehat{\phi}_i^{\, \prime}(\xi) \, \text{d}\xi
+\end{equation*}
 
 \newpage
 Let $ R_1,\ldots, R_M \subset \Omega $ be closed, pairwise disjoint intervals for some $M \in \N$ and denote 
