@@ -12,7 +12,7 @@ clc; clear; close all;
 
 % Settings
 c_index = 1;            % coefficient index choose int 1-4
-u_exact_index = 2;      % exact solution index choose int 1-2
+u_exact_index = 4;      % exact solution index choose int 1-2
 dof = 2;                % number of basis nodes per element, r = dof-1, P1 elements are dof = 2 
 
 
@@ -20,11 +20,9 @@ dof = 2;                % number of basis nodes per element, r = dof-1, P1 eleme
 final_time = 10;        % T = 10 endtime
 is_resonator = false;
 dt_scaling_factor = 1;
-num_ref = 5;            % <= 5 for fast performance, <= 9 in general
+num_ref = 10;            % <= 5 for fast performance, <= 9 in general
 initial_meshsize = 1;
 refine_factor = 2;
-plot_time = 10;         % describes the time at which the solution is plotted
-
 
 % initialization
 errors = zeros(2, num_ref);

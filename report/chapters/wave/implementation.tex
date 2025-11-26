@@ -121,7 +121,7 @@ Following a similar logic as in the space-independent case we can consider a coe
 Let $y_1,\ldots,y_{M} \in \Omega$ and $y_0 = 0$ denote the lower boundary and $y_{M+1} = 1$ the upper boundary of $\Omega$.
 Define the open intervals
 \begin{equation*}
-    R_i := (y_i, y_{i+1}) \qquad \text{for } i \in \{0,\ldots,M\}
+    R_m := (y_i, y_{m+1}) \qquad \text{for } m \in \{0,\ldots,M\}
 \end{equation*}
 and the in space piecewise constant coefficient 
 \begin{equation*}
@@ -135,16 +135,22 @@ and the in space piecewise constant coefficient
 \end{equation*}
 where $t \in [0,T]$ and 
 \begin{equation*}
-    c_{\min} \leq \rho_i(t) \leq c_{\max} \qquad \forall i \in \{0,\ldots,M\}, t \in [0,T].
+    c_{\min} \leq \rho_m(t) \leq c_{\max} \qquad \forall m \in \{0,\ldots,M\}, t \in [0,T].
 \end{equation*}
-The update method could work in this fashion for any type functions $\rho_i$, but we will only consider  $\rho_i \in C^{\infty}$.
+The update method could work in this fashion for any type functions $\rho_i$, but we will only consider  $\rho_m \in C^{\infty}$.
 Now to properly model the discontinuous coefficient using the DG-FEM we require that the mesh is chosen in such a way that the discontinuities never occur inside an element but rather 
-only at the boundary. If $\mathcal{T}_h = \{I_n\}_{n=0}^N$ denotes the partition of $\Omega$, where $I_n = (x_n, x_{n+1})$ are the elements defined by the face nodes $0 = x_0,\ldots,x_{N+1}=1$,
+only at the boundary. If $\mathcal{T}_h = \{I_n\}_{n=0}^N$ denotes the partition of $\Omega$, where $I_n = (x_n, x_{n+1})$ are the elements defined by the face nodes $0 = x_0,\ldots,x_{N+1}=L$,
 then we require 
 \begin{equation*}
     \{y_0,\ldots,y_{M+1}\} \subset \{x_0,\ldots,x_{N+1}\}.
 \end{equation*} 
+In total
+\begin{enumerate}
+    \item  For each $ m \in \{0,\ldots,M+1\}$ there exists an index $ n_m \in \{0,\ldots,N+1\}$ such that $x_{n_m} = y_m$. We denote the index $n_m$ to specify the dependency on $m$.
+    \item For each $ m \in \{0,\ldots,M\} $ there exists an set of indices $ \mathcal{J}_m \subset \{0,\ldots,N\}$ such that the element $I_n \subset R_m$ for all $n \in \mathcal{J}_m$.
+\end{enumerate}
 
+ 
 Recall that in the assembly of the stiffness matrix (see \ref{sec:stiff_assembly}) we had 
 \begin{equation*}
     \mathbf{B}(t) = \mathbf{A}(t) - \mathbf{B}_{\text{cons}}(t) + \mathbf{B}_{\text{penal}}(t).
@@ -153,38 +159,120 @@ We update all three matrices separately.
 We start by updating $\mathbf{A}$, which proves to be the simplest case. \\
 We were able to characterize the assembly of each of the sub-matrices by using local contribution matrices
 for each element (in the case of $\mathbf{A}$) or for each face node (in the case of $\mathbf{B}_{\text{cons}}, \mathbf{B}_{\text{penal}}$).
-Fix a subdomain index $ m\in \{0,\ldots,M\} $ and let $n\in \{0,\ldots,N\} $ such that $I_n \subset R_m$ is an element contained in the subdomain. 
-The local contribution matrix of $\mathbf{A}$ for the element $I_n$ was given by 
+Fix a subdomain index $ m\in \{0,\ldots,M\} $ and  $n\in \mathcal{J}_m$.
+The local contribution matrix of $\mathbf{A}$ for the element $I_n$ is given by 
 \begin{equation*}
-    [\widehat{\mathbf{A}}^{(n)}(t)]_{i,j} = \frac{2}{h_s} \int_{-1}^1 c(F_s(\xi),t) \, \widehat{\phi}_j^{\, \prime}(\xi) \widehat{\phi}_i^{\, \prime}(\xi) \, \text{d}\xi
-    = \frac{2\rho_{m}(t)}{h_s} \int_{-1}^1 \, \widehat{\phi}_j^{\, \prime}(\xi) \widehat{\phi}_i^{\, \prime}(\xi) \, \text{d}\xi
+    [\widehat{\mathbf{A}}^{(n)}(t)]_{i,j} = \frac{2}{h_n} \int_{-1}^1 c(F_n(\xi),t) \, \widehat{\phi}_j^{\, \prime}(\xi) \widehat{\phi}_i^{\, \prime}(\xi) \, \text{d}\xi
+    = \frac{2\rho_{m}(t)}{h_n} \int_{-1}^1 \, \widehat{\phi}_j^{\, \prime}(\xi) \widehat{\phi}_i^{\, \prime}(\xi) \, \text{d}\xi.
 \end{equation*}
+In total the matrix $\mathbf{A}$ is composed of $M$ bigger blocks corresponding to a respective subdomain $R_m$, each containing a set of smaller block matrices
+corresponding to the elements contained in $R_m$:
+\[
+\mathbf{A}(t)=
+\begin{bmatrix}
+\frac{\rho_0(t)}{\rho_0(0)}\tilde{\mathbf{A}}_0(0) & & & \\
+ & \frac{\rho_1(t)}{\rho_1(0)}\tilde{\mathbf{A}}_1(0) & & \\
+ & & \ddots & \\
+ & & & \frac{\rho_m(t)}{\rho_m(0)}\tilde{\mathbf{A}}_m(0)
+\end{bmatrix},
+\]
+or written as a sum 
+\begin{equation}
+    \label{eq:piecewise_const_coefficient_update_proceedure_sum_A}
+    \mathbf{A}(t)= \sum_{m=0}^{M} \frac{\rho_m(t)}{\rho_m(0)}\sum_{s \in \mathcal{J}_m} \mathbf{A}^{(s)}(0),
+\end{equation}
+where the $ \mathbf{A}^{(s)} $ are defined in (\ref{def:A_part_assembly_definition}).
+An initial matrix can therefore be calculated once and in every time step we get $\mathbf{A}(t)$ by multiplying each block by the corresponding 
+factor $\rho_m(t)$. \\
+The update of the matrices $ \mathbf{B}_{\text{cons}}, \mathbf{B}_{\text{penal}} $ is a little more complicated. 
 
-\newpage
-Let $ R_1,\ldots, R_M \subset \Omega $ be closed, pairwise disjoint intervals for some $M \in \N$ and denote 
-\begin{equation*}
-     R_0 := \Omega \setminus \bigcup_{i = 1}^{M} R_i
-\end{equation*} 
-the background medium.
-Define the piecewise constant coefficient in space as 
-\begin{equation*}
-    c(x,t) := 
-    \begin{cases}
-        \rho_0(t) & \text{for } x \in R_0 \\
-        \rho_1(t) & \text{for } x \in R_1 \\
-        \vdots \\
-        \rho_M(t) & \text{for } x \in R_M
-    \end{cases},
-\end{equation*}
-where $t \in [0,T]$ and 
-\begin{equation*}
-    c_{\min} \leq \rho_i(t) \leq c_{\max} \qquad \forall i \in \{0,\ldots,M\}, t \in [0,T].
-\end{equation*}
-The update method could work in this fashion for any type functions $\rho_i$, but we will only consider  $\rho_i \in C^{\infty}$.
-We will only require this specific setup where the resonators $R_i$ for $i \in \{1,\ldots,M\}$ are closed, pairwise disjoint intervals, it is not hard to see
-how the entire procedure can be generalized 
-Recall that in the assembly of the stiffness matrix (see \ref{sec:stiff_assembly}) we had 
-\begin{equation*}
-    \mathbf{B} = \mathbf{A} - \mathbf{B}_{\text{cons}} + \mathbf{B}_{\text{penal}}.
-\end{equation*}
-We will update all three matrices separately. 
+Consider an inner face node $y_m$ between two
+subdomains $R_{m-1}, R_{m} $ for $ m\in \{1,\ldots,M\}$, there exists $n \in \{1,\ldots,N\}$ with $x_n = y_m$. Recall the local contribution matrices 
+\[
+    \widehat{\textbf{B}}_{\text{cons}}^{(n)}(t) =
+	\begin{bmatrix}
+		\textbf{C}_{\text{cons}}^{(n-1,n-1)}(t) & \textbf{C}_{\text{cons}}^{(n-1,n)}(t) \\
+		\textbf{C}_{\text{cons}}^{(n,n-1)} (t)   & \textbf{C}_{\text{cons}}^{(n,n)}(t)
+	\end{bmatrix}, \qquad 
+    \widehat{\textbf{B}}_{\text{penal}}^{(n)}(t) =
+	\begin{bmatrix}
+		\textbf{C}_{\text{penal}}^{(n-1,n-1)} (t) & \textbf{C}_{\text{penal}}^{(n-1,n)} (t) \\
+		\textbf{C}_{\text{penal}}^{(n,n-1)} (t)   & \textbf{C}_{\text{penal}}^{(n,n)} (t)
+	\end{bmatrix},
+\]
+where
+\begin{align*}
+	 & [\textbf{C}_{\text{cons}}^{(n-1,n-1)}(t)]_{i,j} = \frac{\rho_{m-1}(t)}{h_{n-1}} \widehat{\phi}_j^{\,\prime}(1) \widehat{\phi}_i(1) + \frac{\rho_{m-1}(t)}{h_{n-1}} \widehat{\phi}_i^{\,\prime} (1) \widehat{\phi}_j(1),  \\
+	 & [\textbf{C}_{\text{cons}}^{(n-1,n)}(t)]_{i,j} = \frac{\rho_{m}(t)}{h_{n}} \widehat{\phi}_j^{\,\prime} (-1) \widehat{\phi}_i (1) - \frac{ \rho_{m-1}(t) }{h_{n-1}} \widehat{\phi}_i^{\,\prime} (1) \widehat{\phi}_j (-1), \\
+	 & [\textbf{C}_{\text{cons}}^{(n,n)}(t)]_{i,j} = -\frac{\rho_{m}(t)}{h_n} \widehat{\phi}_j^{\,\prime} (-1) \widehat{\phi}_i (-1) - \frac{\rho_{m}(t)}{h_n} \widehat{\phi}_i^{\,\prime} (-1) \widehat{\phi}_j (-1), \\
+     & [\textbf{C}_{\text{penal}}^{(n-1,n-1)}(t)]_{i,j} = \texttt{a}_n(t) \widehat{\phi}_j(1) \widehat{\phi}_i(1), \\
+	 & [\textbf{C}_{\text{penal}}^{(n-1,n)}(t)]_{i,j} = -\texttt{a}_n(t) \widehat{\phi}_j(-1) \widehat{\phi}_i(1), \\
+	 & [\textbf{C}_{\text{penal}}^{(n,n)}(t)]_{i,j} = \texttt{a}_n(t) \widehat{\phi}_j(-1) \widehat{\phi}_i(-1),
+    \end{align*}
+
+for
+\[
+    \texttt{a}_n = \frac{\sigma \max(\rho_{m-1}(t), \rho_m(t))}{\min(h_{n-1}, h_n)}.
+\]
+
+The problem is that the consistency terms and 
+penalty terms both contain mixed factors of the coefficient $c$ over face nodes. Therefore if the corresponding face node is a face between
+two subdomains $R_{m-1}, R_m$, meaning the face node is a point of discontinuity of $c$, then we can no longer simply factor out the $\rho_m(t)$. 
+We first have to subtract the local contributions containing such mixed terms, then we can multiply by the time-dependent factor
+\[
+    \frac{\rho_m(t)}{\rho_m(0)}
+\]
+per subdomain as done in the case of $\mathbf{A}$ and finally add the missing contribution corresponding to the subdomain face nodes back in. We can rewrite this procedure as the sums
+\begin{align}
+    \label{eq:piecewise_const_coefficient_update_proceedure_sum_B_cons}
+    \mathbf{B}_{\text{cons}}(t) &= \sum_{m=1}^{M} \frac{\rho_m(t)}{\rho_m(0)} \Big( \sum_{s\in \mathcal{J}_m} \mathbf{B}_{\text{cons}}^{(s)} (0)  - \mathbf{B}_{\text{cons}}^{(n_m)}(0) \Big)
+    + \sum_{m=1}^{M}\mathbf{B}_{\text{cons}}^{(n_m)}(t) + \sum_{s \in \{0,N+1\}} \frac{\rho_m(t)}{\rho_m(0)} \mathbf{B}_{\text{cons}}^{(s)}(0), \\
+    \label{eq:piecewise_const_coefficient_update_proceedure_sum_B_penal}
+    \mathbf{B}_{\text{penal}}(t) &= \sum_{m=1}^{M} \frac{\rho_m(t)}{\rho_m(0)} \Big( \sum_{s\in \mathcal{J}_m} \mathbf{B}_{\text{penal}}^{(s)} (0)  - \mathbf{B}_{\text{penal}}^{(n_m)}(0) \Big)
+    + \sum_{m=1}^{M}\mathbf{B}_{\text{penal}}^{(n_m)}(t) + \sum_{s \in \{0,N+1\}} \frac{\rho_m(t)}{\rho_m(0)} \mathbf{B}_{\text{penal}}^{(s)}(0).
+\end{align}
+Note that the terms corresponding to the boundary nodes $x_0, x_{N+1}$ do not require the subtraction due to the absence of mixed terms. \\
+We see therefore that after having assembled the initial matrices $ \mathbf{A}(0), \mathbf{B}_{\text{cons}}(0), \mathbf{B}_{\text{penal}}(0)$ once, we only need to compute the parts
+$\mathbf{B}_{\text{cons}}^{(n_m)}(t) , \mathbf{B}_{\text{penal}}^{(n_m)}(t)$ for $m\in \{1,\ldots,M\}$ and the factors $\rho_m(t)$ for $m\in \{0,\ldots,M+1\}$. 
+Since $M$ is fixed (in practice $M < 10$), we reduce the computational cost of assembling $\mathbf{B}(t)$ from $\mathcal{O}(N)$ to $\mathcal{O}(M) = \mathcal{O}(1)$. \\
+We can sum up the update procedure as the following algorithm:
+
+\begin{algorithm}
+\caption{Calculate $\mathbf{B}(t)$ }
+\begin{algorithmic}
+\STATE Assemble initial matrices 
+\STATE $\tilde{\mathbf{A}} := \mathbf{A}(0), \tilde{\mathbf{B}}_{\text{cons}} :=  \mathbf{B}_{\text{cons}}(0), \tilde{\mathbf{B}}_{\text{penal}} :=  \mathbf{B}_{\text{penal}}(0) $;
+\STATE
+\FOR{$m = 1$ to $M$}
+    \STATE Subtract mixed terms
+    \STATE  $\tilde{\mathbf{B}}_{\text{cons}} := \tilde{\mathbf{B}}_{\text{cons}} - {\mathbf{B}}^{(n_m)}_{\text{cons}}(0) $;
+    \STATE  $\tilde{\mathbf{B}}_{\text{penal}} := \tilde{\mathbf{B}}_{\text{penal}} - {\mathbf{B}}^{(n_m)}_{\text{penal}}(0) $;
+\ENDFOR 
+\STATE
+\FOR{$m = 0$ to $M$}
+    \STATE Define index vector containing indices of all DoFs inside the subdomain $R_m$ 
+    \STATE $\mathbf{j}_m$;
+    \STATE Divide by initial coefficient
+    \STATE $ \tilde{\mathbf{A}}(\mathbf{j}_m,\mathbf{j}_m) :=  \tilde{\mathbf{A}}(\mathbf{j}_m,\mathbf{j}_m)/\rho_m(0)$;
+    \STATE  $\tilde{\mathbf{B}}_{\text{cons}}(\mathbf{j}_m,\mathbf{j}_m) := \tilde{\mathbf{B}}_{\text{cons}}(\mathbf{j}_m,\mathbf{j}_m)/\rho_m(0) $;
+    \STATE  $\tilde{\mathbf{B}}_{\text{penal}}(\mathbf{j}_m,\mathbf{j}_m) := \tilde{\mathbf{B}}_{\text{penal}}(\mathbf{j}_m,\mathbf{j}_m)/\rho_m(0) $;
+\ENDFOR
+\STATE $\vdots$
+\FOR{$m = 0$ to $M$}
+    \STATE Define index vector containing indices of all DoFs inside the subdomain $R_m$ 
+    \STATE $\mathbf{j}_m$;
+    \STATE Multiply by current coefficient
+    \STATE $ \tilde{\mathbf{A}}(\mathbf{j}_m,\mathbf{j}_m) :=  \tilde{\mathbf{A}}(\mathbf{j}_m,\mathbf{j}_m) \cdot \rho_m(t)$;
+    \STATE  $\tilde{\mathbf{B}}_{\text{cons}}(\mathbf{j}_m,\mathbf{j}_m) := \tilde{\mathbf{B}}_{\text{cons}}(\mathbf{j}_m,\mathbf{j}_m)\cdot \rho_m(t) $;
+    \STATE  $\tilde{\mathbf{B}}_{\text{penal}}(\mathbf{j}_m,\mathbf{j}_m) := \tilde{\mathbf{B}}_{\text{penal}}(\mathbf{j}_m,\mathbf{j}_m) \cdot \rho_m(t) $;
+\ENDFOR
+\STATE
+\FOR{$m = 1$ to $M$}
+    \STATE Add current mixed terms
+    \STATE  $\tilde{\mathbf{B}}_{\text{cons}} := \tilde{\mathbf{B}}_{\text{cons}} + {\mathbf{B}}^{(n_m)}_{\text{cons}}(t) $;
+    \STATE  $\tilde{\mathbf{B}}_{\text{penal}} := \tilde{\mathbf{B}}_{\text{penal}} + {\mathbf{B}}^{(n_m)}_{\text{penal}}(t) $;
+\ENDFOR 
+\STATE $\mathbf{B}(t) :=  \tilde{\mathbf{A}} - \tilde{\mathbf{B}}_{\text{cons}} + \tilde{\mathbf{B}}_{\text{penal}}$
+\end{algorithmic}
+\end{algorithm}
+The first part of the algorithm should be done before the leapfrog iteration and then the second part can be done repeatedly during the leapfrog iteration using the prepared matrices.

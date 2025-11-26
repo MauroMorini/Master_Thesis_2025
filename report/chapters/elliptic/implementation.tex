@@ -154,7 +154,10 @@ where $T$ is given by (\ref{def:local_to_global_map})
 $\textbf{A}$ is assembled similarly to the standard stiffness matrix in continuous finite element. The main difference is that there is no overlap in the elementwise contributions.
 Each set of local (element) basis functions only contributes to the integrals over said element. 
 We can rewrite $\textbf{A} = \sum_{s=0}^{N} \textbf{A}^{(s)}$, where
-$[\textbf{A}^{(s)}]_{T(n,i),T(m,j)} = \int_{I_s} c \,(\Phi_j^m)' (\Phi_i^n)' \, \text{d}x$.
+\begin{equation}
+	\label{def:A_part_assembly_definition}
+[\textbf{A}^{(s)}]_{T(n,i),T(m,j)} = \int_{I_s} c \,(\Phi_j^m)' (\Phi_i^n)' \, \text{d}x.
+\end{equation}
 Now since we have $\text{supp}(\Phi_i^n)\subset I_n$ the only non-zero entries of $\textbf{A}^{(s)} $ are the ones where both $n=m=s$. Pulling back the integral
 to the reference element using the chain rule and the substitution $F_s^{-1}(x) = \xi$ we find
 \begin{equation*}
@@ -181,10 +184,11 @@ $\widehat{\textbf{A}}^{(s)} \in \mathbb{R}^{(r+1)\times (r+1)}$ for each element
 \label{subsec:assembly_cons}
 As before we rewrite $\textbf{B}_{\text{cons}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{cons}}^{(s)} $, where
 
-\begin{equation*}
+\begin{equation}
+	\label{def:B_cons_part_assembly_definition}
 	[\textbf{B}_{\text{cons}}^{(s)}]_{T(n,i),T(m,j)} = \avg{c(x_s) \Phi_j^{m \, \prime} (x_s)}\jump{\Phi_i^n(x_s)} + 
 	\avg{c(x_s)\Phi_i^{n\, \prime} (x_s)}\jump{\Phi_j^m(x_s)}
-\end{equation*}
+\end{equation}
 
 \subsubsection{Interior Faces}
 First let $s \in \{1,\ldots,N\}$ denote an interior face, we observe again, that the entries of
@@ -268,9 +272,10 @@ with
 
 \subsection{Assembly of B penalty part}
 Again we rewrite $\textbf{B}_{\text{penal}} = \sum_{s=0}^{N+1} \textbf{B}_{\text{penal}}^{(s)}$, where
-\begin{equation*}
-	[\textbf{B}_{\text{penal}}^{(s)}]_{T(n,i), T(m,j)} = { \texttt{a}_s} \jump{\Phi_j^m(x_s)} \jump{\Phi_i^n(x_s)}
-\end{equation*}
+\begin{equation}
+	\label{def:B_penal_part_assembly_definition}
+	[\textbf{B}_{\text{penal}}^{(s)}]_{T(n,i), T(m,j)} = { \texttt{a}_s} \jump{\Phi_j^m(x_s)} \jump{\Phi_i^n(x_s)} 
+\end{equation}
 We proceed analogously to \ref{subsec:assembly_cons}.
 \subsubsection{Interior Faces}
 Let $s\in \{1,\ldots,N\} $ and $x_s$ denote an interior face. As before we have that
