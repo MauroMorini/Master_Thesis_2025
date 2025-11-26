@@ -482,9 +482,9 @@ classdef SIPGWaveSolver1D < handle
                         dirichlet_vector(elements(boundary_element_idx(i),:)) = 0;
                         neumann_vector(elements(boundary_element_idx(i),:)) = 0;
                         if boundary_condition.bc_location == obj.initial_mesh.lower_interval_bound
-                            transparent_bc_matrix(1, 1) = sqrt(c_vals(1, 1));
+                            transparent_bc_matrix(1, 1) = 1;
                         elseif boundary_condition.bc_location == obj.initial_mesh.upper_interval_bound
-                            transparent_bc_matrix(end, end) = sqrt(c_vals(end, end));
+                            transparent_bc_matrix(end, end) = 1;
                         else
                             error(sprintf('transparent b.c. neither at the upper nor lower interval bound, but at: %d', boundary_condition.bc_location));
                         end

@@ -119,7 +119,7 @@ end
     % f_vals = f_exact_handle(nodes);
     % [uh_ref, ~] = dg1d.sip_1d_elliptic_solver(Mesh, boundary_cond, f_vals, c_vals, sigma);
     % reference_sol_struct = struct("mesh", copy(Mesh), "sol", uh_ref, "type", "numerical_solution");
-    % error_ref = errors1D(reference_sol_struct, exact_solution_struct);
+    % error_ref = errors_1d(reference_sol_struct, exact_solution_struct);
     % exact_solution_struct = reference_sol_struct;
     
 
@@ -129,7 +129,7 @@ for i = 1:num_refinement_iterations-1
     if overwrite_functions_bool
         reference_struct = numerical_solutions{i+1};
     end
-    [errors(1,i),errors(2,i)] = fem1d.errors1D(numerical_solutions{i}, reference_struct);
+    [errors(1,i),errors(2,i)] = fem1d.errors_1d(numerical_solutions{i}, reference_struct);
     errors_1d_obj = fem1d.Errors1D(exact_solution_struct.u_handle, exact_solution_struct.du_handle, numerical_solutions{i}.sol, numerical_solutions{i}.mesh);
     errors_1d_obj.run();
     [errors(1,i),errors(2,i)] = errors_1d_obj.getErrors();

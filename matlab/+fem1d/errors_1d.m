@@ -1,4 +1,4 @@
-function [l2_error, h1_error] = errors1D(numerical_sol_struct, exact_sol_struct)
+function [l2_error, h1_error] = errors_1d(numerical_sol_struct, exact_sol_struct)
     % calculates the error in L^2 and H^1 norm for FEM. Can deal with FEM solution of high h-refinement 
     % as exact solution or just taking the exact solution and it's derivative as function handles 
     % note that for FEM solution as reference the H^1 norm is too good!
