@@ -142,6 +142,7 @@ classdef PDEData < handle
             pde_data.has_exact_solution = has_exact_solution;
             pde_data.wave_speed_type = wave_speed_type;
             pde_data.wave_speed_is_continuous = false;
+            pde_data.rhs_is_time_independent = true; 
         end
 
         function [c_sym, type] = generateSmoothWaveSpeed(index)

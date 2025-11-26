@@ -9,11 +9,12 @@ classdef SIPGWaveSolver1D < handle
         initial_mesh                        % MeshIntervalDG1d object
         quadrature_mesh                     % MeshIntervalDG1d object for quadrature 
         pde_data                            % PDEData1D object
-        solution                            % (num_nodes, num_steps) solution matrix
+        solution                            % (1, num_save_times) cell array with WaveSolution objects in each entry
+        uh_iter                             % (1, 2) cell containing previous and current solution in WaveSolution form  
         initial_matrix_struct               % struct as a collection of assembled initial matrices
         neutered_matrix_struct              % struct containing initial matrices with removed values at resonator boundaries and divided by c locally for piecewise-const process 
         dt double = 0                       % global stepsize for time integration    
-        time_vector (1,:) double            % time vector containing all steps made 
+        time_vector (1,:) double            % time vector containing all steps saved 
         matrix_update_type = []             % dictates how matrices are updated in each time step
                                             % in {"time-independent", "brute-force", "piecewise-const-coefficient-in-space"} 
         matrix_resonator_masks              % struct, see recompute_matrix_resonator_masks() for definition       
@@ -292,6 +293,17 @@ classdef SIPGWaveSolver1D < handle
             if isnan(obj.dt)
                 obj.dt = obj.initial_mesh.h_min/obj.initial_mesh.dof;
             end
+
+            % initialize time_vector if not already done
+            if isempty(obj.time_vector)
+                if obj.dt < 1/60
+                    dt_save = 1/60;
+                else
+                    dt_save = obj.dt;
+                end
+                obj.time_vector = obj.pde_data.initial_time:dt_save:obj.pde_data.final_time;
+            end
+            assert(abs(obj.time_vector(1)- obj.pde_data.initial_time)<1e-15)
         end
 
         function system_struct = setup_system(obj, current_time)
@@ -434,14 +446,6 @@ classdef SIPGWaveSolver1D < handle
             system_struct.B_penalty_int = sparse(B_penalty_rows, B_penalty_cols, B_penalty_vals, n, n);
             
             system_struct.B = system_struct.A - system_struct.B_flux_int + system_struct.B_penalty_int + system_struct.B_bound;
-
-            % DEBUG
-            % system_struct_debug = obj.assemble_matrices_at_time(current_time);
-            % errors = [norm(full(system_struct_debug.A - system_struct.A));
-            %           norm(full(system_struct_debug.B_bound - system_struct.B_bound));
-            %           norm(full(system_struct_debug.B_flux_int - system_struct.B_flux_int));
-            %           norm(full(system_struct_debug.B_penalty_int - system_struct.B_penalty_int));];
-            % s = 1;
         end
 
         function x = solve_system(obj, A, b)
@@ -501,11 +505,13 @@ classdef SIPGWaveSolver1D < handle
             % using a taylor-expansion
             u0 = obj.pde_data.initial_displacement(obj.initial_mesh.nodes);
             v0 = obj.pde_data.initial_velocity(obj.initial_mesh.nodes); 
-            system_struct = obj.setup_system(obj.time_vector(1));
-            obj.solution(:, 1) = u0;
+            system_struct = obj.setup_system(obj.pde_data.initial_time);
+            obj.uh_iter{1} = dg1d.WaveSolution(copy(obj.initial_mesh), obj.pde_data.initial_time, u0);
+            obj.solution{1} = dg1d.WaveSolution(copy(obj.initial_mesh), obj.pde_data.initial_time, u0);
             system_matrix = system_struct.M;
             system_rhs = obj.dt^2/2*(system_struct.load_vector - system_struct.B*u0 - system_struct.R*v0);
-            obj.solution(:, 2) = u0 + obj.dt*v0 + obj.solve_system(system_matrix, system_rhs);
+            uh_temp = u0 + obj.dt*v0 + obj.solve_system(system_matrix, system_rhs);
+            obj.uh_iter{2} = dg1d.WaveSolution(copy(obj.initial_mesh), obj.pde_data.initial_time + obj.dt, uh_temp);
         end
 
         function obj = setup_iteration(obj)
@@ -516,25 +522,33 @@ classdef SIPGWaveSolver1D < handle
             obj.assemble_initial_matrices();
             obj.calculate_stable_stepsize();
 
-            obj.time_vector = obj.pde_data.initial_time:obj.dt:obj.pde_data.final_time;
-            obj.solution = zeros(size(obj.initial_mesh.nodes,1), size(obj.time_vector, 2));
+            obj.solution = cell(1, length(obj.time_vector));
             obj.implement_initial_conditions();
         end
 
         function obj = leap_frog_leap(obj)
             % main iteration, applies leapfrog time integration
             M = obj.initial_matrix_struct.M;
-            numiter = length(obj.time_vector)-1;
-            
+            numiter = length(obj.pde_data.initial_time:obj.dt:obj.pde_data.final_time)-1;
+            current_time = obj.pde_data.initial_time;
+            current_solution_index = 2;
             for i = 2:numiter
-                system_struct = obj.setup_system(obj.time_vector(i));
+                current_time = current_time + obj.dt;
+                system_struct = obj.setup_system(current_time);
                 system_matrix = (M + obj.dt/2*system_struct.R);
                 system_rhs = obj.dt^2*system_struct.load_vector + ...
-                            (2*system_struct.M - obj.dt^2*system_struct.B)*obj.solution(:, i) - ...
-                            (system_struct.M - obj.dt/2*system_struct.R)*obj.solution(:, i-1);
-                % obj.solution(:, i+1) = obj.solve_system(system_matrix, system_rhs);
-                obj.solution(:, i+1) = system_matrix\system_rhs;
+                            (2*system_struct.M - obj.dt^2*system_struct.B)*obj.uh_iter{2}.uh - ...
+                            (system_struct.M - obj.dt/2*system_struct.R)*obj.uh_iter{1}.uh;
+                % uh_temp = obj.solve_system(system_matrix, system_rhs);
+                uh_temp = system_matrix\system_rhs;
+                obj.uh_iter{1} = obj.uh_iter{2};
+                obj.uh_iter{2} = dg1d.WaveSolution(copy(obj.initial_mesh), current_time, uh_temp);
+                if current_solution_index <= length(obj.time_vector) && abs(obj.time_vector(current_solution_index) - current_time) < obj.dt/2
+                    obj.solution{current_solution_index} = obj.uh_iter{1};
+                    current_solution_index = current_solution_index + 1;
+                end
             end
+            obj.solution{current_solution_index} = obj.uh_iter{2};
         end
 
         function obj = run(obj)

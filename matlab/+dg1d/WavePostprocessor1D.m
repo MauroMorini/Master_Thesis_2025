@@ -30,18 +30,17 @@ classdef WavePostprocessor1D < handle
                 warning("no error could be calculated since there is no exact solution")
                 return
             end
-            [uh, T] = obj.get_solution_at_time(obj.time_vector(end));
-            obj.errors_obj = fem1d.Errors1D(@(x) obj.pde_data.u_exact_fun(x,T), @(x) obj.pde_data.grad_u_exact_fun(x,T), uh, obj.mesh);
+            [uh, T, mesh] = obj.get_solution_at_time(obj.pde_data.final_time);
+            obj.errors_obj = fem1d.Errors1D(@(x) obj.pde_data.u_exact_fun(x,T), @(x) obj.pde_data.grad_u_exact_fun(x,T), uh, mesh);
             obj.errors_obj.initialize_dg_settings(@(x) obj.pde_data.wave_speed_coeff_fun(x,T), obj.sigma);
             obj.errors_obj.run();
         end
 
-        function [u_h, t_h] = get_solution_at_time(obj, t)
+        function [u_h, t_h, mesh] = get_solution_at_time(obj, t)
             % for a given time t extracts the time t_h in the time_vector which is closest to t and 
             % returns the solution u_h(:, t_h)
             [~, t_h_index] = min(abs(obj.time_vector - t));
-            u_h = obj.solution(:, t_h_index);
-            t_h = obj.time_vector(t_h_index);
+            [mesh, t_h, u_h] = obj.solution{t_h_index}.getSolution();
         end
 
         function obj = write_to_hdf5(obj, filename)
@@ -144,10 +143,10 @@ classdef WavePostprocessor1D < handle
             end
             figure_cell = cell(1, num_fig);
             for i = 1:num_fig
-                [uh, t] = obj.get_solution_at_time(plot_times(i));
+                [uh, t, mesh] = obj.get_solution_at_time(plot_times(i));
                 f = figure('Visible', 'on');
                 figure_cell{i} = f;
-                obj.mesh.plotDGsol(uh, f, fast_plot);
+                mesh.plotDGsol(uh, f, fast_plot);
                 title("t = " + t)
                 ylim([-2,2])
             end
@@ -185,8 +184,8 @@ classdef WavePostprocessor1D < handle
                     disp("Progress:  " + pct + "% -------------------------")
                 end
                 cla(ax);
-                [uh, ~] = obj.get_solution_at_time(plot_times(i));
-                f = obj.mesh.plotDGsol(uh, f);
+                [uh, ~, mesh] = obj.get_solution_at_time(plot_times(i));
+                f = mesh.plotDGsol(uh, f);
                 ax = findall(f, 'type', 'axes');
         
                 frame = getframe(f);

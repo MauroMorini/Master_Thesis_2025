@@ -1,11 +1,11 @@
 % script to simulate and observe a wave solved with sipg in space and leapfrog in time
 
 clc;clear;close all;
-save_to_h5 = true;
+save_to_h5 = false;
 
 % Settings
 h = 0.1;
-filename_index = 310;
+filename_index = 1;
 u_exact_index = 4;
 wave_speed_index = 1;
 dof = 3;
