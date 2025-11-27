@@ -95,20 +95,21 @@ classdef PDEData < handle
             end
         end
 
-        function [pde_data, resonator_matrix] = generate_pde_data_with_resonators(u_exact_index, wave_speed_index)
+        function [pde_data, resonator_matrix] = generate_pde_data_with_resonators(u_exact_index, wave_speed_index, resonator_matrix)
             arguments (Input)
                 u_exact_index = 1;
                 wave_speed_index = 1;
+                resonator_matrix = [3, 3.25;
+                                    3.5, 3.75;
+                                    4, 4.25;
+                                    4.5, 4.75];
             end
 
             boundary_points = [0, 10];
             initial_time = 0;
             final_time = 20;
             has_exact_solution = false;
-            resonator_matrix = [3, 3.25;
-                                3.5, 3.75;
-                                4, 4.25;
-                                4.5, 4.75];
+            
 
             % symbolic calculations
             syms x t
@@ -133,7 +134,7 @@ classdef PDEData < handle
             rhs_fun = @(x, t) zeros(size(x));
 
             boundary_conditions = cell(1,2);
-            boundary_conditions{1} = fem1d.BoundaryCondition1D("neumann", boundary_points(1), @(x,t) -grad_u_exact_fun(x,t) );
+            boundary_conditions{1} = fem1d.BoundaryCondition1D("dirichlet", boundary_points(1), @(x,t) u_exact_fun(x,t) );
             boundary_conditions{2} = fem1d.BoundaryCondition1D("transparent", boundary_points(2), u_exact_fun);
             pde_data = fem1d.PDEData(initial_time, final_time, initial_displacement, initial_velocity, boundary_points,...
                                 boundary_conditions, rhs_fun, wave_speed_coeff_fun);
