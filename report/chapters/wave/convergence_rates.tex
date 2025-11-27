@@ -1,6 +1,6 @@
 \section{Numerical Results}
 
-\subsection{Rate of Convergence}
+\subsection{Error Analysis with Exact Solution}
 \label{subsec:conv_rate_wave}
 To reproduce the expected convergence rates and therein check the validity of our implementation we follow a similar sequence of steps as already presented in section \ref{subsec:conv_rate_ell}.  
 
@@ -108,6 +108,77 @@ leapfrog limits the error to behave like $\mathcal{O}(\Delta t^2)$ and we couple
 will flatten and behave like $\mathcal{O}(h^2)$.  
 % TODO: put detailed explanation why O(h^3) is an illusion and reference to theory part
 
+\subsection{Error Analysis of Absorbing Boundary Conditions}
+We now want to test the rate of convergence for a absorbing boundary condition implemented at the upper boundary. We proceed analogously to subsection \ref{subsec:conv_rate_wave} with the 
+main difference that now instead of implementing a second (exact) Dirichlet boundary condition at the upper boundary $x = L = 10$ here we introduce an absorbing boundary condition 
+(see section \ref{sec:transparent_bc}). As seen previously the absorbing boundary condition is exact in 1d if we assume
+\begin{enumerate}
+    \item $\text{supp}(f) \in \Omega \times [0,T] $,
+    \item $c(x,t) = 1$ for all $x\in \left[L, \infty \right), t \in [0,T]$,
+    \item No waves return from infinity, meaning the wave travels exclusively to the right for $x \geq L$.
+\end{enumerate}  
+Indeed these all hold for both exact solutions $u_1(x,t) = e^{-(x-t+2)^2} , u_2(x,t) = \sin(x-t - \pi)$ as long as we fix $c = c_1 \equiv 1$. Clearly for the other coefficients we used previously
+we cannot expect convergence at all due to the systematic error the absorbing boundary condition would introduce.
+\begin{figure}[h!]
+    \centering
+    
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_uniform_mesh_exact_sol_errors_absorbin_bc_P1.jpg}
+        \caption{Errors of SIPG in space and leapfrog in time for $P^1$-elements with absorbing b.c.}
+        \label{fig:wave_uniform_mesh_error_absorbing_bc_p1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_uniform_mesh_exact_sol_errors_absorbin_bc_P2.jpg}
+        \caption{Errors of SIPG in space and leapfrog in time for $P^2$-elements with absorbing b.c.}
+        \label{fig:wave_uniform_mesh_error_absorbing_bc_p2}
+    \end{minipage}
+\end{figure}
+In Figures \ref{fig:wave_uniform_mesh_error_absorbing_bc_p1}, \ref{fig:wave_uniform_mesh_error_absorbing_bc_p2} we observe the expected convergence rates calculated with the exact solution 
+$u_2$ and the constant coefficient $c_1 $. \\
+Indeed if we consider a coefficient which is not constantly 1 at the boundary $x = L$, then the error does not decrease with decreasing meshsize. 
+
+\begin{figure}[h!]
+    \centering
+    
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_uniform_mesh_exact_sol_absorbin_bc_with_non_const_coeff_P2.jpg}
+        \caption{Numerical and exact solution with inexact absorbing b.c. and $\mathcal{P}^2$-elements at $T=10$}
+        \label{fig:wave_uniform_mesh_absorbing_bc_with_non_const_coeff_p2}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.44\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/dg_wave_uniform_mesh_exact_sol_errors_absorbin_bc_with_non_const_coeff_P2.jpg}
+        \caption{Errors of numerical solution with inexact absorbing b.c. and $\mathcal{P}^2$-elements}
+        \label{fig:wave_uniform_mesh_error_absorbing_bc_with_non_const_coeff_p2}
+    \end{minipage}
+\end{figure}
+We choose the coefficient $c_2(x,t) = (\sin(x) + 2)(\cos(t) + 2)$ which is clearly non-constant at $x=L$ and the exact solution $u_2$ and plot the errors. In
+Figure \ref{fig:wave_uniform_mesh_error_absorbing_bc_with_non_const_coeff_p2} we observe how the errors are non-decreasing for a decreasing meshsize $h$.
+We visualize the exact and the numerical solution at the final time $T=10$ (the time at which the errors are computed)
+in Figure \ref{fig:wave_uniform_mesh_absorbing_bc_with_non_const_coeff_p2}. The transparent boundary condition introduces such a heavy
+systematic error, that the numerical solution no longer looks anything like the exact solution $u_2$ (plotted in blue).
+
+\subsection{Error Analysis without Exact Solution}
+Starting with an exact solution $u$ and modifying the pde to exactly output $u$ is one way of testing the exactness and convergence rates of the method as done previously. Here we would like 
+to explore an alternative method, which doesn't require knowledge of the exact solution itself. \\
+Consider a sequence of nested meshes $\{ \mathcal{T}_h^{(m)} \}_{m=0}^M$, where each mesh $\mathcal{T}_h^{(m+1)}$ is obtained by refining every element of the previous mesh $\mathcal{T}_h^{(m)}$, 
+by a factor of 2.
+The idea is now that we refine the last mesh in the sequence $\mathcal{T}_h^{(M)}$ by a factor of 8, therefore obtaining a very fine mesh $\mathcal{T}_h^{(M+1)}$ on which we compute a numerical solution.
+This final numerical solution $u_h^{(M+1)}$ plays the role of the exact solution. We compute the errors 
+\begin{equation*}
+    \norm{u_h^{(M+1)}(\cdot, T) - u_h^{(m)}(\cdot, T)}_{L^2(\Omega)}, \quad
+    \norm{u_h^{(M+1)}(\cdot, T) - u_h^{(m)}(\cdot, T)}_{H^1(\mathcal{T}_h^{(m)})}, \quad 
+    \norm{u_h^{(M+1)}(\cdot, T) - u_h^{(m)}(\cdot, T)}_{\epsilon}
+\end{equation*}
+for all $m \in \{0,\ldots, M\}$.
+
+% TODO: Write evaluation code for dg solution (uh and grad_uh) and extend er
+
 
 \subsection{Visualization of the SIPG-leapfrog Solution}
 In Figures \ref{fig:uniform_mesh_wave_sol_1_p1}-\ref{fig:uniform_mesh_wave_sol_2_p2} 
@@ -120,26 +191,26 @@ $\mathcal{T}_h^{(1)}$. Clearly the choice of the coefficient $c$ does not influe
     \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_wave_num_sol_1_p1.jpg}
-        \caption{$u_1$ with $P^1$-elements}
+        \caption{$u_1$ with $P^1$-elements at $T = 10$}
         \label{fig:uniform_mesh_wave_sol_1_p1}
         \vspace{10pt}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_wave_num_sol_2_p1.jpg}
-        \caption{$u_2$ with $P^1$-elements}
+        \caption{$u_2$ with $P^1$-elements at $T = 10$}
         \label{fig:uniform_mesh_wave_sol_2_p1}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.44\textwidth}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_wave_num_sol_1_p2.jpg}
-        \caption{$u_1$ with $P^2$-elements}
+        \caption{$u_1$ with $P^2$-elements at $T = 10$}
         \label{fig:uniform_mesh_wave_sol_1_p2}
         \vspace{10pt}
         \centering
         \includegraphics[width=\linewidth]{figures/dg_wave_num_sol_2_p2.jpg}
-        \caption{$u_2$ with $P^2$-elements}
+        \caption{$u_2$ with $P^2$-elements at $T = 10$}
         \label{fig:uniform_mesh_wave_sol_2_p2}
     \end{minipage}
 \end{figure}
 
-\subsection{}
+\subsection{Simulating Wave with Piecewise Constant Coefficient }

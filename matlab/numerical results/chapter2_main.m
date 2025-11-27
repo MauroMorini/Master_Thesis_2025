@@ -4,7 +4,7 @@
 % they also share a lot of repeating code.
 
 clc; clear; close all;
-%% Convergence Rates
+%% Error Analysis with Exact Solution
 % script to calculate and visualize errors of leapfrog sipg solution of the wave equation with time
 % dependent coefficients on a uniform mesh.
 % If the computation takes too long consider choosing a smaller final time or reducing the max 
@@ -20,7 +20,7 @@ dof = 2;                % number of basis nodes per element, r = dof-1, P1 eleme
 final_time = 10;        % T = 10 endtime
 is_resonator = false;
 dt_scaling_factor = 1;
-num_ref = 10;            % <= 5 for fast performance, <= 9 in general
+num_ref = 5;            % <= 5 for fast performance, <= 9 in general
 initial_meshsize = 1;
 refine_factor = 2;
 
@@ -72,6 +72,87 @@ grid on;
 cr = fem1d.Errors1D.interpolate_convergence_rates(meshsizes, errors);
 fprintf('Interpolated Convergence Rates ------------- \nl2: %g,  h1: %g,  energy: %g \n\n', cr(2,1),cr(2,2),cr(2,3));
 
+%% Error Analysis of Absorbing Boundary Conditions
+% Here we show convergence rates for a simple exact solution with transparent boundary conditions
+% and plot the numerical solution against the exact solution after one
+% refinement
+
+% Settings
+c_index = 2;            % only for 1 the method converges, see for example 2 
+u_exact_index = 2;      % exact solution index choose int 1-2
+dof = 3;                % number of basis nodes per element, r = dof-1, P1 elements are dof = 2 
+
+
+% additional Settings
+final_time = 10;        % T = 10 endtime
+is_resonator = false;
+dt_scaling_factor = 1;
+num_ref = 6;            % <= 5 for fast performance, <= 9 in general
+initial_meshsize = 1;
+refine_factor = 2;
+
+% initialization
+errors = zeros(2, num_ref);
+meshsizes = zeros(1, num_ref);
+pde_data = fem1d.PDEData.generate_smooth_pde_data(u_exact_index, c_index);
+pde_data.final_time = final_time;
+pde_data.boundary_conditions{2}.bc_type = "transparent";
+waveguide = mesh.MeshIntervalDG1d(pde_data.boundary_points, [2*initial_meshsize, initial_meshsize/50]);
+waveguide.createUniformMesh(initial_meshsize);
+
+waveguide.dof = dof;
+waveguide.updatePet();
+
+for i = 1:num_ref
+    if i > 1
+        waveguide.refineAll(refine_factor);
+        waveguide.updatePet();
+    end
+    sipg_solver = dg1d.SIPGWaveSolver1D(waveguide, pde_data);
+    if ~is_resonator
+        sipg_solver.dt = waveguide.h_min*dt_scaling_factor/(dof-1);
+    end
+    sipg_solver.run();
+    wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
+    wave_postprocessor.calculate_errors();
+    [errors(1,i), errors(2,i), errors(3,i)] = wave_postprocessor.errors_obj.getErrors();
+    meshsizes(i) = waveguide.h_max;
+
+    % plot solution in second refinement cycle
+    if i == 2
+        f = figure;
+        [uh, th] = wave_postprocessor.get_solution_at_time(final_time);
+        x_plot = linspace(waveguide.lower_interval_bound, waveguide.upper_interval_bound, 2000);
+        u_exact_plot_vals = pde_data.u_exact_fun(x_plot, th);
+        hold on;
+        plot(x_plot, u_exact_plot_vals);
+        f = waveguide.plotDGsol(uh, f);
+        hold off;
+        legend("exact solution $u_2$", "$u_h$", 'Interpreter', 'Latex')
+        title("Exact and numerical solution with absorbing boundary conditions")
+    end
+end
+
+% plot errors
+dof_plot = dof;
+line_width = 2;
+figure;
+loglog(meshsizes, meshsizes.^(dof_plot-1), '--','LineWidth', line_width);
+hold on
+loglog(meshsizes, meshsizes.^(dof_plot), '--', 'LineWidth', line_width);
+loglog(meshsizes, errors(1,:),'^-' ,'LineWidth', line_width);
+loglog(meshsizes, errors(2,:),'o-' ,'LineWidth', line_width);
+loglog(meshsizes, errors(3,:), 'x-','LineWidth', line_width);
+hold off
+xlabel('meshsize h');
+ylabel('error');
+legend("h^"+(dof_plot-1), "h^"+(dof_plot), "L2", "H1", "energy")
+title("Error rates for P^"+(dof-1)+ "elements with Absorbing b.c. at upper boundary");
+grid on;
+cr = fem1d.Errors1D.interpolate_convergence_rates(meshsizes, errors);
+fprintf('Interpolated Convergence Rates ------------- \nl2: %g,  h1: %g,  energy: %g \n\n', cr(2,1),cr(2,2),cr(2,3));
+
+
 %% Plot numerical approximation of exact solution
 
 % Settings
@@ -90,8 +171,6 @@ initial_meshsize = 1;
 refine_factor = 2;
 
 % initialization
-errors = zeros(2, num_ref);
-meshsizes = zeros(1, num_ref);
 pde_data = fem1d.PDEData.generate_smooth_pde_data(u_exact_index, c_index);
 pde_data.final_time = final_time;
 waveguide = mesh.MeshIntervalDG1d(pde_data.boundary_points, [2*initial_meshsize, initial_meshsize/50]);
@@ -122,3 +201,4 @@ wave_postprocessor = dg1d.WavePostprocessor1D(sipg_solver);
 wave_postprocessor.plot_solutions(plot_time);
 grid on;
 ylim([-1.1, 1.1])
+title("numerical solution for P^"+ (dof-1) + " elements at t="+plot_time)

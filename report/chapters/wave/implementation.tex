@@ -10,11 +10,11 @@ The answer may differ depending on the purpose of the simulation. The problem wi
 as well is that the incident wave is directly influenced and modified by the upper boundary condition. 
 Lets say we impose a Dirichlet boundary condition at the lower boundary and a homogeneous Neumann boundary condition at the upper boundary
 \begin{equation*}
-    u(0, t) = \sin(x-t),  \qquad u_x(L,t) = 0,
+    u(0, t) = \sin(0-t),  \qquad u_x(L,t) = 0,
 \end{equation*}  
 then the upper boundary will reflect the full wave back. This clearly pollutes the incident wave and if we wanted to observe how the the incident wave changes 
 by passing through an inhomogeneous medium, the reflected wave would overshadow any slight modulation stemming from variations in the material.
-In reality in this context it would be more interesting to simulate the problem on an unbounded domain. We would like the wave to just propagate through the upper boundary
+In reality in this context it would be more interesting to simulate the problem on an unbounded domain. We would like the wave to just propagate through the inhomogeneity 
 and not return. We could achieve this by choosing a very large domain, large enough such that the incident wave never reaches the upper boundary for $t \in [0,T]$.
 Clearly this is a suboptimal, since we increase computaional load needlessly, the majority of the simulated wave would be uninteresting. 
 In practice it is more convenient to choose an artifical boundary.
@@ -22,9 +22,9 @@ To simulate an artificial boundary of this kind we need to impose artificial bou
 \textit{non-reflecting} boundary conditions. \\
 Suppose
 \begin{equation*}
-    \text{supp}(f),\text{supp}(c) \subset \Omega \times [0,T],
+    \text{supp}(f) \subset (0,L) \times [0,T], \qquad  c(x,t)=1 \quad \forall x \in \left[L,\infty \right), t \in [0,T]
 \end{equation*}
-i.e.\ the artificial boundary has been chosen sufficiently far away from the origin, such that the wave outside 
+i.e.\ the artificial boundary $L$ has been chosen sufficiently far away from the origin, such that the wave outside 
 of the domain travels at a constant speed $\sqrt{c} = 1$ with no forcing. \\
 Secondly assume that no waves are returning from outside of the domain, meaning all the waves outside 
 the domain travel soley towards infinity.
@@ -43,7 +43,7 @@ at the upper boundary (exit of the waveguide), which corresponds to
     u_t(L, \cdot) + u_x(L,\cdot) = 0 \qquad \text{in } [0, T].
 \end{equation*}
 
-To implement this boundary condition into our time-marching scheme we have to first treat the bilinear form $b$ at the upper boundary as if we were to implement 
+To implement this boundary condition into our time-marching scheme we have to first treat the bilinear form $b_h$ at the upper boundary as if we were to implement 
 a Neumann boundary condition (see section \ref{sec:boundary_conditions_elliptic}), meaning after integrating by parts and summing over all elements we don't introduce
 the symmetry and penalty terms at the corresponding node $x_{N+1}$, instead we apply the absorbing boundary condition and get
 \begin{equation*}
@@ -101,7 +101,7 @@ If $c$ is in fact only a function of space and not of time, meaning $c(x,t) = c(
 \end{equation*}
 
 \subsubsection{Space-Independent Coefficient}
-Similarly we can also consider the case of spatially independent coefficients. If $c(x,t) = c(0, t)$ for all $x \in \Omega, t \in [0,T]$ then we can write $c(0,t) = c(t)$ and  
+Similarly we can also consider the case of space-independent coefficients. If $c(x,t) = c(0, t)$ for all $x \in \Omega, t \in [0,T]$ then we can write $c(0,t) = c(t)$ and  
 \begin{align*}
     b_h(\Phi_j, \Phi_i;t) = c(t)\Big( 
         \sum_{n=0}^N \int_{I_n} \Phi_i^{\prime} \Phi_j^{\prime}\, \text{d}x
@@ -118,12 +118,12 @@ which allows for a fast vectorized update.
 
 \subsubsection{Piecewise Constant Coefficient}
 Following a similar logic as in the space-independent case we can consider a coefficient $c$ which is piecewise constant in space and arbitrary in time.
-Let $y_1,\ldots,y_{M} \in \Omega$ and $y_0 = 0$ denote the lower boundary and $y_{M+1} = 1$ the upper boundary of $\Omega$.
+Let $y_1,\ldots,y_{M} \in \Omega$ and $y_0 = 0$ denote the lower boundary and $y_{M+1} = L$ the upper boundary of $\Omega$.
 Define the open intervals
 \begin{equation*}
     R_m := (y_i, y_{m+1}) \qquad \text{for } m \in \{0,\ldots,M\}
 \end{equation*}
-and the in space piecewise constant coefficient 
+and the (in space) piecewise constant coefficient 
 \begin{equation*}
     c(x,t) := 
     \begin{cases}
@@ -137,9 +137,8 @@ where $t \in [0,T]$ and
 \begin{equation*}
     c_{\min} \leq \rho_m(t) \leq c_{\max} \qquad \forall m \in \{0,\ldots,M\}, t \in [0,T].
 \end{equation*}
-The update method could work in this fashion for any type functions $\rho_i$, but we will only consider  $\rho_m \in C^{\infty}$.
-Now to properly model the discontinuous coefficient using the DG-FEM we require that the mesh is chosen in such a way that the discontinuities never occur inside an element but rather 
-only at the boundary. If $\mathcal{T}_h = \{I_n\}_{n=0}^N$ denotes the partition of $\Omega$, where $I_n = (x_n, x_{n+1})$ are the elements defined by the face nodes $0 = x_0,\ldots,x_{N+1}=L$,
+Now to properly model the discontinuous coefficient using the DG-FEM we require that the mesh is chosen in such a way, that the discontinuities never occur inside an element, but rather 
+only at the boundaries. If $\mathcal{T}_h = \{I_n\}_{n=0}^N$ denotes the partition of $\Omega$, where $I_n = (x_n, x_{n+1})$ are the elements defined by the face nodes $0 = x_0,\ldots,x_{N+1}=L$,
 then we require 
 \begin{equation*}
     \{y_0,\ldots,y_{M+1}\} \subset \{x_0,\ldots,x_{N+1}\}.
@@ -212,7 +211,7 @@ where
 
 for
 \[
-    \texttt{a}_n = \frac{\sigma \max(\rho_{m-1}(t), \rho_m(t))}{\min(h_{n-1}, h_n)}.
+    \texttt{a}_n(t) = \frac{\sigma \max(\rho_{m-1}(t), \rho_m(t))}{\min(h_{n-1}, h_n)}.
 \]
 
 The problem is that the consistency terms and 

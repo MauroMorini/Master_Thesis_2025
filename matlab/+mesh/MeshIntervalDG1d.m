@@ -339,6 +339,9 @@ classdef MeshIntervalDG1d < handle & matlab.mixin.Copyable
             upper_element_idx =  find(H > 0) + 1;
         end
 
+% EVALUATE DG SOL ------------------------------------------------------------------------------------------------  
+
+
 % VISUALIZE ------------------------------------------------------------------------------------------------------
         function f = plotMesh(obj, f)
             if nargin == 1

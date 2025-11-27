@@ -7,9 +7,9 @@ plot_errors = true;
 
 % Settings
 filename_index = 30;
-c_index = 4;
+c_index = 1;
 u_exact_index = 2;
-is_resonator = true;
+is_resonator = false;
 dof = 2;
 dt_scaling_factor = 0.5;
 num_ref = 5;
