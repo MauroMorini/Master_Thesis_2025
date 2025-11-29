@@ -1,0 +1,105 @@
+\section{Error Analysis}
+The goal of this section is to derive a priori error estimates to show convergence of the method described in (\ref{eq:wave_fully_discrete_system}).
+We will only show convergence for time-independent coefficients, where we will assume a sufficiently regular solution of the problem (\ref{eq:weak_form_wave}). \\
+To show convergence we will require the help of a special kind of projection onto the finite element space, called \textit{elliptic projection}. \\
+Firstly let $\mathcal{T}_h = \{I_n\}_{n=0}^N$ be a partition of $\Omega$ of meshsize $\displaystyle h = \max_{n=0,\ldots,N} h_n$, let $c \in C^1(\bar{\Omega})$ be a time-independent coefficient, 
+let $r\geq 1$ denote a polynomial degree and hence $V_h = V_h^r(\mathcal{T}_h)$ be our finite element space. \\
+Fix a sufficiently large constant $\sigma > 0$, such that the (time-independent) bilinear form $b_h$ is coercive on $V_h$ (see Theorem \ref{thr:cont_coerc_bilin_form}). 
+We will assume throughout this section that $\sigma$ is big enough to guarantee coercivity of $b_h$. Recall that we were
+able to extend the bilinear form $b_h$ defined on $V_h$ to the space $V = V_h + H^2(\Omega)$ in Section \ref{sec:extension_of_bilin_form}. 
+On this bigger space we do loose coercivity of the bilinear form.
+Since $b_h$ is continuous and coercive on $V_h$, for any $u \in V$ 
+\begin{equation*}
+    b_h(u,\cdot): V_h \to \R 
+\end{equation*}
+defines a continuous linear form. $V_h$ is a finite dimensional vector space and the tuple $(V_h, \norm{\cdot}_{\epsilon})$ defines a Hilbert space. With Lax-Milgram we find that for any 
+$u \in V$ there exists a unique $w \in V_h$ such that 
+\begin{equation*}
+    b_h(u,v) = b_h(w,v) \qquad \forall v \in V_h.
+\end{equation*}
+This leads us to the following definition:
+
+\begin{definition}[Elliptic Projection]
+    For each $u \in V$ there exists a unique $\Pi_h u \in V_h$ such that 
+    \begin{equation*}
+        b_h(u,v) = b_h(\Pi_h u, v) \qquad \forall v \in V_h.
+    \end{equation*}
+    We call $\Pi_h u$ the \textbf{Elliptic Projection} of $u$ onto $V_h$. Therefore 
+    \begin{equation*}
+        \Pi_h : V \to V_h
+    \end{equation*}
+    defines a linear projection operator. 
+\end{definition}
+The elliptic projection satisfies the following estimates 
+\begin{lemma}[Elliptic Projection Estimates]
+    Let $r \geq 1$ and $u\in H^{r+1}(\Omega)$. There exist constants $C_1, C_2 > 0$ only dependent on $c,\sigma,\Omega$, but not on $u$ or $h$ such that
+    \begin{enumerate}[label=\textnormal{(\roman*)}]
+        \item $\displaystyle \norm{u - \Pi_h u}_{\epsilon} \leq C_1 h^r \abs{u}_{H^{r+1}(\Omega)}$,
+        \item $\displaystyle \norm{u - \Pi_h u}_{L^2(\Omega)} \leq C_2 h^{r+1} \abs{u}_{H^{r+1}(\Omega)}$.
+    \end{enumerate} 
+\end{lemma}
+\begin{proof}
+    First recall the interpolation operator $\mathcal{I}_h^r$ from Definition \ref{def:linear_interp_operator}, which interpolates any target at the element face nodes $x_n$ 
+    (plus additional element internal interpolation nodes for $r > 1$). \\
+    \begin{proofstep}[Proof of (i)]
+        Let $u \in H^{r+1}(\Omega)$, we introduce the interpolant into the error:
+        \begin{equation*}
+            \norm{u-\Pi_h u}_{\epsilon} = \norm{u- \mathcal{I}_h^r u}_{\epsilon} + \norm{\mathcal{I}_h^r u - \Pi_h u}_{\epsilon}.
+        \end{equation*} 
+        Because the interpolation nodes of the interpolant lay at the element faces it holds that $\jump{(u- \mathcal{I}_h^r u)(x_n)} = 0$ for all $n \in \{0,\ldots,N+1\}$ and therefore 
+        \begin{equation*}
+            \enorm{u- \mathcal{I}_h^r u} = \norm{\sqrt{c}(u- \mathcal{I}_h^r u)'}_{L^2(\Omega)} \leq c_{\max} \abs{u- \mathcal{I}_h^r u}_{H^1(\Omega)}
+            \leq c_{\max} h^r \abs{u}_{H^{r+1}(\Omega)},
+        \end{equation*} 
+        where in the last step we have used Lemma \ref{lemma:interp_estimate}. So we have found
+        \begin{equation}
+            \label{eq:proof_elliptic_proj_estimate_1_first_eq}
+            \enorm{u - \Pi_h u} \leq c_{\max} h^r \abs{u}_{H^{r+1}(\Omega)} + \enorm{\mathcal{I}_h^r u - \Pi_h u}.
+        \end{equation}
+        It remains to estimate the second term. Define $w_h := \mathcal{I}_h^r u - \Pi_h u \in V_h$, since $b_h$ is coercive on $V_h$ 
+        with respect to the energy norm we can estimate
+        \begin{equation*}
+            \enorm{w_h}^2 \leq \frac{1}{C_{\text{coer}}} b_h(w_h, w_h) = \frac{1}{C_{\text{coer}}} 
+            \Big( b_h(\mathcal{I}_h^r u - u, w_h) + \underbrace{b_h(u - \Pi_h u, w_h)}_{=0} \Big),
+        \end{equation*}
+        where the last term is zero by the definition of the elliptic projection.
+        Next by using the definition of the bilinear form and Cauchy-Schwarz we can estimate 
+        \begin{align*}
+            b_h(u - \mathcal{I}_h^r u, w_h) &= 
+            \sum_{n=0}^{N} \int_{I_n} c (u - \mathcal{I}_h^r u)' w_h' \text{ d}x 
+            - \sum_{n = 0}^{N+1} \avg{c(x_n)(u-\mathcal{I}_h^r u)'(x_n)}\jump{w_h(x_n)} \\
+            & - \sum_{n = 0}^{N+1} \avg{c(x_n)w_h'(x_n)} \underbrace{\jump{(u-\mathcal{I}_h^r u)(x_n)}}_{=0}
+            + \sum_{n = 0}^{N+1} \texttt{a}_n \jump{w_h(x_n)} \underbrace{\jump{(u-\mathcal{I}_h^r u)(x_n)}}_{=0} \\
+            & \leq \sum_{n = 0}^{N} \norm{\sqrt{c}(u-\mathcal{I}_h^r u)'}_{L^2(I_n)} \norm{\sqrt{c}w_h'}_{L^2(\Omega)}
+            + \sum_{n = 0}^{N+1} \frac{\avg{c(x_n)(u-\mathcal{I}_h^r u)'(x_n)}}{\sqrt{\texttt{a}_n}} \sqrt{\texttt{a}_n} \jump{w_h(x_n)} \\
+            & \leq \enorm{w_h}\Big( \sum_{n=0}^{N} \norm{\sqrt{c}(u-\mathcal{I}_h^r u)'}_{L^2(I_n)}^2
+            + \sum_{n=0}^{N+1} \frac{\avg{c(x_n)(u-\mathcal{I}_h^r u)'(x_n)}^2}{\texttt{a}_n}
+                \Big)^{1/2} \\
+            & \leq \enorm{w_h}\Big( \sum_{n=0}^{N} c_{\max}\abs{u-\mathcal{I}_h^r u}_{H^1(I_n)}^2
+            + \sum_{n=0}^{N+1} \frac{\avg{c(x_n)(u-\mathcal{I}_h^r u)'(x_n)}^2}{\texttt{a}_n}
+                \Big)^{1/2}.
+        \end{align*}
+        By again applying Lemma \ref{lemma:interp_estimate} we find 
+        \begin{equation*}
+            \sum_{n=0}^{N} c_{\max}\abs{u-\mathcal{I}_h^r u}_{H^1(I_n)}^2 \leq c_{\max}h^{2r} \abs{u}_{H^{r+1}(\Omega)}^2.
+        \end{equation*}
+        Recall that in the proof of Theorem \ref{thr:elliptic_l2_convergence} we have already estimated the terms 
+        (see (\ref{eq:elliptic_proof_convergence_in_energy_norm_estimating_interp_error_avg_terms}))
+        \begin{equation*}
+            \frac{\avg{c(x_n)(u - \mathcal{I}_h^r u)'(x_n)}^2}{\texttt{a}_n} \leq 
+            \frac{2 c_{\max}}{\sigma } h^{2r} \Big(|u|_{H^{r+1}(I_{n-1})}^2 + |u|_{H^{r+1}(I_{n})}^2 \Big)
+        \end{equation*}
+        for interior faces $n \in \{1,\ldots,N\}$ and 
+        \begin{equation*}
+			\frac{\avg{c(x_{0})(u - \mathcal{I}_h^r u)'(x_{0})}^2}{\texttt{a}_{0} } 
+			\leq \frac{4 c_{\max}}{\sigma} h^{2r} |u|^2_{H^{r+1}(I_{0})}, \quad 
+			\frac{\avg{c(x_{N+1})(u - \mathcal{I}_h^r u)'(x_{N+1})}^2}{\texttt{a}_{N+1} } 
+			\leq \frac{4 c_{\max}}{\sigma } h^{2r} |u|^2_{H^{r+1}(I_{N})}
+		\end{equation*}
+        for boundary faces. So we have found 
+        \begin{equation*}
+            \enorm{w_h}^2 \leq \frac{1}{C_{\text{coer}}} b_h(u - \mathcal{I}_h^r u, w_h) 
+            \leq 
+        \end{equation*}
+    \end{proofstep}
+\end{proof}

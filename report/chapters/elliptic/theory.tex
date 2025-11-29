@@ -356,6 +356,7 @@ degree and $V_h^r(\mathcal{T}_h)$ be the discrete subspace.
 
 % Extension of the Bilinear form -----------------------------------------------------------------------------------------------------------------------------------------
 \section{Extension of the Bilinear Form}
+\label{sec:extension_of_bilin_form}
 To simplify the theory we will continue to assume the exact solution to be in $H^2(\Omega)$. 
 When we intend to extend the bilinear form from $V_h$ to a bigger space, which contains the exact solution, we run into the problem, that $V_h \not \subset H^1(\Omega)$, 
 by extension we also have $V_h \not \subset H^2(\Omega)$. So in contrast to continuous FEM we have to use a bigger space allowing for discontinuities and including both 
@@ -563,6 +564,7 @@ Let $r \geq 1$ be a polynomial degree, $\mathcal{T}_h = \{I_n\}_{n=0}^{N_h}$, be
 $ h = \max_{n \in \{0,\ldots,N_h\}} h_n > 0$, where $h_n = |x_{n+1} - x_n |$ and $I_n = (x_{n}, x_{n+1})$ for 
 $n=0,\ldots,N_h$.
 \begin{definition}
+	\label{def:linear_interp_operator}
 	We define the linear interpolation operator 
 	\begin{eqnarray*}
 		\mathcal{I}_h^r : C^{0}(\Omega) \to V_h^r(\mathcal{T}_h) \cap C^0(\Omega),
@@ -665,10 +667,13 @@ $n=0,\ldots,N_h$.
 			& \leq \frac{2 c_{\max}}{\sigma C_{\text{coer}}} h^{2r} \Big(|u|_{H^{r+1}(I_{n-1})}^2 + |u|_{H^{r+1}(I_{n})}^2 \Big).
 		\end{align*}
 		Similarly for the boundary nodes, i.e.\@ $n \in \{0, N_h+1\}$ we find 
-		\begin{equation*}
-			\frac{\avg{c(x_{n})(u - \mathcal{I}_h u)'(x_{n})}^2}{\texttt{a}_{n} C_{\text{coer}}} 
-			\leq \frac{4 c_{\max}}{\sigma C_{\text{coer}}} h^{2r} |u|^2_{H^{r+1}(I_{n})}.
-		\end{equation*}
+		\begin{equation}
+			\label{eq:elliptic_proof_convergence_in_energy_norm_estimating_interp_error_avg_terms}
+			\frac{\avg{c(x_{0})(u - \mathcal{I}_h u)'(x_{0})}^2}{\texttt{a}_{0} C_{\text{coer}}} 
+			\leq \frac{4 c_{\max}}{\sigma C_{\text{coer}}} h^{2r} |u|^2_{H^{r+1}(I_{0})}, \quad 
+			\frac{\avg{c(x_{N_h+1})(u - \mathcal{I}_h u)'(x_{N_h+1})}^2}{\texttt{a}_{N_h+1} C_{\text{coer}}} 
+			\leq \frac{4 c_{\max}}{\sigma C_{\text{coer}}} h^{2r} |u|^2_{H^{r+1}(I_{N_h})}
+		\end{equation}
 		This gives us now the tools to complete the estimate of $|T_2|$, we find
 		\begin{equation}
 			\label{eq:proof_elliptic_energy_error_T2}
