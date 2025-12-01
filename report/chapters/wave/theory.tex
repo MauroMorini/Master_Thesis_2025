@@ -1,13 +1,17 @@
 \section{Error Analysis}
 The goal of this section is to derive a priori error estimates to show convergence of the method described in (\ref{eq:wave_fully_discrete_system}).
 We will only show convergence for time-independent coefficients, where we will assume a sufficiently regular solution of the problem (\ref{eq:weak_form_wave}). \\
-To show convergence we will require the help of a special kind of projection onto the finite element space, called \textit{elliptic projection}. \\
+
 Firstly let $\mathcal{T}_h = \{I_n\}_{n=0}^N$ be a partition of $\Omega$ of meshsize $\displaystyle h = \max_{n=0,\ldots,N} h_n$, let $c \in C^1(\bar{\Omega})$ be a time-independent coefficient, 
 let $r\geq 1$ denote a polynomial degree and hence $V_h = V_h^r(\mathcal{T}_h)$ be our finite element space. \\
 Fix a sufficiently large constant $\sigma > 0$, such that the (time-independent) bilinear form $b_h$ is coercive on $V_h$ (see Theorem \ref{thr:cont_coerc_bilin_form}). 
 We will assume throughout this section that $\sigma$ is big enough to guarantee coercivity of $b_h$. Recall that we were
 able to extend the bilinear form $b_h$ defined on $V_h$ to the space $V = V_h + H^2(\Omega)$ in Section \ref{sec:extension_of_bilin_form}. 
 On this bigger space we do loose coercivity of the bilinear form.
+In the following subsections we will accumulate some necessary tools for the proof of the a priori error estimates.
+
+\subsection{Elliptic Projection}
+To show convergence we will require the help of a special kind of projection onto the finite element space, called \textit{elliptic projection}. \\
 Since $b_h$ is continuous and coercive on $V_h$, for any $u \in V$ 
 \begin{equation*}
     b_h(u,\cdot): V_h \to \R 
@@ -98,8 +102,124 @@ The elliptic projection satisfies the following estimates
 		\end{equation*}
         for boundary faces. So we have found 
         \begin{equation*}
-            \enorm{w_h}^2 \leq \frac{1}{C_{\text{coer}}} b_h(u - \mathcal{I}_h^r u, w_h) 
-            \leq 
+            \enorm{w_h}^2 \leq \frac{b_h(u - \mathcal{I}_h^r u, w_h) }{C_{\text{coer}}} 
+            \leq \enorm{w_h} \frac{\sqrt{c_{\max}(\sigma + 6)}}{\sqrt{\sigma} C_{\text{coer}}} h^{r}\abs{u}_{H^{r+1}(\Omega)}.
         \end{equation*}
+    Dividing by $\enorm{w_h}$ on both sides and combining it with (\ref{eq:proof_elliptic_proj_estimate_1_first_eq}) finally yields the desired equation
+    \begin{equation*}
+        \enorm{u - \Pi_h u} \leq C_1 h^r \abs{u}_{H^{r+1}(\Omega)},
+    \end{equation*}
+    where $\displaystyle C_1 = c_{\max} + \frac{\sqrt{c_{\max}(\sigma + 6)}}{\sqrt{\sigma} C_{\text{coer}}}$.
     \end{proofstep}
+    \begin{proofstep} [Proof of (ii)]
+        The proof of (ii) is analogous to the proof of Theorem \ref{thr:elliptic_l2_convergence} so we will not repeat it here.
+    \end{proofstep}
+\end{proof}
+
+So far we have not needed any restriction on the mesh $\mathcal{T}_h$, this is because we consider only the 1d case. In reality when we consider problems on higher dimensional domains, certain 
+regularity assumptions on the mesh are required. These assumptions always appear in the context of a sequence of meshes $ \{\mathcal{T}_h\}_h $. 
+We would like that a sequence of meshes we consider for convergence does not contain elements which grow ever smaller in comparison to others which stay big. This yields the following definition.
+\begin{definition}
+    A sequence of meshes $ \{\mathcal{T}_h\}_h $ is called \textbf{quasi-uniform} if there exists some constant $\kappa > 0$ independent of the meshsize $h$, such that
+    \begin{equation*}
+        \frac{\max_{n}h_n}{\min_n h_n} \leq \kappa,
+    \end{equation*} 
+    where $\max_n h_n, \min_n h_n$ denote the maximal, minimal element size per mesh respectively.
+\end{definition}
+Clearly if we only consider one mesh and not a sequence, every mesh will be quasi-uniform, the key to this definition is that we consider a sequence of meshes. \\
+
+\subsection{Inverse Inequality}
+Inequalities like the \textit{Poincaré inequality} or the \textit{Sobolev inequalities } are essential tools in the theory of partial differential equations allowing estimation
+of lower order derivatives by higher order derivatives. The opposite is also possible, although only on finite dimensional subspaces.
+\begin{lemma}[Inverse Inequality]
+    \label{lemma:inverse_inequality}
+    Let $I := (a,b) \subset \R$ be an arbitrary (open, nonempty) interval and $r\geq 1$ a polynomial degree, we denote the interval length by $h := b-a$. There exists a constant 
+    $C_{\text{inv}}(r) > 0$ only depending on $r$, such that 
+    \begin{equation*}
+        \norm{v'}_{L^2(I)} \leq C_{\text{inv}} h^{-1} \norm{v}_{L^2(I)}.
+    \end{equation*}
+\end{lemma} 
+\begin{proof}
+    \begin{proofstep}
+        Recall the reference element $\hat{I} = (-1, 1)$ and define the (affine) element map 
+        \begin{equation*}
+            F: \hat{I} \to I, \quad \xi \mapsto \frac{a+b}{2} + \frac{h}{2} \xi.
+        \end{equation*}
+        Next we define the functional 
+        \begin{equation*}
+            \mathcal{R}: \mathcal{P}^r(\hat{I})\setminus {\{0\}} \to \left[0, \infty \right), \quad \mathcal{R}[\widehat{v}] := \frac{\norm{\widehat{v}^{\,\prime}}_{L^2(\hat{I})}^2}{\norm{\widehat{v}}_{L^2(\hat{I})}^2}.
+        \end{equation*}
+        Note that $\mathcal{R}$ is homogeneous of degree 0, i.e.\ $\mathcal{R}[\widehat{v}] = \mathcal{R}[\lambda \widehat{v}]$ for any $\lambda > 0$, using this, the finite dimensionality of
+        $\mathcal{P}^r(\hat{I})$ and the closedness of the unit ball we have
+        \begin{equation*}
+            \mathcal{R}_{*}:= \sup_{\widehat{v} \in \mathcal{P}^r(\hat{I})\setminus \{0\}} \mathcal{R}[\widehat{v}] 
+            = \max_{\substack{\widehat{v} \in \mathcal{P}^r(\hat{I}) \\ \norm{\widehat{v}}_{L^2(\hat{I})}=1}} \mathcal{R}[\widehat{v}] > 0,
+        \end{equation*}
+        meaning the supremum is attained, which in turn yields the inequality
+        \begin{equation}
+            \label{eq:proof_inv_inequality_ineq_on_ref}
+            \norm{\widehat{v}^{\, \prime}}_{L^2(\hat{I})}^2 \leq \mathcal{R}_{*} \norm{\widehat{v}}_{L^2(\hat{I})}^2 \qquad  \forall \widehat{v} \in \mathcal{P}^r(\hat{I}).
+        \end{equation}
+    \end{proofstep}
+    \begin{proofstep}
+        Let $v \in  \mathcal{P}^r({I})$, we can pull $v$ back to the reference element by defining $\widehat{v}(\xi) := v(F(\xi))$ for all $\xi \in \hat{I}$, or equivalently
+        $v(x) = \widehat{v}(F^{-1}(x))$ for all $x\in I$. Clearly $\widehat{v} \in  \mathcal{P}^r(\hat{I})$. \\
+        We can now proof the sought inequality by starting on $I$, going to the reference element $\hat{I}$ by substitution, applying (\ref{eq:proof_inv_inequality_ineq_on_ref}) there and 
+        coming back to $I$ by substitution once again:
+        \begin{align*}
+            \norm{v'}_{L^2(I)}^2 &= \int_{I}\abs{v'(x)}^2 \text{d}x = \int_{I} \abs{\widehat{v}^{\,\prime}(F^{-1}(x))}^2 \Big(\frac{2}{h}\Big)^2 \text{d}x
+            = \frac{2}{h} \int_{\hat{I}} \abs{\widehat{v}^{\,\prime}(\xi)}^2 \text{d}\xi \\
+            &\leq \frac{2\mathcal{R}_{*}}{h} \int_{\hat{I}} \abs{\widehat{v}(\xi)}^2 \text{d}x
+            = \frac{4\mathcal{R}_{*}}{h^2} \norm{v}_{L^2(I)}^2 = C_{\text{inv}}^2 h^{-2}\norm{v}_{L^2(I)}^2,
+        \end{align*}
+        for $C_{\text{inv}}^2 = 4\mathcal{R}_{*}$.
+    \end{proofstep}
+\end{proof}
+By making use of Lemma \ref{lemma:inverse_inequality} we can now estimate the energy norm from above by the $L^2$-norm on the finite element space. In fact one could extend the following lemma 
+to show equivalence of the two norms on $V_h$, but we are only interested in the upper bound. 
+\begin{lemma}
+    Let $r\geq 1$ be a polynomial degree, $\{\mathcal{T}_h\}_h$ be a sequence of quasi-uniform meshes with uniformity constant $\kappa > 0$ and let $V_h = V_h(\mathcal{T}_h)$ be the 
+    finite element space. Then there exists a constant $C_{\lambda}(c, \sigma, r, \kappa) > 0$ independent of $h$, such that 
+    \begin{equation*}
+        \enorm{v}^2 \leq C_{\lambda} h^{-2} \norm{v}_{L^2(\Omega)}^2 \qquad \forall v\in V_h.
+    \end{equation*} 
+    Furthermore it follows that 
+    \begin{equation*}
+        b_h(v,v) \leq C_{\text{cont}} C_{\lambda} h^{-2} \norm{v}_{L^2(\Omega)}^2 \qquad \forall v \in V_h.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    Fix an arbitrary mesh $\mathcal{T}_h$ in the sequence of meshes and denote $h_{\min} = \min_n h_n$ the smallest element size. Due to the quasi-uniformity of the mesh sequence we have
+    \begin{equation}
+        \label{eq:proof_enorm_equivalence_quasi_uniformity}
+        h_{\min}^{-1} \leq \frac{\kappa}{h}.
+    \end{equation}
+    Let $v \in V_h$, recall the definition of the energy norm 
+    \begin{equation*}
+        \enorm{v}^2 = \sum_{n=0}^{N_h} \norm{\sqrt{c}v'}^2_{L^2(I_n)} + \sum_{n=0}^{N_h+1} \texttt{a}_n \jump{v(x_n)}^2.
+    \end{equation*}
+    We can estimate the trace values of the jump terms by applying Lemma \ref{lemma:inv_ineq}:
+    \begin{align*}
+        \texttt{a}_n \jump{v(x_n)}^2 &= \texttt{a}_n \Big( v(x_n^-) - v(x_n^+)\Big)^2 \leq 2 \texttt{a}_n(\abs{v(x_n^-)}^2 + \abs{v(x_n^+)}^2) \\
+        & \leq \frac{2\sigma c_{\max}(r+1)^2}{h_{\min}^2}\Big( \norm{v}_{L^2(I_{n-1})}^2 + \norm{v}_{L^2(I_{n})}^2 \Big)
+        \qquad \forall n \in \countset{1}{N_h},
+    \end{align*}
+    and 
+    \begin{equation*}
+        \texttt{a}_0\jump{v(x_0)}^2 \leq \frac{\sigma c_{\max}(r+1)^2}{h_{\min}^2} \norm{v}_{L^2(I_0)}^2, \quad 
+        \texttt{a}_{N_h+1}\jump{v(x_{N_h+1})}^2 \leq \frac{\sigma c_{\max}(r+1)^2}{h_{\min}^2} \norm{v}_{L^2(I_{N_h})}^2
+    \end{equation*}
+    for the boundary faces.
+    We can apply these estimates together with Lemma \ref{lemma:inverse_inequality} to bound the energy norm
+    \begin{equation*}
+        \enorm{v}^2 \leq c_{\max} \Big(\sum_{n=0}^{N_h} \norm{v'}_{L^2(I_n)}^2 
+        + \frac{3\sigma (r+1)^2}{h_{\min}^2} \norm{v}_{L^2(\Omega)}^2 \Big) 
+        \leq c_{\max} h_{\min}^{-2} \Big( C_{\text{inv}}^2 + 3\sigma (r+1)^2\Big) \norm{v}_{L^2(\Omega)}^2
+    \end{equation*}
+    and with (\ref{eq:proof_enorm_equivalence_quasi_uniformity}) we finally get 
+    \begin{equation*}
+        \enorm{v}^2 \leq C_{\lambda}h^{-2} \norm{v}_{L^2(\Omega)}^2 \qquad \forall v \in V_h,
+    \end{equation*}
+    where $C_{\lambda} = c_{\max}\kappa (C_{\text{inv}}^2 + 3(r+1)^2\sigma) $. 
+    The estimate on $b_h$ follows directly from the estimate on the energy norm above and the continuity of the bilinear form on $V_h$.
 \end{proof}

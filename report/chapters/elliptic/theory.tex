@@ -755,9 +755,13 @@ continuous FEM.
 		\begin{enumerate}
 			\item $ \displaystyle \abs{\varphi - \mathcal{I}_h^1 \varphi}_{H^1(\Omega)}^2 \leq h^2 \abs{\varphi}_{H^2(\Omega)}^2 \qquad \forall n \in \countset{0}{N_h} $,
 			\item $\displaystyle \frac{{\avg{ c(x_n) (\varphi - \mathcal{I}_h^1 \varphi)'(x_n) }}^2}{\texttt{a}_n} 
-				\leq \gamma_n \frac{c_{\max}}{\sigma} h^2 \, \Big( \abs{\varphi}_{H^2(I_{n-1})}^2 + \abs{\varphi}_{H^2(I_{n})}^2 \Big) \qquad \forall n \in \countset{0}{N_h+1}$,
+				\leq 2 \frac{c_{\max}}{\sigma} h^2 \, \Big( \abs{\varphi}_{H^2(I_{n-1})}^2 + \abs{\varphi}_{H^2(I_{n})}^2 \Big) \qquad \forall n \in \countset{1}{N_h}$,
+			\item $\displaystyle \frac{\avg{c(x_{0})( \varphi - \mathcal{I}_h^1 \varphi)'(x_{0})}^2}{\texttt{a}_{0} } 
+			\leq \frac{4 c_{\max}}{\sigma} h^{2} |\varphi|^2_{H^{2}(I_{0})}, \quad 
+			\frac{\avg{c(x_{N+1})(\varphi - \mathcal{I}_h^1 \varphi)'(x_{N+1})}^2}{\texttt{a}_{N+1} } 
+			\leq \frac{4 c_{\max}}{\sigma } h^{2} |\varphi|^2_{H^{2}(I_{N})}$.
 		\end{enumerate}
-		where $\gamma_n = 2$ for $n \in \countset{1}{N_h}$ and $\gamma_n = 4$ for $n \in \{0, N_h+ 1\}$. Putting all of the above together we find
+		Putting all of the above together we find
 		\begin{equation*}
 			\norm{e}_{L^2(\Omega)}^2 \leq \Big( \sqrt{c_{\max}} + \sqrt{\frac{6 c_{\max}}{\sigma}} \Big) C_{\epsilon} h^{r+1} \abs{\varphi}_{H^2(\Omega)} \abs{u}_{H^{r+1}(\Omega)}
 			\leq \Big(1 + \sqrt{\frac{6}{\sigma}}\Big)\sqrt{c_{\max}} C_{\epsilon} \tilde{C} \norm{e}_{L^2(\Omega)} \abs{u}_{H^{r+1}(\Omega)},
