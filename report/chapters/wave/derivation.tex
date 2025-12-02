@@ -147,9 +147,10 @@ First we choose a (stable) stepsize $\Delta t > 0$, we write $t_m = m \cdot \Del
     \mathbf{u}_m := \mathbf{u}(t_m), \quad \mathbf{B}_m := \mathbf{B}(t_m), \quad \mathbf{l}_m := \mathbf{l}(t_m).
 \end{equation*}
 We introduce a second order finite difference quotient to approximate the second order time derivative
-\begin{equation*}
+\begin{equation}
+    \label{def:centered_finite_difference_quotient}
     \ddot{\mathbf{u}}_m \approx \delta^2 \mathbf{u}_m := \frac{ \mathbf{u}_{m+1} - 2 \mathbf{u}_{m} + \mathbf{u}_{m-1}}{\Delta t^2},
-\end{equation*}
+\end{equation}
 plugging this into (\ref{eq:wave_matrix-vector_semidiscrete_system}) and reforming yields the fully discrete, explicit leapfrog scheme 
 \begin{equation}
     \label{eq:wave_fully_discrete_system}

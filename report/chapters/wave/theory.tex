@@ -279,22 +279,24 @@ to show equivalence of the two norms on $V_h$, but we are only interested in the
     Due to the length oif this proof and the sheer amount of constants appearing we will not exactly calculate $\mathcal{C}$, to simplify notation we will assume the constant to be
     growing throughout this proof and reuse it as a placeholder.
 
-    \begin{proofstep}
+    \begin{proofstep}[Introduce Elliptic Projection]
         First define $u^m := u(t_m) \in H^{r+1}(\Omega)$ for all $m \in \countset{0}{M}$.
         By introducing the elliptic projection into the error and using the triangle inequality we can estimate
         \begin{equation}
             \label{eq:proof_wave_l2_convergence_introducing_elliptic_projection_first_estimate}
             \norm{u^m - u_h^m}_{\lo} \leq \norm{u^m - \Pi_h u^m}_{\lo} + \norm{u_h^m - \Pi_h u^m}_{\lo} \qquad \forall m \in \countset{0}{M}.
         \end{equation}
+    \end{proofstep}
+    \begin{proofstep} [Derive Error Equation]
         Define $e^m := u_h^m - \Pi_h u^m \in V_h $. For all $m \in \countset{1}{M-1}$ $u^m$ and  $u_h^m$ satisfy 
         \begin{align}
             \label{eq:proof_wave_l2_convergence_pde_of_cont_solution}
             (\partial_{t}^2 u^m, v)_{\lo} + \sipgb(u^m, v) &= \ell(v) &&\forall v \in V_h, \\
-            \label{eq:proof_wave_l2_convergence_pde_of_discrete_solution}
             (\delta^2 u_h^m, v)_{\lo} + \sipgb(u_h^m, v) &= \ell(v) &&\forall v \in V_h
+            \label{eq:proof_wave_l2_convergence_pde_of_discrete_solution}
         \end{align}
         respectively.
-        We can subtract (\ref{eq:proof_wave_l2_convergence_pde_of_discrete_solution}) - (\ref{eq:proof_wave_l2_convergence_pde_of_discrete_solution}) and find
+        We can subtract (\ref{eq:proof_wave_l2_convergence_pde_of_cont_solution}) - (\ref{eq:proof_wave_l2_convergence_pde_of_discrete_solution}) and find
         \begin{align*}
             0 &= (\partial_t^2 u^m - \delta^2 u_h^m, v)_{\lo} + \sipgb(u^m - u_h^m, v) \\
             & = (\partial_t^2 u^m - \delta^2 \Pi_h u^m + \delta^2 \Pi_h u^m - \delta^2 u_h^m, v)_{\lo} + \sipgb(u^m - \Pi_h u^m + \Pi_h u^m - u_h^m, v) \\
@@ -306,5 +308,19 @@ to show equivalence of the two norms on $V_h$, but we are only interested in the
             (\delta^2 e^m, v)_{\lo} + \sipgb(e^m,v) = (r^m, v)_{\lo} \qquad \forall v \in V_h,m\in \countset{1}{M-1}
         \end{equation}
         where $r^m := \partial_t^2 u^m - \delta^2 \Pi_h u^m$, denotes the residual at time $t_m$. 
+    \end{proofstep}
+    \begin{proofstep}[Sum up Error Equations]
+        For $j \in \countset{2}{M-2}$ by the definition of $\delta^2$ in (\ref{def:centered_finite_difference_quotient}) we find
+        \begin{align*}
+            (\delta^2 e^{j+1},v)_{\lo} + (\delta^2 e^{j},v)_{\lo} + (\delta^2 e^{j-1},v)_{\lo} 
+            =  \Big(\frac{e^{n+2} - e^{n+1}}{\Delta t^2},v \Big)_{\lo} - \Big(\frac{e^{n-1} - e^{n-2}}{\Delta t^2},v\Big)_{\lo},
+        \end{align*}
+        therefore summing up all error equations over $j = 1,\ldots,m$ for some $m \in \countset{1}{M-1}$ yields 
+        \begin{equation}
+            \Big(\frac{e^{m+1} - e^{m}}{\Delta t},v \Big)_{\lo} - \Big(\frac{e^{1} 
+            - e^{0}}{\Delta t},v \Big)_{\lo} + \Delta t \sum_{j = 1}^{m} \sipgb(e^j, v) 
+            = \Delta t \sum_{j=1}^m (r^j,v)_{\lo}
+        \end{equation}
+        where we have multiplied both sides with $\Delta t$.
     \end{proofstep}
 \end{proof}
