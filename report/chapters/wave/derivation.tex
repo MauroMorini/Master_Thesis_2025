@@ -10,7 +10,19 @@ then discretize in time using leapfrog time-integration to solve the problem num
 First we pose the problem and recall some analysis on regularity, existence and uniqueness of solutions. 
 Next we discretize both in time and space deriving the fully discrete scheme. We will then again elaborate on the actual implementation of the program 
 as well as recalling convergence theory. Finally we will present the numerical experiments reproducing the expected convergence rates where 
-exact solutions are given and simulate the behavior of waves propagating through a waveguide with material properties varying in space and time. 
+exact solutions are given and simulate the behavior of waves propagating through a waveguide with material properties varying in space and time. \\
+\begin{remark}
+    We will be using different notations for derivatives loosely throughout this chapter with the goal of simplifying notation while maintaining clarity depending 
+    on the context. In general if we consider a spacial function $v \in H^1$ we denote
+    \begin{equation*}
+        \frac{\text{d}v}{\text{d}x} = v' = v_x = \partial_x v,
+    \end{equation*} 
+    and for a temporal function $ w \in C^1$ we denote
+    \begin{equation*}
+        \frac{\text{d}w}{\text{d}t} = w' = \dot{w} = w_t = \partial_t w .
+    \end{equation*} 
+    For a space-time function $u \in C^1([0,T];H^1)$ we may use a combination of the above.
+\end{remark}
 
 % Problem ----------------------------------------------------------------------------------------------------------------------------------------------------
 \section{Problem}
@@ -32,7 +44,7 @@ First we assume homogeneous Dirichlet boundary conditions, meaning $g_0 \equiv g
 Multiplying the pde (\ref{eq:strong_form_wave}a) by a test function $v \in  C^{\infty}_c (\Omega)$ and integrating by parts gives us the weak formulation: \\ \\
 Find $u \in L^2(0,T; H_0^1(\Omega))$, with $ u_t \in L^2(0,T;L^2(\Omega)), u_{tt} \in L^2(0,T;H^{-1}(\Omega)) $, such that
 \begin{subequations}
-    \label{eq:weak_form_wave}
+    \label{eq:weak_form_wave_homogeneous_dirichlet_bc}
     \begin{equation}
     \langle u_{tt}(t), v \rangle + a(u(t), v;t) = (f(t),v)_{L^2(\Omega)} \qquad \forall v \in C^{\infty}_c  (\Omega) \quad \text{for a.e. }t\in  (0,T),    
     \end{equation}
@@ -46,11 +58,11 @@ where
 \end{equation*}
 denotes the standard (time-dependent) elliptic bilinear form and $\langle \cdot, \cdot \rangle $ denotes the duality pairing between $H^{-1}(\Omega)$ and $H^1_0(\Omega)$.
 Note that both the time derivatives as well as the space derivatives have to be understood in a weak sense. 
-It is well known that the problem (\ref{eq:weak_form_wave}) is well posed (see section 7.2 Theorem 3 in \cite{EvansPDE}). Furthermore we even have 
+It is well known that the problem (\ref{eq:weak_form_wave_homogeneous_dirichlet_bc}) is well posed (see section 7.2 Theorem 3 in \cite{EvansPDE}). Furthermore we even have 
 \begin{equation*}
     u \in C^1([0,T]; L^2(\Omega)) \cap C([0,T];H_0^1(\Omega)),
 \end{equation*}
-which ensures the validity of the initial conditions (\ref{eq:weak_form_wave}b). \\
+which ensures the validity of the initial conditions (\ref{eq:weak_form_wave_homogeneous_dirichlet_bc}). \\
 We can furthermore deduce existence and uniqueness of the weak problem for inhomogeneous Dirichlet boundary conditions, if they are sufficiently regular. Suppose 
 for example $g_0 = g(0, \cdot), g_L = g(L, \cdot)$ for some $g \in C^2([0,T]; H^2(\Omega))$. We can write $u = w + g$, where $w \in C^1([0,T]; L^2(\Omega)) \cap C([0,T];H_0^1(\Omega))$ 
 is the unique (weak) solution of 
@@ -59,7 +71,22 @@ is the unique (weak) solution of
     w(0,\cdot) = w(L,\cdot) &= 0 && \text{in } [0,T], \\
     w(\cdot, 0) = u_0 - g(\cdot, 0), \quad w_t(\cdot, 0) &= v_0 - g_t(\cdot, 0) && \text{in } \Omega.
 \end{align*}
-With this we can conclude the problem to be well-posed and continue with the discretization procedure.
+By assuming sufficient regularity of the boundary conditions, initial conditions and the source term $f$ as well as certain compatibility conditions to hold
+we can get arbitrarily regular solutions of (\ref{eq:weak_form_wave}). In this chapter we will just assume the solution to satisfy a desired level of
+regularity, therefore implying sufficiently regular pde data. More theory on the regularity of solutions of hyperbolic equations can be found in section 7.2 Theorem 6 of \cite{EvansPDE}. \\
+Define $H:= \{v \in H^2(\Omega)\, | \, v(0) = g_0, v(L) = g_L\}$ the higher regularity weak problem we consider reads: \\ \\
+Find $u \in C^2([0,T]; H)$ such that 
+\begin{subequations}
+    \label{eq:weak_form_wave}
+    \begin{align}
+        (u_{tt}(t), v)_{L^2(\Omega)} + a(u(t), v;t) &= (f(t), v)_{L^2(\Omega)} &&\forall v \in C_c^{\infty}(\Omega),t \in [0,T] \\
+        u(0,t) = g_0, \quad u(L,t) &= g_L                                   &&\forall t \in [0,T]
+    \end{align}
+\end{subequations}
+
+
+With this we can conclude the problem to be well-posed and continue with the discretization procedure. 
+
 
 % Spacial Discretization ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 \section{Variational Formulation and Fully-Discrete-Scheme}
@@ -77,14 +104,14 @@ variational formulation:
 Find $u_h \in C^2([0,T]; V_h)$ with $u_h(\cdot,0) = \mathcal{I}_h u_0, u_t(\cdot, 0) = \mathcal{I}_h v_0$ such that 
 \begin{equation}
     \label{eq:wave_semidiscrete_var_form}
-    (\partial_{t}^2 u_{h}(t), v)_{L^2(\Omega)} + b_h(u_h,v;t) = \ell_h(v;t) \qquad \forall v \in V_h, t \in [0,T],
+    (\partial_{t}^2 u_{h}(t), v)_{L^2(\Omega)} + b_h(u_h,v;t) = \ell(v;t) \qquad \forall v \in V_h, t \in [0,T],
 \end{equation}
 where 
 \begin{align*}
     b_h(u,v;t) & = \sum_{n=0}^N \int_{I_n} c(x,t)u_x(x,t)v_x(x)\, \text{d}x
 		-\sum_{n=0}^{N+1} \avg{c(x_n,t)u_x(x_n, t)}\jump{v(x_n)} + \avg{c(x_n,t)v_x(x_n)}\jump{u(x_n,t)} \\
 		& + \sum_{n=0}^{N+1} \texttt{a}_n(t)\jump{u(x_n,t)}\jump{v(x_n)},                                   \\
-		\ell_h(v;t)  & = (f(t),v)_{L^2(\Omega)}-g_L(t)c(x_{N+1}^-,t)v_x(x_{N+1}^-) + g_0(t)c(x_0^+,t)v_x(x_0^+) \\
+		\ell(v;t)  & = (f(t),v)_{L^2(\Omega)}-g_L(t)c(x_{N+1}^-,t)v_x(x_{N+1}^-) + g_0(t)c(x_0^+,t)v_x(x_0^+) \\
 		&+ \texttt{a}_{N+1}(t)g_L(t)v(x_{N+1}^-) + \texttt{a}_0(t) g_0(t) v(x_{0}^+).
 \end{align*}
 \end{tcolorbox}
@@ -102,7 +129,7 @@ to testing against basis functions yields the matrix-vector system of ODEs
 \end{equation}
 Here $[\mathbf{M}]_{i,j} = (\Phi_j, \Phi_i)_{L^2(\Omega)}$ is the \textit{mass matrix}, which in our case is not time-dependent. \\
 $ [\mathbf{B}(t)]_{i,j} = b_h(\Phi_j, \Phi_i; t)$ is the \textit{stiffness matrix}, similar to the elliptic case but now with a time-dependent coefficient $c$ and
-$ [\mathbf{l}(t)]_i = \ell_h(\Phi_i;t)$ the \textit{load vector}, also time-dependent. Finally $ [\mathbf{u}(t)]_i = \alpha_i(t)$ denotes the solution vector with the time-dependent coefficients
+$ [\mathbf{l}(t)]_i = \ell(\Phi_i;t)$ the \textit{load vector}, also time-dependent. Finally $ [\mathbf{u}(t)]_i = \alpha_i(t)$ denotes the solution vector with the time-dependent coefficients
 as entries uniquely determining the semi-discrete solution. The double dots over $\mathbf{u}$ denote the second order time-derivative, i.e.\ 
 \begin{equation*}
     \ddot{\mathbf{u}} = \frac{\text{d}^2 \mathbf{u}}{\text{d}t^2} .
@@ -115,27 +142,27 @@ $\mathbf{M}$ is block-diagonal, since by the construction of the basis
 functions, each element is fully decoupled from the rest, this simplifies solving any linear system with the mass matrix as the system matrix. We can capitalize on this property of DG-FEM by choosing 
 an explicit time integration scheme. An explicit scheme, in contrast to an implicit scheme, ensures that we only need to invert the mass matrix and not the stiffness matrix
 as well.  \\
-First we choose a (stable) stepsize $\Delta t > 0$, we write $t_m = m \cdot \Delta t \in [0, T]$ and denote 
+First we choose a (stable) stepsize $\Delta t > 0$, we write $t_m = m \cdot \Delta t \in [0, T]$, where we can assume there exists some $M \in \N$ such that $M\Delta t = T$. Denote 
 \begin{equation*}
     \mathbf{u}_m := \mathbf{u}(t_m), \quad \mathbf{B}_m := \mathbf{B}(t_m), \quad \mathbf{l}_m := \mathbf{l}(t_m).
 \end{equation*}
 We introduce a second order finite difference quotient to approximate the second order time derivative
 \begin{equation*}
-    \ddot{\mathbf{u}}_m \approx \frac{ \mathbf{u}_{m+1} - 2 \mathbf{u}_{m} + \mathbf{u}_{m-1}}{\Delta t^2},
+    \ddot{\mathbf{u}}_m \approx \delta^2 \mathbf{u}_m := \frac{ \mathbf{u}_{m+1} - 2 \mathbf{u}_{m} + \mathbf{u}_{m-1}}{\Delta t^2},
 \end{equation*}
 plugging this into (\ref{eq:wave_matrix-vector_semidiscrete_system}) and reforming yields the fully discrete, explicit leapfrog scheme 
 \begin{equation}
     \label{eq:wave_fully_discrete_system}
-    \mathbf{M}\mathbf{u}_{m+1} = \Delta t^2 \mathbf{l}_m + (2 \mathbf{M} - \Delta t^2 \mathbf{B}_m) \mathbf{u}_{m} - \mathbf{u}_{m-1}.
+    \mathbf{M}\mathbf{u}_{m+1} = \Delta t^2 \mathbf{l}_m + (2 \mathbf{M} - \Delta t^2 \mathbf{B}_m) \mathbf{u}_{m} - \mathbf{u}_{m-1} \qquad m = 1,\ldots,M-1.
 \end{equation}
 This being a multistep scheme we have to initialize $\mathbf{u}_0, \mathbf{u}_1$. To do so we use the interpolated values of the initial 
-displacement to initialize $\mathbf{u}_0$, meaning we can write $ \mathcal{I}_h u_0 = \sum_{n=1}^{M} \alpha_n(0) \Phi_n $ for some coefficients $
+displacement to initialize $\mathbf{u}_0$, meaning we can write $ \mathcal{I}_h u_0 = \sum_{n=1}^{\text{dim}(V_h)} \alpha_n(0) \Phi_n $ for some coefficients $
 \alpha_n(0) \in \mathbb{R}$ and get
 \begin{equation*}
-    [\mathbf{u}_0]_i = \alpha_i(0).
+    [\mathbf{u}_0]_i = \alpha_i(0),
 \end{equation*}
-In fact since we have chosen a Lagrangian basis for the space $V_h$, finding the coefficients $\alpha_i(0)$ corresponds to evaluating the to be interpolated function
-$u_0$ at the corresponding node $x_i$ on which the basis function $\Phi_i$ is stationed, i.e.\ $\alpha_i(0) = u_0(x_i)$. \\
+where $\mathcal{I}_h$ is defined in Definition \ref{def:linear_interp_operator}.
+\\
 For $\mathbf{u}_1$ we Taylor-expand 
 \begin{equation*}
     \mathbf{u}_1 \approx \mathbf{u}(\Delta t) = \mathbf{u}_0 + \Delta t \mathbf{v}_0 + \frac{\Delta t^2}{2} \ddot{\mathbf{u}}(0) + \mathcal{O}(\Delta t^3),
@@ -144,7 +171,6 @@ using (\ref{eq:wave_matrix-vector_semidiscrete_system}) we can rewrite $\ddot{\m
 \begin{equation*}
     \mathbf{u}_1 :=   \mathbf{u}_0 + \Delta t \mathbf{v}_0 + \frac{\Delta t^2}{2}\mathbf{M}^{-1}( \mathbf{l}_0 - \mathbf{B}_0 \mathbf{u}_0).
 \end{equation*}
-
 To guarantee stability of the leapfrog scheme $\Delta t$ has to be chosen small enough to satisfy the CFL condition, here this means specifically that 
 the matrix $\mathbf{M} - \frac{\Delta t^2}{4}\mathbf{B}(t)$ has to be symmetric positive definite (SPD) for all times. 
 This is equivalent to requiring that 
@@ -154,3 +180,18 @@ This is equivalent to requiring that
 where $\lambda_{\min}, \lambda_{\max}$ denote the minimal and maximal (positive) eigenvalues respectively. The expression is well-defined, since 
 $\mathbf{B}(t)$ and $\mathbf{M}$ are SPD for all $t \in [0,T]$. This follows from a slight adaptation of the coercivity proof of the SIPG bilinear form on $V_h$ 
 (Theorem \ref{thr:cont_coerc_bilin_form}). For further information on the stability of leapfrog see \cite{groteNumWaveLecture}.
+Hence we have derived the fully discrete scheme with the necessary initial conditions and time-stepping in matrix-vector form. \\
+Finally we will rewrite the fully-discrete scheme in function form: \\ 
+
+\begin{tcolorbox}[mythmstyle]
+    Find the sequence $\{u_h^m\}_{m=0}^M \subset V_h$ such that 
+    \begin{subequations}
+        \label{eq:wave_fully_discrete_problem}
+        \begin{align}
+            &(\delta^2 u_h^m, v)_{\lo} + \sipgb (u_h^m, v;t_m) = \ell(v;t_m) &&\forall v \in V_h, m \in \countset{1}{M-1}, \\
+            &u_h^0 = \mathcal{I}_h u_0, \quad 
+            u_h^1 = u_h^0 + \Delta t \mathcal{I}_h v_0 + \frac{\Delta t^2}{2} \ddot{u}_h^0 \\
+            &(\ddot{u}_h^0,v)_{\lo} = \ell(v;0) - \sipgb(u_h^0, v) &&\forall v \in V_h
+        \end{align}
+    \end{subequations}
+\end{tcolorbox}

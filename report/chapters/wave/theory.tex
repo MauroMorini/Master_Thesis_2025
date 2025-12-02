@@ -1,13 +1,48 @@
 \section{Error Analysis}
 The goal of this section is to derive a priori error estimates to show convergence of the method described in (\ref{eq:wave_fully_discrete_system}).
-We will only show convergence for time-independent coefficients, where we will assume a sufficiently regular solution of the problem (\ref{eq:weak_form_wave}). \\
+We will only show convergence for time-independent coefficients, where we will assume a sufficiently regular solution of the problem (\ref{eq:weak_form_wave}). 
+Throughout this section we will therefore assume the following: \\
 
 Firstly let $\mathcal{T}_h = \{I_n\}_{n=0}^N$ be a partition of $\Omega$ of meshsize $\displaystyle h = \max_{n=0,\ldots,N} h_n$, let $c \in C^1(\bar{\Omega})$ be a time-independent coefficient, 
 let $r\geq 1$ denote a polynomial degree and hence $V_h = V_h^r(\mathcal{T}_h)$ be our finite element space. \\
-Fix a sufficiently large constant $\sigma > 0$, such that the (time-independent) bilinear form $b_h$ is coercive on $V_h$ (see Theorem \ref{thr:cont_coerc_bilin_form}). 
-We will assume throughout this section that $\sigma$ is big enough to guarantee coercivity of $b_h$. Recall that we were
-able to extend the bilinear form $b_h$ defined on $V_h$ to the space $V = V_h + H^2(\Omega)$ in Section \ref{sec:extension_of_bilin_form}. 
-On this bigger space we do loose coercivity of the bilinear form.
+Fix a sufficiently large constant $\sigma > 0$, such that the (time-independent) bilinear form $\sipgb$ is coercive on $V_h$ (see Theorem \ref{thr:cont_coerc_bilin_form}). 
+We will assume that $\sigma$ is big enough to guarantee coercivity of $\sipgb$. Recall that we were
+able to extend the bilinear form $\sipgb$ defined on $V_h$ to the space $V = V_h + H^2(\Omega)$ in Section \ref{sec:extension_of_bilin_form}. We find the continuous 
+SIPG-variational formulation (with a time-independent coefficient): \\ \\
+Find $u \in C^2([0,T];V)$ with $u(0) = u_0, u_t(0) = v_0$ such that 
+    \begin{equation}
+        \label{eq:wave_sipg_var_form}
+        (u_{tt}(t), v)_{L^2(\Omega)} + \sipgb(u(t),v) = \ell(v) \qquad \forall v \in V, t \in [0,T] 
+    \end{equation}
+This variational form is consistent with the weak formulation (\ref{eq:weak_form_wave}) (with inhomogeneous dirichlet boundary conditions strongly enforced).
+
+\begin{lemma}
+    Let $u \in C^2([0,T];H^2(\Omega))$. Then $u$ is a solution of (\ref{eq:weak_form_wave}) if and only if it is a solution of (\ref{eq:wave_sipg_var_form})
+\end{lemma}
+\begin{proof}
+    The proof is similar to Theorem \ref{thr:elliptic_consistency_sipg_variational_formulation}, so we will not go into details.
+    \begin{proofstep}
+        Suppose $u \in C^2([0,T]; H^2(\Omega))$ satisfies (\ref{eq:weak_form_wave}), then 
+        \begin{equation*}
+            u_{tt}(t) - (c u_{x}(t))_x = f(t) \qquad \forall t \in [0,T]\text{, a.e.\ in }\Omega.
+        \end{equation*}
+        We can multiply this by a test function $v \in V$, integrate by parts and generally follow the derivation of the SIPG variational form as presented in detail in 
+        section \ref{sec:elliptic_var_form} and find that $u$ satisfies (\ref{eq:wave_sipg_var_form}).
+    \end{proofstep}
+    \begin{proofstep}
+        Similarly suppose $u \in C^2([0,T]; H^2(\Omega))$ satisfies (\ref{eq:wave_sipg_var_form}), then by plugging test functions $v \in C_c^{\infty} \subset V$ into 
+        (\ref{eq:wave_sipg_var_form}) we find
+        \begin{equation*}
+            (u_{tt}(t), v)_{L^2(\Omega)} + a(u(t), v) = (f(t),v)_{\lo},
+        \end{equation*}
+        which in turn implies
+        \begin{equation*}
+            u_{tt}(t) - (c u_{x}(t))_x = f(t) \qquad \forall t \in [0,T]\text{, a.e.\ in }\Omega.
+        \end{equation*}
+        The boundary conditions can be recovered in an analogous manner as done in the proof of Theorem \ref{thr:elliptic_consistency_sipg_variational_formulation}.
+    \end{proofstep}
+\end{proof}
+
 In the following subsections we will accumulate some necessary tools for the proof of the a priori error estimates.
 
 \subsection{Elliptic Projection}
@@ -222,4 +257,54 @@ to show equivalence of the two norms on $V_h$, but we are only interested in the
     \end{equation*}
     where $C_{\lambda} = c_{\max}\kappa (C_{\text{inv}}^2 + 3(r+1)^2\sigma) $. 
     The estimate on $b_h$ follows directly from the estimate on the energy norm above and the continuity of the bilinear form on $V_h$.
+\end{proof}
+
+\subsection{A Priori L2 Error Estimation}
+\begin{theorem} [Leapfrog Convergence in $L^2$-norm]
+    \label{thr:wave_l2_convergence}
+    Let $r\geq 1$ be the polynomial degree, $h_0 > 0$, $\{\mathcal{T}_h\}_{0<h\leq h_0}$ be a quasi-uniform sequence of meshes with uniformity constant $\kappa > 0$ and
+    $\Delta t > 0$ (depending on $h$) small enough such that 
+    \begin{equation*}
+        1 - \frac{C_{\lambda}C_{\text{cont}}\Delta t^2}{4 h^2} > \frac{1}{2}.
+    \end{equation*} 
+    Let $u \in C^3([0,T];H^{r+1}(\Omega))$ be the (weak) solution of the wave equation (\ref{eq:weak_form_wave}) and 
+    $\{u_h^m\}_{m=0}^{M} \subset V_h$ be the sequence of fully discrete solutions from (\ref{eq:wave_fully_discrete_problem}). \\
+    Then there exists some constant $\mathcal{C} > 0$ independent of $h,\Delta t, u, T$, such that 
+    \begin{equation*}
+        \max_{m = 0,\ldots,M} \norm{u(t_m) - u_h^m}_{\lo} \leq \mathcal{C}\sqrt{1 + T^2}(\Delta t^2 + h^{r+1})\norm{u}_{C^3([0,T];H^{r+1}(\Omega))}
+    \end{equation*}
+\end{theorem}
+
+\begin{proof}
+    Due to the length oif this proof and the sheer amount of constants appearing we will not exactly calculate $\mathcal{C}$, to simplify notation we will assume the constant to be
+    growing throughout this proof and reuse it as a placeholder.
+
+    \begin{proofstep}
+        First define $u^m := u(t_m) \in H^{r+1}(\Omega)$ for all $m \in \countset{0}{M}$.
+        By introducing the elliptic projection into the error and using the triangle inequality we can estimate
+        \begin{equation}
+            \label{eq:proof_wave_l2_convergence_introducing_elliptic_projection_first_estimate}
+            \norm{u^m - u_h^m}_{\lo} \leq \norm{u^m - \Pi_h u^m}_{\lo} + \norm{u_h^m - \Pi_h u^m}_{\lo} \qquad \forall m \in \countset{0}{M}.
+        \end{equation}
+        Define $e^m := u_h^m - \Pi_h u^m \in V_h $. For all $m \in \countset{1}{M-1}$ $u^m$ and  $u_h^m$ satisfy 
+        \begin{align}
+            \label{eq:proof_wave_l2_convergence_pde_of_cont_solution}
+            (\partial_{t}^2 u^m, v)_{\lo} + \sipgb(u^m, v) &= \ell(v) &&\forall v \in V_h, \\
+            \label{eq:proof_wave_l2_convergence_pde_of_discrete_solution}
+            (\delta^2 u_h^m, v)_{\lo} + \sipgb(u_h^m, v) &= \ell(v) &&\forall v \in V_h
+        \end{align}
+        respectively.
+        We can subtract (\ref{eq:proof_wave_l2_convergence_pde_of_discrete_solution}) - (\ref{eq:proof_wave_l2_convergence_pde_of_discrete_solution}) and find
+        \begin{align*}
+            0 &= (\partial_t^2 u^m - \delta^2 u_h^m, v)_{\lo} + \sipgb(u^m - u_h^m, v) \\
+            & = (\partial_t^2 u^m - \delta^2 \Pi_h u^m + \delta^2 \Pi_h u^m - \delta^2 u_h^m, v)_{\lo} + \sipgb(u^m - \Pi_h u^m + \Pi_h u^m - u_h^m, v) \\
+            & = (\partial_t^2 u^m - \delta^2 \Pi_h u^m,v)_{\lo} - (\delta^2 e^m, v)_{\lo} + \underbrace{{\sipgb(u^m - \Pi_h u^m, v)}}_{=0} - \sipgb(e^m, v)
+        \end{align*}
+        for all $m \in \countset{1}{M-1}$, which leads to the error equation
+        \begin{equation}
+            \label{eq:proof_wave_l2_convergence_error_equation}
+            (\delta^2 e^m, v)_{\lo} + \sipgb(e^m,v) = (r^m, v)_{\lo} \qquad \forall v \in V_h,m\in \countset{1}{M-1}
+        \end{equation}
+        where $r^m := \partial_t^2 u^m - \delta^2 \Pi_h u^m$, denotes the residual at time $t_m$. 
+    \end{proofstep}
 \end{proof}

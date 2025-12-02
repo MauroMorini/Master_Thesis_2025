@@ -1,6 +1,6 @@
 \section{Numerical Results}
 
-\subsection{Error Analysis with Exact Solution}
+\subsection{Convergence Rates with Exact Solution}
 \label{subsec:conv_rate_wave}
 To reproduce the expected convergence rates and therein check the validity of our implementation we follow a similar sequence of steps as already presented in section \ref{subsec:conv_rate_ell}.  
 
@@ -108,7 +108,7 @@ leapfrog limits the error to behave like $\mathcal{O}(\Delta t^2)$ and we couple
 will flatten and behave like $\mathcal{O}(h^2)$.  
 % TODO: put detailed explanation why O(h^3) is an illusion and reference to theory part
 
-\subsection{Error Analysis of Absorbing Boundary Conditions}
+\subsection{Convergence Rates with Absorbing Boundary Conditions}
 We now want to test the rate of convergence for a absorbing boundary condition implemented at the upper boundary. We proceed analogously to subsection \ref{subsec:conv_rate_wave} with the 
 main difference that now instead of implementing a second (exact) Dirichlet boundary condition at the upper boundary $x = L = 10$ here we introduce an absorbing boundary condition 
 (see section \ref{sec:transparent_bc}). As seen previously the absorbing boundary condition is exact in 1d if we assume
@@ -163,7 +163,7 @@ We visualize the exact and the numerical solution at the final time $T=10$ (the 
 in Figure \ref{fig:wave_uniform_mesh_absorbing_bc_with_non_const_coeff_p2}. The transparent boundary condition introduces such a heavy
 systematic error, that the numerical solution no longer looks anything like the exact solution $u_2$ (plotted in blue).
 
-\subsection{Error Analysis without Exact Solution}
+\subsection{Convergence Rates without Exact Solution}
 Starting with an exact solution $u$ and modifying the pde to exactly output $u$ is one way of testing the exactness and convergence rates of the method as done previously. Here we would like 
 to explore an alternative method, which doesn't require knowledge of the exact solution itself. \\
 Consider a sequence of nested meshes $\{ \mathcal{T}_h^{(m)} \}_{m=0}^M$, where each mesh $\mathcal{T}_h^{(m+1)}$ is obtained by refining every element of the previous mesh $\mathcal{T}_h^{(m)}$, 

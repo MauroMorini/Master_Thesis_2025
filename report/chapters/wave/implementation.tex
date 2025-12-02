@@ -52,7 +52,7 @@ the symmetry and penalty terms at the corresponding node $x_{N+1}$, instead we a
 
 the semi-discrete scheme (\ref{eq:wave_semidiscrete_var_form}) turns into
 \begin{equation*}
-    (\partial_{t}^2 u_h(t), v)_{L^2(\Omega)} + b_h(u_h,v;t) + \avg{\partial_t u_h(x_{N+1},t) } \jump{v(x_{N+1})} = \ell_h (v;t) 
+    (\partial_{t}^2 u_h(t), v)_{L^2(\Omega)} + b_h(u_h,v;t) + \avg{\partial_t u_h(x_{N+1},t) } \jump{v(x_{N+1})} = \ell (v;t) 
     \qquad \forall v \in V_h, t \in [0,T],
 \end{equation*}
 where 
@@ -236,7 +236,7 @@ $\mathbf{B}_{\text{cons}}^{(n_m)}(t) , \mathbf{B}_{\text{penal}}^{(n_m)}(t)$ for
 Since $M$ is fixed (in practice $M < 10$), we reduce the computational cost of assembling $\mathbf{B}(t)$ from $\mathcal{O}(N)$ to $\mathcal{O}(M) = \mathcal{O}(1)$. \\
 We can sum up the update procedure as the following algorithm:
 
-\begin{algorithm}
+\begin{algorithm}[h!]
 \caption{Calculate $\mathbf{B}(t)$ }
 \begin{algorithmic}
 \STATE Assemble initial matrices 
@@ -275,3 +275,4 @@ We can sum up the update procedure as the following algorithm:
 \end{algorithmic}
 \end{algorithm}
 The first part of the algorithm should be done before the leapfrog iteration and then the second part can be done repeatedly during the leapfrog iteration using the prepared matrices.
+\newpage 
