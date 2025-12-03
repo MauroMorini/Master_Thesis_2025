@@ -213,6 +213,7 @@ of lower order derivatives by higher order derivatives. The opposite is also pos
 By making use of Lemma \ref{lemma:inverse_inequality} we can now estimate the energy norm from above by the $L^2$-norm on the finite element space. In fact one could extend the following lemma 
 to show equivalence of the two norms on $V_h$, but we are only interested in the upper bound. 
 \begin{lemma}
+    \label{lemma:equivalence_norms_on_Vh}
     Let $r\geq 1$ be a polynomial degree, $\{\mathcal{T}_h\}_h$ be a sequence of quasi-uniform meshes with uniformity constant $\kappa > 0$ and let $V_h = V_h(\mathcal{T}_h)$ be the 
     finite element space. Then there exists a constant $C_{\lambda}(c, \sigma, r, \kappa) > 0$ independent of $h$, such that 
     \begin{equation*}
@@ -402,8 +403,84 @@ to show equivalence of the two norms on $V_h$, but we are only interested in the
              \underbrace{ - \sipgb \Big(\frac{E^m + E^{m-1}}{2}, \frac{E^m + E^{m-1}}{2}\Big)}_{\leq 0} \nonumber \\
             &+ \sipgb \Big(\underbrace{\frac{E^m - E^{m-1}}{2}}_{= \Delta t e^m/2}, \frac{E^m - E^{m-1}}{2} \Big)
             + \Delta t \sum_{j = 0}^{m-1} (R^j, e^{j+1} + e^j)_{\lo} \nonumber \\
-            &\leq \norm{e^0}_{\lo}^2 + \frac{\Delta t^2}{4} \sipgb(e^^m, e^m) 
-            + \Delta t \sum_{j = 0}^{m-1}(R^j, e^{j+1} + e^j)
+            &\leq \norm{e^0}_{\lo}^2 + \frac{\Delta t^2}{4} \sipgb(e^m, e^m) 
+            + \Delta t \sum_{j = 0}^{m-1}(R^j, e^{j+1} + e^j) \qquad \forall m \in \countset{1}{M},
+            \label{eq:proof_wave_l2_convergence_first_estimate_em}
         \end{align}
+        where we have used that the bilinear form $\sipgb$ is coercive on $V_h$ 
+        and $E^m \in V_h$, therefore implying that 
+        \begin{equation*}
+            \sipgb \Big( \frac{E^m + E^{m-1}}{2}, \frac{E^m + E^{m-1}}{2} \Big) \geq 0.
+        \end{equation*}
+    \end{proofstep}
+    \begin{proofstep}[Main Estimation Step]
+        Using Lemma \ref{lemma:equivalence_norms_on_Vh} we find 
+        \begin{equation*}
+            \sipgb(e^m, e^m) \leq C_{\text{cont}}C_{\lambda} h^{-2} \norm{e^m}_{\lo}^2.
+        \end{equation*}
+        and introducing this into (\ref{eq:proof_wave_l2_convergence_first_estimate_em})
+        yields
+        \begin{equation*}
+            \norm{e^m}_{\lo}^2 \leq 
+            \norm{e^0}_{\lo}^2 + \frac{C_{\text{cont}}C_{\lambda} \Delta t^2}{4h^2} \norm{e^m}_{\lo}^2
+            + \Delta t \sum_{j = 0}^{m-1}(R^j, e^{j+1} + e^j) \qquad \forall m \in \countset{1}{M}. 
+        \end{equation*}
+        By the assumption 
+        \begin{equation*}
+            \varepsilon := 1 - \frac{C_{\text{cont}}C_{\lambda} \Delta t^2}{4h^2} > \frac{1}{2}
+        \end{equation*}
+        we can take the term $\displaystyle \frac{C_{\text{cont}}C_{\lambda} \Delta t^2}{4h^2} \norm{e^m}_{\lo}^2$ to the 
+        left hand side of the inequality. Using Cauchy-Schwarz and Young's inequality we estimate
+        \begin{align*}
+            \varepsilon \norm{e^m}_{\lo}^2 
+            &\leq \norm{e^0}_{\lo}^2 
+            + \Delta t \sum_{j = 0}^{m-1} (R^j, e^{j+1} + e^j)_{\lo} \\
+            &\leq \norm{e^0}_{\lo}^2 
+            + \Big( \max_{j = 0,\ldots,M}\norm{e^j}_{\lo}\Big) \Big(\frac{\sqrt{\varepsilon}}{\sqrt{\varepsilon}}\Big)
+            2 \Delta t \sum_{j = 0}^{m-1} \norm{R^j}_{\lo} \\
+            &\leq \norm{e^0}_{\lo}^2   
+            + \max_{j = 0,\ldots,M} \frac{\varepsilon}{2} \norm{e^j}_{\lo}^2
+            + \frac{2 \Delta t^2}{\varepsilon} \Big(\sum_{j = 0}^{m-1} \norm{R^j}_{\lo} \Big) \\
+            &\leq  \norm{e^0}_{\lo}^2   
+            + \max_{j = 0,\ldots,M} \frac{\varepsilon}{2} \norm{e^j}_{\lo}^2
+            + \frac{2 \Delta t^2}{\varepsilon} \Big( \sum_{j = 0}^{M-1} \norm{R^j}_{\lo} \Big)^2.
+        \end{align*}
+        We are now left with a right hand side completely independent of $m \in \countset{1}{M}$.
+        This allows us now to take the maximum over $m$ on both sides of the inequality
+        (in reality only the left hand side is affected)
+        \begin{equation*}
+            \max_{j = 0,\ldots,M} \varepsilon \norm{e^j}_{\lo}^2
+            \leq  \norm{e^0}_{\lo}^2   
+            + \max_{j = 0,\ldots,M} \frac{\varepsilon}{2} \norm{e^j}_{\lo}^2
+            + \frac{2 \Delta t^2}{\varepsilon} \Big( \sum_{j = 0}^{M-1} \norm{R^j}_{\lo} \Big)^2,
+        \end{equation*}
+        and subtracting the term $\displaystyle \max_{j = 0,\ldots,M} \frac{\varepsilon}{2} \norm{e^j}_{\lo}^2$ 
+        on both sides yields 
+        \begin{equation*}
+            \max_{j = 0,\ldots,M} \frac{1}{4} \norm{e^j}_{\lo}^2
+            \leq \max_{j = 0,\ldots,M} \frac{\varepsilon}{2} \norm{e^j}_{\lo}^2
+            \leq  \norm{e^0}_{\lo}^2   
+            + \frac{2 \Delta t^2}{\varepsilon} \Big( \sum_{j = 0}^{M-1} \norm{R^j}_{\lo} \Big)^2.
+        \end{equation*}
+        We can now estimate 
+        \begin{equation*}
+            \frac{2 \Delta t^2}{\varepsilon} \Big( \sum_{j = 0}^{M-1} \norm{R^j}_{\lo} \Big)^2
+            \leq {8 \Delta t^2} \norm{R^0}_{\lo}^2  
+            + {8 \Delta t^2} \Big( \sum_{j = 1}^{M-1} \norm{R^j}_{\lo} \Big)^2
+        \end{equation*}
+        having used the general inequality $(a+b)^2 \leq 2a^2 + 2b^2$ and $\varepsilon > 1/2$.
+        Together we find the estimate 
+        \begin{equation}
+            \label{eq:proof_wave_l2_convergence_main_estimation_multiple_terms}
+            \max_{j = 0,\ldots,M} \norm{e^j}_{\lo}^2 
+            \leq 4 \norm{e^0}_{\lo}^2 
+            + {8 \Delta t^2} \norm{R^0}_{\lo}^2  
+            + {8 \Delta t^2} \Big( \sum_{j = 1}^{M-1} \norm{R^j}_{\lo} \Big)^2
+            =: T_1 + T_2 + T_3.
+        \end{equation}
+    \end{proofstep}
+    \begin{proofstep}[Estimating $T_1$]
+        This term itself does not require much work since it follows directly from the definitions
+        
     \end{proofstep}
 \end{proof}
