@@ -313,14 +313,58 @@ to show equivalence of the two norms on $V_h$, but we are only interested in the
         For $j \in \countset{2}{M-2}$ by the definition of $\delta^2$ in (\ref{def:centered_finite_difference_quotient}) we find
         \begin{align*}
             (\delta^2 e^{j+1},v)_{\lo} + (\delta^2 e^{j},v)_{\lo} + (\delta^2 e^{j-1},v)_{\lo} 
-            =  \Big(\frac{e^{n+2} - e^{n+1}}{\Delta t^2},v \Big)_{\lo} - \Big(\frac{e^{n-1} - e^{n-2}}{\Delta t^2},v\Big)_{\lo},
+            =  \Big(\frac{e^{j+2} - e^{j+1}}{\Delta t^2},v \Big)_{\lo} - \Big(\frac{e^{j-1} - e^{j-2}}{\Delta t^2},v\Big)_{\lo},
         \end{align*}
         therefore summing up all error equations over $j = 1,\ldots,m$ for some $m \in \countset{1}{M-1}$ yields 
         \begin{equation}
+            \label{eq:proof_wave_l2_convergence_summed_up_error_equation_with_sums_outside}
             \Big(\frac{e^{m+1} - e^{m}}{\Delta t},v \Big)_{\lo} - \Big(\frac{e^{1} 
             - e^{0}}{\Delta t},v \Big)_{\lo} + \Delta t \sum_{j = 1}^{m} \sipgb(e^j, v) 
-            = \Delta t \sum_{j=1}^m (r^j,v)_{\lo}
+            = \Delta t \sum_{j=1}^m (r^j,v)_{\lo},
         \end{equation}
-        where we have multiplied both sides with $\Delta t$.
+        where we have multiplied both sides with $\Delta t$. 
+        Note that the bilinearity of $\sipgb$ has been used here as well as 
+        it's time independency. 
+        For $m \in \countset{1}{M-1}$ define 
+        \begin{align*}
+            E^m &:= \Delta t \sum_{j=1}^{m} e^j, && E^0:= 0, \\
+            R^m &:= \Delta t \sum_{j=0}^{m} r^j, && r^0:= \frac{e^1 - e^0}{\Delta t^2}.
+        \end{align*}
+        Applying these definitions and the bilinearity of $\sipgb$ to 
+        (\ref{eq:proof_wave_l2_convergence_summed_up_error_equation_with_sums_outside})
+        and taking the term $R^0$ to the right hand side yields the accumulated 
+        error equation 
+        \begin{equation}
+            \label{eq:proof_wave_l2_convergence_accumulated_error_equation}
+            \Big( \frac{e^{m+1} - e^m}{\Delta t},v \Big)_{\lo} + \sipgb(E^m,v) = (R^m,v)_{\lo} 
+            \qquad \forall v \in V_h, m \in \countset{0}{M-1}.
+        \end{equation}
+        Note that the case $m = 0$ holds by the definition of $R^0, E^0$.
+    \end{proofstep}
+    \begin{proofstep}[Reform Error Equation into Error Estimate]
+        Since (\ref{eq:proof_wave_l2_convergence_accumulated_error_equation})
+        holds for all $v \in V_h$, for an arbitrary $j \in \countset{0}{M-1}$ 
+        (where we call $m = j$ in the accumulated error equation 
+        (\ref{eq:proof_wave_l2_convergence_accumulated_error_equation}) above
+        to then later again sum it up over $j$) we can choose the test function 
+        \begin{equation*}
+            v = \frac{e^{j+1} - e^j}{2},
+        \end{equation*}
+        introduce it into (\ref{eq:proof_wave_l2_convergence_accumulated_error_equation})
+        and multiply the equation by $2 \Delta t$. We obtain 
+        \begin{equation*}
+            \norm{e^{j+1}}_{\lo}^2 - \norm{e^j}_{\lo}^2 + \Delta t \,
+            \sipgb(E^j, e^{j+1} + e^j) = \Delta t\, (R^j, e^{j+1} + e^j)_{\lo} 
+        \end{equation*}
+        for $j \in \countset{0}{M-1}$ arbitrary. Due to the specific choice of  the test function
+        $v$ we were able to eliminate the cross terms $ (e^{j+1}, e^{j})_{\lo}$.
+        % TODO: plusminus 
+        For a fixed $m \in \countset{0}{M-1}$ we sum up 
+        over $j = 0,\ldots, m$ finding
+        \begin{equation*}
+            \norm{e^{m+1}}_{\lo}^2 - \norm{e^0}_{\lo}^2 + 
+            \Delta t \sum_{j=0}^{m} \sipgb(E^j, e^{j+1} + e^j) 
+            = \Delta t \sum_{j=0}^{m} (R^j, e^{j+1} + e^j)_{\lo}. 
+        \end{equation*}
     \end{proofstep}
 \end{proof}
