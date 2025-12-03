@@ -344,9 +344,10 @@ to show equivalence of the two norms on $V_h$, but we are only interested in the
     \begin{proofstep}[Reform Error Equation into Error Estimate]
         Since (\ref{eq:proof_wave_l2_convergence_accumulated_error_equation})
         holds for all $v \in V_h$, for an arbitrary $j \in \countset{0}{M-1}$ 
-        (where we call $m = j$ in the accumulated error equation 
+        (where we call the variable $j$ in the accumulated error equation   
         (\ref{eq:proof_wave_l2_convergence_accumulated_error_equation}) above
-        to then later again sum it up over $j$) we can choose the test function 
+        instead of $m$ as before, because we intend
+        to then later again sum over $j=0,\ldots,m-1$) we can choose the test function 
         \begin{equation*}
             v = \frac{e^{j+1} - e^j}{2},
         \end{equation*}
@@ -357,14 +358,52 @@ to show equivalence of the two norms on $V_h$, but we are only interested in the
             \sipgb(E^j, e^{j+1} + e^j) = \Delta t\, (R^j, e^{j+1} + e^j)_{\lo} 
         \end{equation*}
         for $j \in \countset{0}{M-1}$ arbitrary. Due to the specific choice of  the test function
-        $v$ we were able to eliminate the cross terms $ (e^{j+1}, e^{j})_{\lo}$.
-        % TODO: plusminus 
-        For a fixed $m \in \countset{0}{M-1}$ we sum up 
-        over $j = 0,\ldots, m$ finding
+        $v$ we were able to eliminate the cross terms $ \pm \frac{1}{2 \Delta t }(e^{j+1}, e^{j})_{\lo}$.
+        For a fixed $m \in \countset{0}{M}$ we sum 
+        over $j = 0,\ldots, m-1$ finding
         \begin{equation*}
-            \norm{e^{m+1}}_{\lo}^2 - \norm{e^0}_{\lo}^2 + 
-            \Delta t \sum_{j=0}^{m} \sipgb(E^j, e^{j+1} + e^j) 
-            = \Delta t \sum_{j=0}^{m} (R^j, e^{j+1} + e^j)_{\lo}. 
+            \norm{e^{m}}_{\lo}^2 - \norm{e^0}_{\lo}^2 + 
+            \Delta t \sum_{j=0}^{m-1} \sipgb(E^j, e^{j+1} + e^j) 
+            = \Delta t \sum_{j=0}^{m-1} (R^j, e^{j+1} + e^j)_{\lo}. 
         \end{equation*}
+        We will now focus on the term $ \Delta t \sum_{j=0}^{m} \sipgb(E^j, e^{j+1} + e^j) $
+        and rewrite it using the symmetry of the bilinear form.
+        Firstly note that 
+        \begin{equation}
+            \label{eq:proof_wave_l2_summed_up_error_equation_with_chosen_test_funct_pre_estimate}
+            E^{j+1} - E^{j-1} = \Delta t \sum_{i = 1}^{j+1} e^i - \Delta t \sum_{i = 1}^{j-1} e^i
+            = \Delta t (e^{j+1} + e^{j-1}) \qquad \forall j \in \countset{1}{M-1}.
+        \end{equation}
+        We can therefore rewrite 
+        \begin{align}
+            \Delta t \sum_{j = 0}^{m-1}\sipgb(E^j, e^{j+1} + e^j) 
+            &= \Delta t \, \sipgb(\underbrace{E^0}_{=0}, e^1 + e^0)
+            + \sum_{j = 1}^{m-1}\sipgb(E^j, \Delta t(e^{j+1} + e^j)) \nonumber \\
+            &= \sum_{j = 1}^{m-1} \sipgb(E^j, E^{j+1}- E^{j-1})  
+            = \sum_{j = 1}^{m-1} \sipgb(E^{j+1}, E^j) - \sipgb(E^j, E^{j-1})\nonumber \\
+            \label{eq:proof_wave_l2_convergence_pre_estimate_bh_term_rewrite_1}
+            &= \sipgb(E^m, E^{m-1}) - \sipgb(E^1, \underbrace{E^0}_{=0}) 
+            = \sipgb(E^m, E^{m-1}).
+        \end{align}
+        Secondly we find (by again applying the symmetry of $\sipgb$)
+        \begin{align}
+            \label{eq:proof_wave_l2_convergence_pre_estimate_bh_term_rewrite_2}
+            \sipgb\Big(\frac{E^{m} + E^{m-1}}{2}, \frac{E^{m} + E^{m-1}}{2}\Big)
+             - \sipgb\Big(\frac{E^{m} - E^{m-1}}{2}, \frac{E^{m} - E^{m-1}}{2}\Big)
+             = \sipgb(E^m, E^{m-1}).
+        \end{align} 
+        Finally after combining (\ref{eq:proof_wave_l2_convergence_pre_estimate_bh_term_rewrite_1}), (\ref{eq:proof_wave_l2_convergence_pre_estimate_bh_term_rewrite_2})
+        and introducing them into (\ref{eq:proof_wave_l2_summed_up_error_equation_with_chosen_test_funct_pre_estimate}) after having taken
+        the term 
+        \[- \norm{e^0}_{\lo}^2 + \Delta t \sum_{j=0}^{m-1} \sipgb(E^j, e^{j+1} + e^j)\]
+        to the right hand side we can estimate 
+        \begin{align}
+            \norm{e^m}_{\lo}^2 &= \norm{e^0}_{\lo}^2 
+             \underbrace{ - \sipgb \Big(\frac{E^m + E^{m-1}}{2}, \frac{E^m + E^{m-1}}{2}\Big)}_{\leq 0} \nonumber \\
+            &+ \sipgb \Big(\underbrace{\frac{E^m - E^{m-1}}{2}}_{= \Delta t e^m/2}, \frac{E^m - E^{m-1}}{2} \Big)
+            + \Delta t \sum_{j = 0}^{m-1} (R^j, e^{j+1} + e^j)_{\lo} \nonumber \\
+            &\leq \norm{e^0}_{\lo}^2 + \frac{\Delta t^2}{4} \sipgb(e^^m, e^m) 
+            + \Delta t \sum_{j = 0}^{m-1}(R^j, e^{j+1} + e^j)
+        \end{align}
     \end{proofstep}
 \end{proof}
